@@ -297,12 +297,12 @@
         }
 
         /* ================= LISTADO LATERAL (≤ 10% ANCHO) ================= */
-        /* ================= LISTADO LATERAL DE EMPRESAS (AMPLIO, ELEGANTE Y LEGIBLE) ================= */
+        /* ================= LISTADO LATERAL DE EMPRESAS (ANCHO FIJO 400PX) ================= */
         #companies-sidebar {
-            width: var(--sidebar-width);
-            min-width: 320px;
-            max-width: 520px;
-            flex: 0 0 var(--sidebar-width);
+            width: 400px;
+            min-width: 400px;
+            max-width: 400px;
+            flex: 0 0 400px;
             background: #ffffff;
             color: var(--bb-text-dark);
             display: flex;
@@ -312,12 +312,12 @@
             position: relative;
             z-index: 500;
             box-shadow: 2px 0 12px rgba(0, 0, 0, 0.04);
-            transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), flex 0.25s cubic-bezier(0.16, 1, 0.3, 1), margin-left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: margin-left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         /* Estado Colapsado / Oculto de la Barra Lateral */
         .dashboard-body.sidebar-collapsed #companies-sidebar {
-            margin-left: calc(-1 * var(--sidebar-width));
+            margin-left: -400px;
             min-width: 0;
             border-right: none;
             visibility: hidden;
@@ -640,15 +640,49 @@
             width: 100vw;
         }
 
-        .btn-toggle-sidebar {
-            border-radius: 8px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            padding: 5px 11px;
+        /* Botón de Colapso dentro del Sidebar (Llamativo y Táctil para Tablets) */
+        .btn-collapse-sidebar {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            color: #0066FF;
+            border: 1.5px solid #93c5fd;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            min-height: 36px;
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0, 102, 255, 0.12);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            touch-action: manipulation;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .btn-collapse-sidebar:hover {
+            background: linear-gradient(135deg, #0066FF 0%, #0052cc 100%);
+            color: #ffffff;
+            border-color: #0066FF;
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+            transform: translateX(-2px);
+        }
+
+        .btn-collapse-sidebar:active {
+            transform: scale(0.95);
+        }
+
+        /* Botón Flotante en el Mapa (Ultra Llamativo con Pulso Luminoso para Tablets) */
+        @keyframes tabletGlowPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 102, 255, 0.65), 0 8px 24px rgba(0, 102, 255, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 12px rgba(0, 102, 255, 0), 0 8px 24px rgba(0, 102, 255, 0.4);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 102, 255, 0), 0 8px 24px rgba(0, 102, 255, 0.4);
+            }
         }
 
         .btn-floating-expand-sidebar {
@@ -656,26 +690,63 @@
             top: 14px;
             left: 14px;
             z-index: 1000;
-            font-size: 0.78rem;
-            font-weight: 600;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(8px);
-            border: 1px solid var(--bb-border);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            font-size: 0.88rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #0066FF 0%, #0b2545 100%);
+            color: #ffffff !important;
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 8px 24px rgba(0, 102, 255, 0.45), 0 2px 8px rgba(0, 0, 0, 0.2);
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 7px 13px;
-            transition: all 0.2s ease;
-            color: var(--bb-text-dark);
+            gap: 8px;
+            padding: 10px 20px;
+            min-height: 46px;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            touch-action: manipulation;
+            user-select: none;
+            animation: tabletGlowPulse 2.8s infinite;
         }
 
         .btn-floating-expand-sidebar:hover {
+            background: linear-gradient(135deg, #0052cc 0%, #06192e 100%);
+            box-shadow: 0 12px 30px rgba(0, 102, 255, 0.6), 0 4px 12px rgba(0, 0, 0, 0.25);
+            transform: translateY(-2px) scale(1.02);
+            color: #ffffff !important;
+        }
+
+        .btn-floating-expand-sidebar:active {
+            transform: scale(0.97);
+            box-shadow: 0 4px 14px rgba(0, 102, 255, 0.4);
+        }
+
+        .btn-floating-expand-sidebar .floating-counter-badge {
             background: #ffffff;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-            color: var(--bb-primary);
-            transform: translateY(-1px);
+            color: #0066FF;
+            font-size: 0.76rem;
+            font-weight: 800;
+            border-radius: 20px;
+            padding: 2px 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Optimizaciones responsivas para Tablet */
+        @media (max-width: 1024px) {
+            #top-banner {
+                padding: 0 0.85rem;
+            }
+            .brand-logos-container {
+                gap: 10px;
+            }
+            .btn-floating-expand-sidebar {
+                top: 12px;
+                left: 12px;
+                padding: 12px 22px;
+                font-size: 0.92rem;
+                min-height: 48px;
+            }
         }
 
         #map {
@@ -816,14 +887,6 @@
         <!-- 2.3 BANNER SUPERIOR INSTITUCIONAL SEDATEZ -->
         <header id="top-banner">
             <div class="brand-logos-container">
-                <!-- Botón de Ocultar / Mostrar Barra Lateral -->
-                <button type="button" class="btn btn-outline-secondary btn-sm btn-toggle-sidebar" id="btn-toggle-sidebar" title="Ocultar barra lateral">
-                    <i class="bi bi-layout-sidebar-inset" id="icon-toggle-sidebar"></i>
-                    <span class="d-none d-md-inline" id="text-toggle-sidebar">Ocultar panel</span>
-                </button>
-
-                <div class="brand-divider"></div>
-
                 <!-- LOGO OFICIAL SEDATEZ -->
                 <div class="sedatez-badge d-flex align-items-center">
                     <img src="logo_sedatez.png" alt="SEDATEZ - Zulia" style="height: 56px; max-height: 58px; width: auto; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.06));">
@@ -879,18 +942,11 @@
                             <span class="fw-bold" style="font-size: 0.88rem; color: #1e293b;">Empresas</span>
                             <span class="badge" style="background: var(--bb-primary-light); color: var(--bb-primary); font-size: 0.72rem; font-weight: 700;" id="sidebar-counter">54</span>
                         </div>
-                        <div class="d-flex align-items-center gap-1">
-                            <!-- Selector de Ancho Interactivo -->
-                            <div class="btn-group btn-group-sm" role="group" aria-label="Ancho del listado">
-                                <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2" id="btn-w-340" title="Ancho 340px" style="font-size: 0.68rem;">340px</button>
-                                <button type="button" class="btn btn-primary btn-xs py-0 px-2 active" id="btn-w-400" title="Ancho 400px (Recomendado)" style="font-size: 0.68rem;">400px</button>
-                                <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2" id="btn-w-460" title="Ancho 460px (Ultra Amplio)" style="font-size: 0.68rem;">460px</button>
-                            </div>
-                            <!-- Botón Colapsar Barra Lateral -->
-                            <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2" id="btn-collapse-sidebar" title="Ocultar barra lateral" style="font-size: 0.72rem;">
-                                <i class="bi bi-chevron-bar-left"></i>
-                            </button>
-                        </div>
+                        <!-- Botón Ocultar Barra Lateral (Llamativo y Táctil para Tablets) -->
+                        <button type="button" class="btn btn-collapse-sidebar" id="btn-collapse-sidebar" title="Ocultar barra lateral">
+                            <i class="bi bi-chevron-left fw-bold"></i>
+                            <span>Ocultar</span>
+                        </button>
                     </div>
 
                     <!-- Buscador Cómodo con botón de limpiar -->
@@ -945,11 +1001,9 @@
                     <span class="sidebar-width-indicator">
                         <i class="bi bi-geo-alt-fill text-danger me-1"></i> Estado Zulia (SEDATEZ)
                     </span>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.7rem;" id="sidebar-dimension-tag">
-                            400px
-                        </span>
-                    </div>
+                    <span class="badge bg-light text-secondary border" style="font-size: 0.7rem;">
+                        <i class="bi bi-shield-check text-primary me-1"></i> Oficial
+                    </span>
                 </div>
             </aside>
 
@@ -961,10 +1015,11 @@
                 <!-- Div donde se monta el mapa interactivo -->
                 <div id="map"></div>
 
-                <!-- Botón Flotante para Mostrar Barra Lateral cuando está oculta -->
-                <button type="button" id="btn-expand-sidebar-floating" class="btn btn-floating-expand-sidebar d-none" title="Mostrar panel lateral de empresas">
-                    <i class="bi bi-layout-sidebar-inset text-primary"></i>
-                    <span>Mostrar Directorio</span>
+                <!-- Botón Flotante Ultra Llamativo para Tablets: Mostrar Barra Lateral cuando está oculta -->
+                <button type="button" id="btn-expand-sidebar-floating" class="btn btn-floating-expand-sidebar d-none" title="Toca aquí para ver el listado de empresas">
+                    <i class="bi bi-building-fill fs-6"></i>
+                    <span>Ver Empresas</span>
+                    <span class="floating-counter-badge" id="floating-btn-counter">54</span>
                 </button>
 
                 <!-- Banner de Modo Selección de Coordenadas (GPS Picker Mode) -->
@@ -1460,6 +1515,9 @@
             if (hPending && resumen.pendientes_gps !== undefined) hPending.textContent = resumen.pendientes_gps;
             if (cActive) cActive.textContent = resumen.activas;
             if (cInactive) cInactive.textContent = resumen.inactivas;
+
+            const floatingCount = document.getElementById('floating-btn-counter');
+            if (floatingCount && resumen.total_empresas !== undefined) floatingCount.textContent = resumen.total_empresas;
         }
 
         function poblarSelectoresFiltro(kpisData) {
@@ -1478,6 +1536,7 @@
             // Select de Minerales
             const selMin = document.getElementById('filter-mineral');
             if (selMin && kpisData.por_mineral) {
+                const prevVal = currentMineralFilter;
                 selMin.innerHTML = '<option value="all">💎 Mineral: Todos</option>';
                 kpisData.por_mineral.forEach(min => {
                     const opt = document.createElement('option');
@@ -1485,12 +1544,70 @@
                     opt.textContent = `${min.nombre} (${min.total})`;
                     selMin.appendChild(opt);
                 });
+                if (prevVal && prevVal !== 'all') {
+                    selMin.value = prevVal;
+                }
             }
         }
 
         // ==============================================================
-        // 3. FILTRADO REACTIVO DE CONTRIBUYENTES
+        // 3. NORMALIZACIÓN Y FILTRADO REACTIVO DE CONTRIBUYENTES
         // ==============================================================
+        function normalizeMineralText(str) {
+            if (!str) return '';
+            return String(str)
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/\s+/g, " ")
+                .trim();
+        }
+
+        function getMineralColor(minName) {
+            if (!minName) return '#0b2545';
+            const low = normalizeMineralText(minName);
+            if (low.includes('caliza')) return '#475569'; // Gris pizarra
+            if (low.includes('arena')) return '#d97706';  // Ámbar arena
+            if (low.includes('arcilla') || low.includes('barro') || low.includes('vegetal')) return '#ea580c'; // Terracota
+            if (low.includes('grava') || low.includes('piedra')) return '#0284c7'; // Azul grava
+            if (low.includes('menito')) return '#059669'; // Esmeralda menito
+            return '#0b2545';
+        }
+
+        function matchesMineralFilter(empresa, filterVal) {
+            if (!filterVal || filterVal === 'all') return true;
+            const raw = normalizeMineralText(empresa.minerales_raw || '');
+            const filt = normalizeMineralText(filterVal);
+            if (!raw) return false;
+
+            // 1. Coincidencia directa de subcadena
+            if (raw.includes(filt)) return true;
+
+            // 2. Verificar contra cada mineral del array individual
+            if (Array.isArray(empresa.minerales)) {
+                for (let i = 0; i < empresa.minerales.length; i++) {
+                    const normM = normalizeMineralText(empresa.minerales[i]);
+                    if (normM.includes(filt)) return true;
+                }
+            }
+
+            // 3. Menito (Menito Grueso y Fino vs MENITO)
+            if (filt.includes("menito") && raw.includes("menito")) return true;
+
+            // 4. Arena del Lago vs Arena de Lago
+            if (filt.includes("lago") && raw.includes("lago") && raw.includes("arena")) return true;
+
+            // 5. Barro para Relleno vs Barro
+            if (filt.includes("barro") && raw.includes("barro")) return true;
+
+            // 6. Palabras conectores eliminadas ("de", "del", "y", "para")
+            const cleanFilt = filt.replace(/\b(de|del|y|para)\b/g, "").replace(/\s+/g, " ").trim();
+            const cleanRaw = raw.replace(/\b(de|del|y|para)\b/g, "").replace(/\s+/g, " ").trim();
+            if (cleanFilt && cleanRaw.includes(cleanFilt)) return true;
+
+            return false;
+        }
+
         function applyMnmFilters() {
             const term = currentSearchTerm.toLowerCase().trim();
 
@@ -1519,9 +1636,9 @@
                     }
                 }
 
-                // Filtro por Mineral
+                // Filtro por Mineral Inteligente y Normalizado
                 if (currentMineralFilter !== 'all') {
-                    if (!emp.minerales_raw.toLowerCase().includes(currentMineralFilter.toLowerCase())) {
+                    if (!matchesMineralFilter(emp, currentMineralFilter)) {
                         return false;
                     }
                 }
@@ -1534,12 +1651,45 @@
                                       (emp.expediente || '').toLowerCase().includes(term) ||
                                       (emp.municipio || '').toLowerCase().includes(term) ||
                                       (emp.parroquia || '').toLowerCase().includes(term) ||
-                                      (emp.direccion_terreno || '').toLowerCase().includes(term);
+                                      (emp.direccion_terreno || '').toLowerCase().includes(term) ||
+                                      (emp.minerales_raw || '').toLowerCase().includes(term);
                     if (!matchText) return false;
                 }
 
                 return true;
             });
+
+            // Resaltar visualmente el select de Minerales si está activo
+            const selMin = document.getElementById('filter-mineral');
+            if (selMin) {
+                if (currentMineralFilter !== 'all') {
+                    selMin.style.borderColor = '#0066FF';
+                    selMin.style.backgroundColor = '#eff6ff';
+                    selMin.style.fontWeight = '700';
+                    selMin.style.color = '#0047b3';
+                } else {
+                    selMin.style.borderColor = '#cbd5e1';
+                    selMin.style.backgroundColor = '#f8fafc';
+                    selMin.style.fontWeight = 'normal';
+                    selMin.style.color = '';
+                }
+            }
+
+            // Resaltar visualmente el select de Municipios si está activo
+            const selMun = document.getElementById('filter-municipio');
+            if (selMun) {
+                if (currentMunicipioFilter !== 'all') {
+                    selMun.style.borderColor = '#0066FF';
+                    selMun.style.backgroundColor = '#eff6ff';
+                    selMun.style.fontWeight = '700';
+                    selMun.style.color = '#0047b3';
+                } else {
+                    selMun.style.borderColor = '#cbd5e1';
+                    selMun.style.backgroundColor = '#f8fafc';
+                    selMun.style.fontWeight = 'normal';
+                    selMun.style.color = '';
+                }
+            }
 
             // Actualizar contadores
             const sideCount = document.getElementById('sidebar-counter');
@@ -1547,18 +1697,24 @@
 
             // Conteo de empresas ubicadas en el conjunto filtrado
             const conCoordsEnFiltrados = filtered.filter(e => e.geometria && e.geometria.lat !== null && e.geometria.lng !== null && !isNaN(e.geometria.lat) && Number(e.geometria.lat) !== 0).length;
-
-            // Conteos globales para los botones segmentadores
-            const totalConCoords = MNM_DATA.filter(e => e.geometria && e.geometria.lat !== null && e.geometria.lng !== null && !isNaN(e.geometria.lat) && Number(e.geometria.lat) !== 0).length;
-            const totalSinCoords = MNM_DATA.length - totalConCoords;
+            const sinCoordsEnFiltrados = filtered.length - conCoordsEnFiltrados;
+            const activosEnFiltrados = filtered.filter(e => e.activo).length;
+            const inactivosEnFiltrados = filtered.length - activosEnFiltrados;
 
             if (sideCount) sideCount.textContent = `${filtered.length} empresas`;
             if (mapCount) mapCount.textContent = conCoordsEnFiltrados;
+            const floatingCount = document.getElementById('floating-btn-counter');
+            if (floatingCount) floatingCount.textContent = filtered.length;
 
             const countLocated = document.getElementById('count-located');
             const countPending = document.getElementById('count-pending');
-            if (countLocated) countLocated.textContent = totalConCoords;
-            if (countPending) countPending.textContent = totalSinCoords;
+            if (countLocated) countLocated.textContent = conCoordsEnFiltrados;
+            if (countPending) countPending.textContent = sinCoordsEnFiltrados;
+
+            const countActive = document.getElementById('count-active');
+            const countInactive = document.getElementById('count-inactive');
+            if (countActive) countActive.textContent = activosEnFiltrados;
+            if (countInactive) countInactive.textContent = inactivosEnFiltrados;
 
             renderMnmSidebar(filtered);
             renderMnmMarkers(filtered);
@@ -1652,6 +1808,8 @@
                 return;
             }
 
+            const isMineralFiltered = (currentMineralFilter !== 'all');
+
             empresas.forEach(empresa => {
                 const btn = document.createElement('button');
                 btn.type = 'button';
@@ -1659,8 +1817,10 @@
                 btn.id = `company-btn-${empresa.id}`;
                 if (empresa.id === activeEmpresaId) btn.classList.add('active');
 
-                // Color e ícono del mineral
-                const colorBadge = empresa.color_mineral || '#0b2545';
+                // Si hay un mineral filtrado seleccionado, destacamos ese mineral en el badge principal de la tarjeta
+                const badgeMineralName = isMineralFiltered ? currentMineralFilter : (empresa.mineral_principal || 'Mineral');
+                const colorBadge = getMineralColor(badgeMineralName);
+
                 const statusBadge = empresa.activo 
                     ? '<span class="badge bg-success-subtle text-success border border-success-subtle py-1" style="font-size: 0.65rem;"><i class="bi bi-check-circle-fill me-1"></i>Activo</span>'
                     : '<span class="badge bg-danger-subtle text-danger border border-danger-subtle py-1" style="font-size: 0.65rem;"><i class="bi bi-x-circle-fill me-1"></i>Inactivo</span>';
@@ -1677,18 +1837,31 @@
                     ? '<span class="badge badge-verified-location" title="Coordenadas GPS verificadas en campo"><i class="bi bi-geo-alt-fill me-1"></i>GPS Exacto</span>'
                     : '<span class="badge badge-pending-location" title="Contribuyente sin coordenadas GPS"><i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i>Pendiente por ubicación</span>';
 
+                const cantMinerales = (empresa.minerales && empresa.minerales.length > 0) ? empresa.minerales.length : 1;
+                const multiBadge = (!isMineralFiltered && cantMinerales > 1) 
+                    ? `<span class="badge bg-light text-secondary border py-1" style="font-size: 0.62rem;" title="${empresaEscape(empresa.minerales_raw)}">+${cantMinerales - 1} más</span>` 
+                    : (isMineralFiltered && cantMinerales > 1 ? `<span class="badge bg-primary-subtle text-primary border border-primary-subtle py-1" style="font-size: 0.62rem;">${cantMinerales} minerales</span>` : '');
+
                 btn.innerHTML = `
                     <div class="d-flex align-items-center justify-content-between mb-1">
                         <div class="d-flex align-items-center gap-1 flex-wrap">
-                            <span class="badge text-truncate" style="background-color: ${colorBadge}; color: #ffffff; font-size: 0.68rem; font-weight: 600; max-width: 155px;">
-                                <i class="bi bi-hammer me-1"></i>${empresa.mineral_principal}
+                            <span class="badge text-truncate" style="background-color: ${colorBadge}; color: #ffffff; font-size: 0.68rem; font-weight: 700; max-width: 170px;">
+                                <i class="bi bi-hammer me-1"></i>${badgeMineralName}
                             </span>
+                            ${multiBadge}
                             ${gpsBadge}
                         </div>
                         ${statusBadge}
                     </div>
 
                     <div class="company-name-text mb-1 text-truncate" title="${empresa.razon_social}">${empresa.razon_social}</div>
+
+                    <!-- Fila clara con todos los minerales que extrae la empresa -->
+                    <div class="company-minerals-row mb-1 text-truncate" style="font-size: 0.69rem; color: #475569;" title="${empresaEscape(empresa.minerales_raw)}">
+                        <i class="bi bi-boxes text-primary me-1"></i>
+                        <span class="fw-semibold text-dark">Minerales:</span> 
+                        <span style="color: #334155;">${empresaEscape(empresa.minerales_raw || 'No especificados')}</span>
+                    </div>
 
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="company-rif-subtext"><i class="bi bi-file-earmark-text text-primary me-1"></i>RIF: ${empresa.rif}</span>
@@ -1872,7 +2045,7 @@
                 empresasConCoords.forEach(emp => {
                     const lat = Number(emp.geometria.lat);
                     const lng = Number(emp.geometria.lng);
-                    const pinColor = emp.color_mineral || '#0b2545';
+                    const pinColor = (currentMineralFilter !== 'all') ? getMineralColor(currentMineralFilter) : (emp.color_mineral || '#0b2545');
                     const strokeColor = emp.activo ? '#ffffff' : '#ef4444';
 
                     const pinSvg = `
@@ -1909,7 +2082,7 @@
                                 </div>
                             </div>
                             <div style="font-size: 0.75rem; color: #334155; margin-bottom: 6px;">
-                                <strong>Mineral:</strong> <span style="color: ${emp.color_mineral}; font-weight: 600;">${emp.mineral_principal}</span><br>
+                                <strong>Minerales:</strong> <span style="color: ${pinColor}; font-weight: 600;">${empresaEscape(emp.minerales_raw || emp.mineral_principal)}</span><br>
                                 <strong>Municipio:</strong> ${emp.municipio} • ${emp.parroquia}
                             </div>
                             <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px; font-size: 0.72rem; margin-bottom: 8px;">
@@ -1940,10 +2113,11 @@
                 empresasConCoords.forEach(emp => {
                     const lat = Number(emp.geometria.lat);
                     const lng = Number(emp.geometria.lng);
+                    const pinColor = (currentMineralFilter !== 'all') ? getMineralColor(currentMineralFilter) : (emp.color_mineral || '#0066FF');
                     const customIcon = L.divIcon({
                         className: 'custom-sedatez-pin',
                         html: `
-                            <div style="background-color: ${emp.color_mineral || '#0066FF'}; border: 2.5px solid ${emp.activo ? '#ffffff' : '#ef4444'}; color: #fff; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                            <div style="background-color: ${pinColor}; border: 2.5px solid ${emp.activo ? '#ffffff' : '#ef4444'}; color: #fff; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
                                 <i class="bi bi-gem" style="transform: rotate(45deg); font-size: 11px; color: #ffffff;"></i>
                             </div>`,
                         iconSize: [30, 30],
@@ -1955,7 +2129,7 @@
                     const popupHtml = `
                         <div style="font-family: 'Inter', sans-serif; font-size: 0.8rem;">
                             <strong>${emp.razon_social}</strong><br>
-                            <small class="text-muted">RIF: ${emp.rif} | ${emp.mineral_principal}</small><br>
+                            <small class="text-muted">RIF: ${emp.rif} | ${empresaEscape(emp.minerales_raw || emp.mineral_principal)}</small><br>
                             <small>${emp.municipio}</small><br>
                             <button class="btn btn-xs btn-primary mt-1 w-100" onclick="openTaxpayerOffcanvas(${emp.id})">Ver Ficha</button>
                         </div>`;
@@ -2337,60 +2511,13 @@
         }
 
         // ==============================================================
-        // 10. CONTROL INTERACTIVO DE ANCHO DEL SIDEBAR
-        // ==============================================================
-        function setSidebarWidth(widthPx) {
-            document.documentElement.style.setProperty('--sidebar-width', `${widthPx}px`);
-            const tag = document.getElementById('sidebar-dimension-tag');
-            if (tag) tag.textContent = `${widthPx}px`;
-
-            ['btn-w-340', 'btn-w-400', 'btn-w-460'].forEach(id => {
-                const b = document.getElementById(id);
-                if (b) {
-                    b.classList.remove('btn-primary', 'active');
-                    b.classList.add('btn-outline-secondary');
-                }
-            });
-            const activeBtn = document.getElementById(`btn-w-${widthPx}`);
-            if (activeBtn) {
-                activeBtn.classList.remove('btn-outline-secondary');
-                activeBtn.classList.add('btn-primary', 'active');
-            }
-
-            setTimeout(() => {
-                if (googleMap && typeof google !== 'undefined' && google.maps) {
-                    google.maps.event.trigger(googleMap, 'resize');
-                }
-                if (leafletMapInstance) {
-                    leafletMapInstance.invalidateSize();
-                }
-            }, 300);
-        }
-
-        const btnW340 = document.getElementById('btn-w-340');
-        const btnW400 = document.getElementById('btn-w-400');
-        const btnW460 = document.getElementById('btn-w-460');
-        if (btnW340) btnW340.addEventListener('click', () => setSidebarWidth(340));
-        if (btnW400) btnW400.addEventListener('click', () => setSidebarWidth(400));
-        if (btnW460) btnW460.addEventListener('click', () => setSidebarWidth(460));
-
-        window.addEventListener('resize', () => {
-            const sidebar = document.getElementById('companies-sidebar');
-            const tag = document.getElementById('sidebar-dimension-tag');
-            if (sidebar && tag) tag.textContent = `${sidebar.offsetWidth}px`;
-        });
-
-        // ==============================================================
-        // 11. CONTROL DE OCULTAR / MOSTRAR BARRA LATERAL IZQUIERDA
+        // 10. CONTROL DE OCULTAR / MOSTRAR BARRA LATERAL IZQUIERDA
         // ==============================================================
         let isSidebarCollapsed = false;
 
         function toggleSidebar(forceState) {
             const dashboardBody = document.querySelector('.dashboard-body');
             const floatingBtn = document.getElementById('btn-expand-sidebar-floating');
-            const textToggle = document.getElementById('text-toggle-sidebar');
-            const iconToggle = document.getElementById('icon-toggle-sidebar');
-            const btnToggle = document.getElementById('btn-toggle-sidebar');
 
             if (typeof forceState === 'boolean') {
                 isSidebarCollapsed = forceState;
@@ -2401,23 +2528,9 @@
             if (isSidebarCollapsed) {
                 if (dashboardBody) dashboardBody.classList.add('sidebar-collapsed');
                 if (floatingBtn) floatingBtn.classList.remove('d-none');
-                if (textToggle) textToggle.textContent = 'Mostrar panel';
-                if (iconToggle) iconToggle.className = 'bi bi-layout-sidebar';
-                if (btnToggle) {
-                    btnToggle.title = 'Mostrar barra lateral';
-                    btnToggle.classList.add('btn-primary', 'text-white');
-                    btnToggle.classList.remove('btn-outline-secondary');
-                }
             } else {
                 if (dashboardBody) dashboardBody.classList.remove('sidebar-collapsed');
                 if (floatingBtn) floatingBtn.classList.add('d-none');
-                if (textToggle) textToggle.textContent = 'Ocultar panel';
-                if (iconToggle) iconToggle.className = 'bi bi-layout-sidebar-inset';
-                if (btnToggle) {
-                    btnToggle.title = 'Ocultar barra lateral';
-                    btnToggle.classList.remove('btn-primary', 'text-white');
-                    btnToggle.classList.add('btn-outline-secondary');
-                }
             }
 
             try {
@@ -2434,9 +2547,6 @@
                 }
             }, 280);
         }
-
-        const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
-        if (btnToggleSidebar) btnToggleSidebar.addEventListener('click', () => toggleSidebar());
 
         const btnCollapseSidebar = document.getElementById('btn-collapse-sidebar');
         if (btnCollapseSidebar) btnCollapseSidebar.addEventListener('click', () => toggleSidebar(true));

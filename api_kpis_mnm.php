@@ -50,8 +50,14 @@ try {
     // 5. Conteo aproximado de presencia de minerales
     $mineralesPresencia = array();
     foreach ($mineralesLista as $min) {
+        $searchPattern = '%' . $min['nombre'] . '%';
+        if (stripos($min['nombre'], 'Menito') !== false) {
+            $searchPattern = '%Menito%';
+        } elseif (stripos($min['nombre'], 'Lago') !== false) {
+            $searchPattern = '%Lago%';
+        }
         $stmtMin = $pdo->prepare("SELECT COUNT(*) AS total FROM contribuyente.tab_mnm WHERE da_mineral ILIKE :mineral");
-        $stmtMin->execute(array(':mineral' => '%' . $min['nombre'] . '%'));
+        $stmtMin->execute(array(':mineral' => $searchPattern));
         $c = (int)$stmtMin->fetchColumn();
         if ($c > 0) {
             $mineralesPresencia[] = array(

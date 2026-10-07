@@ -78,8 +78,16 @@ try {
 
     // Filtro por Mineral
     if ($mineralParam !== '' && $mineralParam !== 'all') {
-        $whereClauses[] = "m.da_mineral ILIKE :mineral";
-        $params[':mineral'] = '%' . $mineralParam . '%';
+        if (stripos($mineralParam, 'Menito') !== false) {
+            $whereClauses[] = "m.da_mineral ILIKE :mineral";
+            $params[':mineral'] = '%Menito%';
+        } elseif (stripos($mineralParam, 'Lago') !== false) {
+            $whereClauses[] = "m.da_mineral ILIKE :mineral";
+            $params[':mineral'] = '%Lago%';
+        } else {
+            $whereClauses[] = "m.da_mineral ILIKE :mineral";
+            $params[':mineral'] = '%' . $mineralParam . '%';
+        }
     }
 
     // Filtro por Estatus (Activo/Inactivo)
