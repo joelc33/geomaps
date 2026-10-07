@@ -578,6 +578,30 @@
             transform: translateX(2px);
         }
 
+        .badge-pending-location {
+            background-color: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .badge-verified-location {
+            background-color: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+        }
+
         .sidebar-footer {
             padding: 10px 16px;
             background: #ffffff;
@@ -748,6 +772,19 @@
 
             <!-- ACCIONES DE USUARIO Y LOGOUT -->
             <div class="d-flex align-items-center gap-3">
+                <!-- Resumen Rápido de Minerales No Metálicos -->
+                <div class="d-none d-lg-flex align-items-center gap-2">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-size: 0.72rem;">
+                        <i class="bi bi-building me-1"></i> <span id="header-total-mnm">54</span> Empresas
+                    </span>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.72rem;">
+                        <i class="bi bi-check-circle-fill me-1"></i> <span id="header-active-mnm">51</span> Activas
+                    </span>
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1" style="font-size: 0.72rem;" title="Empresas pendientes por coordenadas GPS">
+                        <i class="bi bi-geo me-1 text-warning"></i> <span id="header-pending-mnm">52</span> Pendientes Ubicación
+                    </span>
+                </div>
+
                 <!-- Info Usuario Oficial -->
                 <div class="d-flex align-items-center gap-2">
                     <div id="user-avatar-initials" class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width: 36px; height: 36px; background: var(--sedatez-navy); font-size: 0.82rem; box-shadow: 0 2px 6px rgba(11, 37, 69, 0.2);">
@@ -771,16 +808,16 @@
         <div class="dashboard-body">
 
             <!-- ============================================================ -->
-            <!-- 2.1 LISTADO LATERAL DE EMPRESAS (AMPLIO, ELEGANTE Y LEGIBLE) -->
+            <!-- 2.1 LISTADO LATERAL DE EMPRESAS MNM (SEDATEZ)               -->
             <!-- ============================================================ -->
-            <aside id="companies-sidebar" aria-label="Directorio Lateral de Empresas">
+            <aside id="companies-sidebar" aria-label="Directorio Lateral de Contribuyentes MNM">
                 <!-- Encabezado del Sidebar Amplio -->
                 <div class="sidebar-header">
                     <div class="sidebar-title">
                         <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-buildings-fill text-primary"></i>
-                            <span>Directorio</span>
-                            <span class="badge" style="background: var(--bb-primary-light); color: var(--bb-primary); font-size: 0.72rem; font-weight: 700;" id="sidebar-counter">10 empresas</span>
+                            <i class="bi bi-building text-primary"></i>
+                            <span class="fw-bold" style="font-size: 0.88rem; color: #1e293b;">Empresas</span>
+                            <span class="badge" style="background: var(--bb-primary-light); color: var(--bb-primary); font-size: 0.72rem; font-weight: 700;" id="sidebar-counter">54</span>
                         </div>
                         <!-- Selector de Ancho Interactivo -->
                         <div class="btn-group btn-group-sm" role="group" aria-label="Ancho del listado">
@@ -791,36 +828,58 @@
                     </div>
 
                     <!-- Buscador Cómodo con botón de limpiar -->
-                    <div class="sidebar-search-box">
+                    <div class="sidebar-search-box mb-2">
                         <i class="bi bi-search sidebar-search-icon"></i>
-                        <input type="text" id="sidebar-search" class="sidebar-search-input" placeholder="Buscar por empresa, RIF o dirección..." title="Escriba para filtrar empresas">
+                        <input type="text" id="sidebar-search" class="sidebar-search-input" placeholder="Buscar por Razón Social, RIF, RITEZ o Expediente..." title="Escriba para filtrar empresas">
                         <button type="button" class="sidebar-search-clear" id="sidebar-search-clear" title="Limpiar búsqueda"><i class="bi bi-x-circle-fill"></i></button>
                     </div>
 
-                    <!-- Chips de Sectores Económicos -->
-                    <div class="sidebar-category-chips" id="category-chips-bar">
-                        <button type="button" class="category-chip active" data-cat="all">Todos</button>
-                        <button type="button" class="category-chip" data-cat="Petróleo">Petróleo</button>
-                        <button type="button" class="category-chip" data-cat="Alimentos">Alimentos</button>
-                        <button type="button" class="category-chip" data-cat="Banca">Banca</button>
-                        <button type="button" class="category-chip" data-cat="Salud">Salud</button>
-                        <button type="button" class="category-chip" data-cat="Servicios">Servicios</button>
-                        <button type="button" class="category-chip" data-cat="Comercio">Comercio</button>
+                    <!-- Filtros Territoriales y Mineros -->
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <select id="filter-municipio" class="form-select form-select-sm" style="font-size: 0.73rem; background-color: #f8fafc; border-color: #cbd5e1;">
+                                <option value="all">📍 Municipio: Todos</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <select id="filter-mineral" class="form-select form-select-sm" style="font-size: 0.73rem; background-color: #f8fafc; border-color: #cbd5e1;">
+                                <option value="all">💎 Mineral: Todos</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Segmentador de Estatus -->
+                    <div class="d-flex align-items-center justify-content-between bg-light p-1 rounded border mb-1">
+                        <span class="small text-muted ps-1" style="font-size: 0.7rem; font-weight: 600;">Estatus:</span>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-xs py-0 px-2 btn-primary active" id="status-btn-all" data-status="all" style="font-size: 0.68rem;">Todos</button>
+                            <button type="button" class="btn btn-xs py-0 px-2 btn-outline-secondary" id="status-btn-active" data-status="1" style="font-size: 0.68rem;">Activos (<span id="count-active">51</span>)</button>
+                            <button type="button" class="btn btn-xs py-0 px-2 btn-outline-secondary" id="status-btn-inactive" data-status="0" style="font-size: 0.68rem;">Inactivos (<span id="count-inactive">3</span>)</button>
+                        </div>
+                    </div>
+
+                    <!-- Segmentador de Ubicación GPS -->
+                    <div class="d-flex align-items-center justify-content-between bg-light p-1 rounded border">
+                        <span class="small text-muted ps-1" style="font-size: 0.7rem; font-weight: 600;">Ubicación:</span>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-xs py-0 px-2 btn-primary active" id="geo-btn-all" data-geo="all" style="font-size: 0.68rem;">Todas</button>
+                            <button type="button" class="btn btn-xs py-0 px-2 btn-outline-secondary" id="geo-btn-located" data-geo="located" style="font-size: 0.68rem;">En Mapa (<span id="count-located">2</span>)</button>
+                            <button type="button" class="btn btn-xs py-0 px-2 btn-outline-secondary" id="geo-btn-pending" data-geo="pending" style="font-size: 0.68rem;">Pendientes (<span id="count-pending">52</span>)</button>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Lista scrolleable de tarjetas de empresas -->
                 <div class="companies-list-scroll" id="companies-list-container">
-                    <!-- Los elementos se renderizan dinámicamente desde el modelo JS / BD -->
+                    <!-- Los elementos se renderizan dinámicamente desde la BD etrib -->
                 </div>
 
-                <!-- Pie de barra lateral con indicación del ancho -->
+                <!-- Pie de barra lateral con indicación del estado -->
                 <div class="sidebar-footer">
                     <span class="sidebar-width-indicator">
-                        <i class="bi bi-geo-alt-fill text-danger me-1"></i> Estado Zulia
+                        <i class="bi bi-geo-alt-fill text-danger me-1"></i> Estado Zulia (SEDATEZ)
                     </span>
                     <div class="d-flex align-items-center gap-2">
-                        <span class="text-muted" style="font-size: 0.7rem;">Ancho:</span>
                         <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.7rem;" id="sidebar-dimension-tag">
                             400px
                         </span>
@@ -836,18 +895,30 @@
                 <!-- Div donde se monta el mapa interactivo -->
                 <div id="map"></div>
 
+                <!-- Banner de Modo Selección de Coordenadas (GPS Picker Mode) -->
+                <div id="map-picker-banner" class="alert alert-primary py-2 px-3 small shadow position-absolute d-none" style="top: 15px; left: 50%; transform: translateX(-50%); z-index: 1050; border-radius: 30px;">
+                    <i class="bi bi-cursor-fill me-1"></i> Haga clic sobre el mapa para fijar la ubicación exacta de la empresa.
+                    <button type="button" class="btn btn-xs btn-outline-dark ms-2 py-0 px-2" id="btn-cancel-picker" style="font-size: 0.72rem;">Cancelar</button>
+                </div>
+
                 <!-- Panel Flotante Superior Derecho con Herramientas -->
                 <div class="map-floating-panel">
                     <div class="d-flex align-items-center gap-2">
                         <span class="badge bg-success-subtle text-success border border-success-subtle py-1">
-                            <i class="bi bi-broadcast me-1"></i> <span id="map-counter">10</span> Ubicaciones
+                            <i class="bi bi-broadcast me-1"></i> <span id="map-counter">2</span> en Mapa
                         </span>
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-secondary py-0 px-2" id="btn-fit-all" title="Ver todas las empresas en el mapa">
-                                <i class="bi bi-arrows-fullscreen"></i> Encajar
+                            <button class="btn btn-outline-secondary py-0 px-2" id="btn-fit-all" title="Ver todo el Estado Zulia">
+                                <i class="bi bi-arrows-fullscreen"></i> Todo el Zulia
                             </button>
-                            <button class="btn btn-outline-secondary py-0 px-2" id="btn-reset-center" title="Volver al centro de Maracaibo">
-                                <i class="bi bi-house"></i> Maracaibo
+                            <button class="btn btn-outline-secondary py-0 px-2" id="btn-focus-maracaibo" title="Centrar en Maracaibo">
+                                <i class="bi bi-geo-alt"></i> Maracaibo
+                            </button>
+                            <button class="btn btn-outline-secondary py-0 px-2" id="btn-focus-perija" title="Centrar en Rosario de Perijá">
+                                <i class="bi bi-mountain"></i> Perijá
+                            </button>
+                            <button class="btn btn-outline-secondary py-0 px-2" id="btn-focus-canada" title="Centrar en La Cañada">
+                                <i class="bi bi-water"></i> La Cañada
                             </button>
                         </div>
                     </div>
@@ -856,25 +927,187 @@
                 <!-- Tarjeta Flotante Inferior de Empresa Seleccionada (Estilo BootstrapBrain) -->
                 <div class="active-company-floating-pill" id="company-detail-card">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h6 class="fw-bold mb-0" style="color: var(--bb-primary); font-size: 0.95rem;" id="pill-company-name">Empresa</h6>
+                        <h6 class="fw-bold mb-0 text-truncate" style="color: var(--bb-primary); font-size: 0.95rem; max-width: 320px;" id="pill-company-name">Empresa</h6>
                         <button type="button" class="btn-close" style="font-size: 0.65rem;" onclick="document.getElementById('company-detail-card').style.display='none'"></button>
                     </div>
                     <div class="d-flex align-items-center gap-2 mb-2">
                         <span class="badge font-monospace" style="background: var(--bb-primary-light); color: var(--bb-primary); font-size: 0.72rem; font-weight: 700;" id="pill-company-rif">RIF: J-00000000-0</span>
-                        <span class="badge bg-light text-secondary border" style="font-size: 0.68rem;" id="pill-company-category">Comercial</span>
+                        <span class="badge bg-light text-secondary border" style="font-size: 0.68rem;" id="pill-company-category">Mineral</span>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.68rem;" id="pill-company-status">Activo</span>
                     </div>
-                    <div class="small text-muted mb-3" style="font-size: 0.76rem; line-height: 1.35;">
+                    <div class="small text-muted mb-2 text-truncate" style="font-size: 0.76rem; line-height: 1.35;" id="pill-company-address-container">
                         <i class="bi bi-geo-alt-fill text-danger me-1"></i> <span id="pill-company-address">Dirección</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center pt-2 border-top">
                         <span class="font-monospace fw-bold" style="font-size: 0.72rem; color: var(--bb-primary);" id="pill-company-coords">10.0000, -71.0000</span>
-                        <a href="javascript:void(0)" id="pill-google-maps-link" target="_blank" class="btn btn-sm btn-bb-primary py-1 px-3" style="font-size: 0.75rem; width: auto;">
-                            <i class="bi bi-box-arrow-up-right me-1"></i> Ver en Maps
-                        </a>
+                        <button type="button" id="pill-open-offcanvas" class="btn btn-sm btn-bb-primary py-1 px-3" style="font-size: 0.75rem; width: auto;">
+                            <i class="bi bi-file-earmark-person me-1"></i> Ver Ficha Técnica
+                        </button>
                     </div>
                 </div>
 
             </main>
+        </div>
+    </div>
+
+
+    <!-- ============================================================== -->
+    <!-- OFFCANVAS: FICHA TÉCNICA Y GEORREFERENCIACIÓN DE CONTRIBUYENTE -->
+    <!-- ============================================================== -->
+    <div class="offcanvas offcanvas-end shadow-lg" tabindex="-1" id="offcanvasTaxpayer" aria-labelledby="offcanvasTaxpayerLabel" style="width: 520px; max-width: 95vw; z-index: 1060;">
+        <div class="offcanvas-header text-white" style="background: linear-gradient(135deg, #0b2545 0%, #134074 100%);">
+            <div>
+                <span class="badge bg-warning text-dark font-monospace mb-1" id="oc-rif">RIF: J-00000000-0</span>
+                <h5 class="offcanvas-title fw-bold fs-6 mb-0 text-truncate" style="max-width: 420px;" id="oc-razon-social">Razón Social</h5>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+
+        <div class="offcanvas-body p-3" style="font-size: 0.85rem;">
+            <!-- Alerta de Estado GPS -->
+            <div id="oc-gps-alert" class="alert alert-warning py-2 px-3 small d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <i class="bi bi-geo-alt-fill me-1" id="oc-gps-icon"></i>
+                    <span id="oc-gps-status-text">Ubicación aproximada por parroquia.</span>
+                </div>
+                <button type="button" class="btn btn-xs btn-outline-dark py-0 px-2" id="btn-activate-map-picker" style="font-size: 0.72rem;">
+                    <i class="bi bi-cursor-fill me-1"></i> Fijar GPS
+                </button>
+            </div>
+
+            <!-- Fila de Identificación Rápida -->
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <div class="p-2 border rounded bg-light">
+                        <div class="text-muted small" style="font-size: 0.7rem;">Código RITEZ:</div>
+                        <div class="fw-bold font-monospace text-primary" id="oc-ritez">2024-0000000</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-2 border rounded bg-light">
+                        <div class="text-muted small" style="font-size: 0.7rem;">Expediente SADL:</div>
+                        <div class="fw-bold font-monospace text-dark" id="oc-expediente">SADL-2024-0000000</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-2 border rounded bg-light">
+                        <div class="text-muted small" style="font-size: 0.7rem;">Estatus Tributario:</div>
+                        <div id="oc-estatus-badge"><span class="badge bg-success">Activo</span></div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-2 border rounded bg-light">
+                        <div class="text-muted small" style="font-size: 0.7rem;">Guías de Transporte:</div>
+                        <div id="oc-guia-badge"><span class="badge bg-info text-dark">Habilitado</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1. Minerales y Operaciones -->
+            <div class="card border mb-3">
+                <div class="card-header bg-white py-2 fw-bold text-dark d-flex align-items-center gap-2" style="font-size: 0.8rem;">
+                    <i class="bi bi-hammer text-primary"></i> Minerales Explotados y Superficie
+                </div>
+                <div class="card-body p-2">
+                    <div class="mb-2">
+                        <div class="text-muted small mb-1" style="font-size: 0.7rem;">Minerales Declarados:</div>
+                        <div id="oc-minerales-chips" class="d-flex flex-wrap gap-1">
+                            <!-- Chips de minerales -->
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                        <span class="text-muted small" style="font-size: 0.72rem;">Superficie Declarada:</span>
+                        <span class="fw-bold font-monospace text-dark" id="oc-superficie">0 Ha</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Ubicaciones (Fiscal vs Terreno Mina) -->
+            <div class="card border mb-3">
+                <div class="card-header bg-white py-2 fw-bold text-dark d-flex align-items-center gap-2" style="font-size: 0.8rem;">
+                    <i class="bi bi-geo-alt text-danger"></i> Ubicación Territorial y Predio
+                </div>
+                <div class="card-body p-2">
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <span class="text-muted small" style="font-size: 0.7rem;">Municipio:</span>
+                            <div class="fw-bold text-dark" id="oc-municipio">MARACAIBO</div>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small" style="font-size: 0.7rem;">Parroquia:</span>
+                            <div class="fw-bold text-dark" id="oc-parroquia">CRISTO DE ARANZA</div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <span class="text-muted small" style="font-size: 0.7rem;">Ubicación del Terreno:</span>
+                        <div class="small p-2 bg-light rounded text-dark border" id="oc-direccion-terreno">Dirección del terreno</div>
+                    </div>
+                    <div>
+                        <span class="text-muted small" style="font-size: 0.7rem;">Domicilio Fiscal Declarado:</span>
+                        <div class="small p-2 bg-light rounded text-muted border" id="oc-direccion-fiscal">Dirección fiscal</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Contactos y Representantes -->
+            <div class="card border mb-3">
+                <div class="card-header bg-white py-2 fw-bold text-dark d-flex align-items-center gap-2" style="font-size: 0.8rem;">
+                    <i class="bi bi-people text-primary"></i> Representante Legal y Contacto
+                </div>
+                <div class="card-body p-2">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted small" style="font-size: 0.72rem;">Representante:</span>
+                        <span class="fw-bold text-dark" id="oc-responsable">Nombre Representante</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted small" style="font-size: 0.72rem;">Teléfono / Móvil:</span>
+                        <span class="font-monospace text-dark" id="oc-telefono">0414-0000000</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted small" style="font-size: 0.72rem;">Correo Electrónico:</span>
+                        <span class="font-monospace text-primary text-truncate" style="max-width: 250px;" id="oc-correo">correo@empresa.com</span>
+                    </div>
+                    <div class="d-flex justify-content-between pt-1 border-top">
+                        <span class="text-muted small" style="font-size: 0.72rem;">Propietario del Terreno:</span>
+                        <span class="text-dark" id="oc-propietario">Nombre Propietario</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Herramienta de Georreferenciación GPS -->
+            <div class="card border border-primary-subtle bg-light mb-2">
+                <div class="card-header bg-primary-subtle py-2 fw-bold text-primary d-flex align-items-center justify-content-between" style="font-size: 0.8rem;">
+                    <span><i class="bi bi-pin-map-fill me-1"></i> Editor de Coordenadas GPS (WGS84)</span>
+                    <span class="badge bg-primary text-white" id="oc-tipo-coord-badge">CENTROIDE</span>
+                </div>
+                <div class="card-body p-3">
+                    <form id="form-georef">
+                        <input type="hidden" id="georef-empresa-id">
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label class="form-label small text-muted mb-1" style="font-size: 0.72rem;">Latitud:</label>
+                                <input type="number" step="0.000001" id="georef-lat" class="form-control form-control-sm font-monospace" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small text-muted mb-1" style="font-size: 0.72rem;">Longitud:</label>
+                                <input type="number" step="0.000001" id="georef-lng" class="form-control form-control-sm font-monospace" required>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary w-50 py-1" id="btn-pick-location" style="font-size: 0.75rem;">
+                                <i class="bi bi-crosshair me-1"></i> Clic en Mapa
+                            </button>
+                            <button type="submit" class="btn btn-sm btn-primary w-50 py-1" id="btn-save-coords" style="font-size: 0.75rem;">
+                                <span id="btn-save-coords-text"><i class="bi bi-cloud-arrow-up-fill me-1"></i> Guardar BD</span>
+                                <span id="btn-save-coords-spinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                            </button>
+                        </div>
+                        <div id="georef-feedback" class="small mt-2 d-none"></div>
+                    </form>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -978,113 +1211,7 @@
 
     <script>
         // ==============================================================
-        // 1. DATASET DE EMPRESAS (MODELO DE DATOS: Nombre, Rif, Direccion, Latitud, Longitud)
-        // ==============================================================
-        const EMPRESAS_DATA = [
-            {
-                id: 1,
-                nombre: "Empresas Polar - Cervecería Modelo",
-                rif: "J-00006372-9",
-                direccion: "Km 10 Vía Perijá, Municipio San Francisco, Zulia",
-                latitud: 10.5987120,
-                longitud: -71.6854130,
-                categoria: "Industrial / Bebidas",
-                icon: "bi-building-fill-gear"
-            },
-            {
-                id: 2,
-                nombre: "Cervecería Regional C.A.",
-                rif: "J-07001402-5",
-                direccion: "Av. 17 Los Haticos con Calle 112, Parroquia Cristo de Aranza, Maracaibo",
-                latitud: 10.6128450,
-                longitud: -71.6219400,
-                categoria: "Industrial",
-                icon: "bi-building-fill-gear"
-            },
-            {
-                id: 3,
-                nombre: "Tiendas Daka Maracaibo",
-                rif: "J-30495861-2",
-                direccion: "Av. 5 de Julio con Calle 72, Sector Tierra Negra, Maracaibo",
-                latitud: 10.6698300,
-                longitud: -71.6142100,
-                categoria: "Comercio / Electrodomésticos",
-                icon: "bi-shop-window"
-            },
-            {
-                id: 4,
-                nombre: "Farmatodo Bella Vista",
-                rif: "J-00020200-1",
-                direccion: "Av. 4 Bella Vista con Calle 67 Cecilio Acosta, Maracaibo",
-                latitud: 10.6612100,
-                longitud: -71.6094500,
-                categoria: "Farmacéutico / Retail",
-                icon: "bi-capsule"
-            },
-            {
-                id: 5,
-                nombre: "Centro Comercial Sambil Maracaibo",
-                rif: "J-31056789-0",
-                direccion: "Av. Guajira, Zona Norte, Parroquia Juana de Ávila, Maracaibo",
-                latitud: 10.6975200,
-                longitud: -71.6364100,
-                categoria: "Centro Comercial",
-                icon: "bi-bag-heart-fill"
-            },
-            {
-                id: 6,
-                nombre: "Lácteos Los Andes - Planta Zulia",
-                rif: "G-20008541-3",
-                direccion: "Zona Industrial II Etapa, Calle 146, San Francisco, Zulia",
-                latitud: 10.5843200,
-                longitud: -71.6721000,
-                categoria: "Alimentos y Bebidas",
-                icon: "bi-cup-hot-fill"
-            },
-            {
-                id: 7,
-                nombre: "Central Madeirense Delicias Norte",
-                rif: "J-00045231-8",
-                direccion: "Av. 15 Las Delicias con Prolongación Circunvalación 2, Maracaibo",
-                latitud: 10.6853200,
-                longitud: -71.6289000,
-                categoria: "Supermercado",
-                icon: "bi-cart-check-fill"
-            },
-            {
-                id: 8,
-                nombre: "Enelven / Corpoelec Sede Amparo",
-                rif: "G-20003000-0",
-                direccion: "Av. 35 con Calle 67B, Sector Amparo, Maracaibo",
-                latitud: 10.6514300,
-                longitud: -71.6492100,
-                categoria: "Servicios Públicos",
-                icon: "bi-lightning-charge-fill"
-            },
-            {
-                id: 9,
-                nombre: "Pinturas Montana Maracaibo",
-                rif: "J-00018590-4",
-                direccion: "Zona Industrial I Etapa, Galpón 4, San Francisco, Zulia",
-                latitud: 10.5921000,
-                longitud: -71.6634500,
-                categoria: "Químicos / Pinturas",
-                icon: "bi-palette-fill"
-            },
-            {
-                id: 10,
-                nombre: "Banesco Principal Bella Vista",
-                rif: "J-07013380-5",
-                direccion: "Av. 4 Bella Vista con Calle 77 (5 de Julio), Maracaibo",
-                latitud: 10.6542100,
-                longitud: -71.6083200,
-                categoria: "Banca y Finanzas",
-                icon: "bi-bank2"
-            }
-        ];
-
-        // ==============================================================
-        // 2. ESTADO Y VARIABLES GLOBALES
+        // 1. ESTADO Y VARIABLES GLOBALES DEL DASHBOARD GIS
         // ==============================================================
         const GOOGLE_MAPS_API_KEY = "AIzaSyA6RBBze6bCJDvTY8gDHoYxGeG0-OgQY2Y";
         let googleMap = null;
@@ -1093,13 +1220,27 @@
         let isGoogleMapsReady = false;
         let activeEmpresaId = null;
 
-        // Fallback Leaflet en caso de contingencia
+        // Fallback Leaflet
         let leafletMapInstance = null;
         let leafletMarkers = {};
 
-        // ==============================================================
-        // 3. CONTROL DE VISTAS (LOGIN <-> DASHBOARD)
-        // ==============================================================
+        // Datos reales de Minerales No Metálicos (SEDATEZ)
+        let MNM_DATA = [];
+        let MNM_KPIS = null;
+
+        // Filtros activos
+        let currentStatusFilter = 'all';
+        let currentGeoFilter = 'all';
+        let currentMunicipioFilter = 'all';
+        let currentMineralFilter = 'all';
+        let currentSearchTerm = '';
+
+        // Modo Picker de Coordenadas
+        let isMapPickerActive = false;
+        let pickerMarkerGoogle = null;
+        let pickerMarkerLeaflet = null;
+
+        // Elementos DOM de Navegación
         const loginView = document.getElementById('login-view');
         const dashboardView = document.getElementById('dashboard-view');
         const loginForm = document.getElementById('login-form');
@@ -1108,13 +1249,15 @@
         const loginPwdInput = document.getElementById('login-password');
 
         // Toggle ver contraseña
-        togglePwd.addEventListener('click', () => {
-            const type = loginPwdInput.type === 'password' ? 'text' : 'password';
-            loginPwdInput.type = type;
-            togglePwd.innerHTML = type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
-        });
+        if (togglePwd) {
+            togglePwd.addEventListener('click', () => {
+                const type = loginPwdInput.type === 'password' ? 'text' : 'password';
+                loginPwdInput.type = type;
+                togglePwd.innerHTML = type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+            });
+        }
 
-        // Actualizar datos del usuario en la interfaz según el spec
+        // Actualizar datos del usuario en la interfaz
         function updateUserData(user) {
             if (!user) return;
             const avatar = document.getElementById('user-avatar-initials') || document.getElementById('user-display-avatar');
@@ -1135,6 +1278,7 @@
                     loginView.style.display = 'none';
                     dashboardView.style.display = 'flex';
                     setupMap();
+                    loadMnmDashboardData();
                 }
             } catch (err) {
                 console.warn('Error verificando sesión inicial:', err);
@@ -1142,76 +1286,371 @@
         }
         checkSession();
 
-        // Submit de Login Real contra PostgreSQL (Conforme al Spec)
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btnText = document.getElementById('btn-login-text');
-            const btnSpinner = document.getElementById('btn-login-spinner');
-            const btnSubmit = document.getElementById('btn-submit-login');
-            const loginAlert = document.getElementById('login-alert');
-            const loginAlertText = document.getElementById('login-alert-text');
-            
-            const idInput = document.getElementById('login-identificador') || document.getElementById('login-email');
-            const identificador = idInput ? idInput.value.trim() : '';
-            const password = document.getElementById('login-password').value;
+        // Submit de Login Real contra PostgreSQL
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btnText = document.getElementById('btn-login-text');
+                const btnSpinner = document.getElementById('btn-login-spinner');
+                const btnSubmit = document.getElementById('btn-submit-login');
+                const loginAlert = document.getElementById('login-alert');
+                const loginAlertText = document.getElementById('login-alert-text');
+                
+                const idInput = document.getElementById('login-identificador') || document.getElementById('login-email');
+                const identificador = idInput ? idInput.value.trim() : '';
+                const password = document.getElementById('login-password').value;
 
-            loginAlert.classList.add('d-none');
-            btnSubmit.disabled = true;
-            btnSpinner.classList.remove('d-none');
-            btnText.textContent = 'Verificando credenciales...';
+                loginAlert.classList.add('d-none');
+                btnSubmit.disabled = true;
+                btnSpinner.classList.remove('d-none');
+                btnText.textContent = 'Verificando credenciales...';
 
-            try {
-                const response = await fetch('api_login.php', {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ identificador: identificador, password: password })
-                });
-                const data = await response.json();
+                try {
+                    const response = await fetch('api_login.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                        body: JSON.stringify({ identificador: identificador, password: password })
+                    });
+                    const data = await response.json();
 
-                if (response.ok && data.success) {
-                    updateUserData(data.user);
-                    // Transición al Dashboard
-                    loginView.style.display = 'none';
-                    dashboardView.style.display = 'flex';
-                    setupMap();
-                } else {
-                    loginAlertText.textContent = data.message || 'Las credenciales ingresadas son incorrectas.';
+                    if (response.ok && data.success) {
+                        updateUserData(data.user);
+                        loginView.style.display = 'none';
+                        dashboardView.style.display = 'flex';
+                        setupMap();
+                        loadMnmDashboardData();
+                    } else {
+                        loginAlertText.textContent = data.message || 'Las credenciales ingresadas son incorrectas.';
+                        loginAlert.classList.remove('d-none');
+                    }
+                } catch (err) {
+                    console.error('Error durante autenticación:', err);
+                    loginAlertText.textContent = 'Error de conexión con el servidor. Verifique su conexión.';
                     loginAlert.classList.remove('d-none');
+                } finally {
+                    btnSubmit.disabled = false;
+                    btnSpinner.classList.add('d-none');
+                    btnText.textContent = 'Iniciar Sesión';
+                }
+            });
+        }
+
+        // Logout
+        if (btnLogout) {
+            btnLogout.addEventListener('click', async () => {
+                if (confirm('¿Desea cerrar la sesión del sistema SEDATEZ?')) {
+                    try {
+                        await fetch('api_logout.php', { method: 'POST' });
+                    } catch(e) {}
+                    dashboardView.style.display = 'none';
+                    loginView.style.display = 'flex';
+                    if (loginForm) loginForm.reset();
+                }
+            });
+        }
+
+        // ==============================================================
+        // 2. CARGA DE DATOS REALES DE MNM (POSTGRESQL etrib)
+        // ==============================================================
+        async function loadMnmDashboardData() {
+            try {
+                // 1. Cargar KPIs y Catálogos
+                const kpisRes = await fetch('api_kpis_mnm.php');
+                const kpisData = await kpisRes.json();
+                if (kpisData.success) {
+                    MNM_KPIS = kpisData;
+                    actualizarContadoresGenerales(kpisData.resumen);
+                    poblarSelectoresFiltro(kpisData);
+                }
+
+                // 2. Cargar Empresas
+                const empRes = await fetch('api_empresas_mnm.php');
+                const empData = await empRes.json();
+                if (empData.success && Array.isArray(empData.data)) {
+                    MNM_DATA = empData.data;
+                    applyMnmFilters();
                 }
             } catch (err) {
-                console.error('Error durante autenticación:', err);
-                loginAlertText.textContent = 'Error de conexión con el servidor. Verifique su conexión.';
-                loginAlert.classList.remove('d-none');
-            } finally {
-                btnSubmit.disabled = false;
-                btnSpinner.classList.add('d-none');
-                btnText.textContent = 'Iniciar Sesión';
+                console.error("Error cargando datos del dashboard MNM:", err);
+            }
+        }
+
+        function actualizarContadoresGenerales(resumen) {
+            if (!resumen) return;
+            const hTotal = document.getElementById('header-total-mnm');
+            const hActive = document.getElementById('header-active-mnm');
+            const hPending = document.getElementById('header-pending-mnm');
+            const cActive = document.getElementById('count-active');
+            const cInactive = document.getElementById('count-inactive');
+
+            if (hTotal) hTotal.textContent = resumen.total_empresas;
+            if (hActive) hActive.textContent = resumen.activas;
+            if (hPending && resumen.pendientes_gps !== undefined) hPending.textContent = resumen.pendientes_gps;
+            if (cActive) cActive.textContent = resumen.activas;
+            if (cInactive) cInactive.textContent = resumen.inactivas;
+        }
+
+        function poblarSelectoresFiltro(kpisData) {
+            // Select de Municipios
+            const selMun = document.getElementById('filter-municipio');
+            if (selMun && kpisData.por_municipio) {
+                selMun.innerHTML = '<option value="all">📍 Municipio: Todos</option>';
+                kpisData.por_municipio.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.id_municipio || m.municipio;
+                    opt.textContent = `${m.municipio} (${m.total})`;
+                    selMun.appendChild(opt);
+                });
+            }
+
+            // Select de Minerales
+            const selMin = document.getElementById('filter-mineral');
+            if (selMin && kpisData.por_mineral) {
+                selMin.innerHTML = '<option value="all">💎 Mineral: Todos</option>';
+                kpisData.por_mineral.forEach(min => {
+                    const opt = document.createElement('option');
+                    opt.value = min.nombre;
+                    opt.textContent = `${min.nombre} (${min.total})`;
+                    selMin.appendChild(opt);
+                });
+            }
+        }
+
+        // ==============================================================
+        // 3. FILTRADO REACTIVO DE CONTRIBUYENTES
+        // ==============================================================
+        function applyMnmFilters() {
+            const term = currentSearchTerm.toLowerCase().trim();
+
+            const filtered = MNM_DATA.filter(emp => {
+                const tieneCoords = Boolean(emp.geometria && 
+                                            emp.geometria.lat !== null && 
+                                            emp.geometria.lng !== null && 
+                                            !isNaN(emp.geometria.lat) && 
+                                            !isNaN(emp.geometria.lng) &&
+                                            Number(emp.geometria.lat) !== 0 &&
+                                            Number(emp.geometria.lng) !== 0);
+
+                // Filtro por Estatus
+                if (currentStatusFilter === '1' && !emp.activo) return false;
+                if (currentStatusFilter === '0' && emp.activo) return false;
+
+                // Filtro por Ubicación GPS
+                if (currentGeoFilter === 'located' && !tieneCoords) return false;
+                if (currentGeoFilter === 'pending' && tieneCoords) return false;
+
+                // Filtro por Municipio
+                if (currentMunicipioFilter !== 'all') {
+                    if (String(emp.id_municipio) !== String(currentMunicipioFilter) && 
+                        emp.municipio.toLowerCase() !== currentMunicipioFilter.toLowerCase()) {
+                        return false;
+                    }
+                }
+
+                // Filtro por Mineral
+                if (currentMineralFilter !== 'all') {
+                    if (!emp.minerales_raw.toLowerCase().includes(currentMineralFilter.toLowerCase())) {
+                        return false;
+                    }
+                }
+
+                // Filtro de Búsqueda de Texto
+                if (term) {
+                    const matchText = (emp.razon_social || '').toLowerCase().includes(term) ||
+                                      (emp.rif || '').toLowerCase().includes(term) ||
+                                      (emp.ritez || '').toLowerCase().includes(term) ||
+                                      (emp.expediente || '').toLowerCase().includes(term) ||
+                                      (emp.municipio || '').toLowerCase().includes(term) ||
+                                      (emp.parroquia || '').toLowerCase().includes(term) ||
+                                      (emp.direccion_terreno || '').toLowerCase().includes(term);
+                    if (!matchText) return false;
+                }
+
+                return true;
+            });
+
+            // Actualizar contadores
+            const sideCount = document.getElementById('sidebar-counter');
+            const mapCount = document.getElementById('map-counter');
+
+            // Conteo de empresas ubicadas en el conjunto filtrado
+            const conCoordsEnFiltrados = filtered.filter(e => e.geometria && e.geometria.lat !== null && e.geometria.lng !== null && !isNaN(e.geometria.lat) && Number(e.geometria.lat) !== 0).length;
+
+            // Conteos globales para los botones segmentadores
+            const totalConCoords = MNM_DATA.filter(e => e.geometria && e.geometria.lat !== null && e.geometria.lng !== null && !isNaN(e.geometria.lat) && Number(e.geometria.lat) !== 0).length;
+            const totalSinCoords = MNM_DATA.length - totalConCoords;
+
+            if (sideCount) sideCount.textContent = `${filtered.length} empresas`;
+            if (mapCount) mapCount.textContent = conCoordsEnFiltrados;
+
+            const countLocated = document.getElementById('count-located');
+            const countPending = document.getElementById('count-pending');
+            if (countLocated) countLocated.textContent = totalConCoords;
+            if (countPending) countPending.textContent = totalSinCoords;
+
+            renderMnmSidebar(filtered);
+            renderMnmMarkers(filtered);
+        }
+
+        // Eventos de Filtro
+        const searchInput = document.getElementById('sidebar-search');
+        const clearBtn = document.getElementById('sidebar-search-clear');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                currentSearchTerm = e.target.value;
+                if (clearBtn) clearBtn.style.display = currentSearchTerm ? 'block' : 'none';
+                applyMnmFilters();
+            });
+        }
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                currentSearchTerm = '';
+                clearBtn.style.display = 'none';
+                applyMnmFilters();
+                searchInput.focus();
+            });
+        }
+
+        const selMun = document.getElementById('filter-municipio');
+        if (selMun) {
+            selMun.addEventListener('change', (e) => {
+                currentMunicipioFilter = e.target.value;
+                applyMnmFilters();
+            });
+        }
+
+        const selMin = document.getElementById('filter-mineral');
+        if (selMin) {
+            selMin.addEventListener('change', (e) => {
+                currentMineralFilter = e.target.value;
+                applyMnmFilters();
+            });
+        }
+
+        // Botones de Estatus (Todos, Activos, Inactivos)
+        ['status-btn-all', 'status-btn-active', 'status-btn-inactive'].forEach(btnId => {
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#companies-sidebar .btn-group button[data-status]').forEach(b => {
+                        b.classList.remove('btn-primary', 'active');
+                        b.classList.add('btn-outline-secondary');
+                    });
+                    btn.classList.remove('btn-outline-secondary');
+                    btn.classList.add('btn-primary', 'active');
+                    currentStatusFilter = btn.getAttribute('data-status');
+                    applyMnmFilters();
+                });
             }
         });
 
-        // Logout
-        btnLogout.addEventListener('click', async () => {
-            if (confirm('¿Desea cerrar la sesión del sistema SEDATEZ?')) {
-                try {
-                    await fetch('api_logout.php', { method: 'POST' });
-                } catch(e) {
-                    console.warn('Error cerrando sesión:', e);
-                }
-                dashboardView.style.display = 'none';
-                loginView.style.display = 'flex';
-                loginForm.reset();
+        // Botones de Ubicación GPS (Todas, En Mapa, Pendientes)
+        ['geo-btn-all', 'geo-btn-located', 'geo-btn-pending'].forEach(btnId => {
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#companies-sidebar .btn-group button[data-geo]').forEach(b => {
+                        b.classList.remove('btn-primary', 'active');
+                        b.classList.add('btn-outline-secondary');
+                    });
+                    btn.classList.remove('btn-outline-secondary');
+                    btn.classList.add('btn-primary', 'active');
+                    currentGeoFilter = btn.getAttribute('data-geo');
+                    applyMnmFilters();
+                });
             }
         });
 
         // ==============================================================
-        // 4. INICIALIZACIÓN DE GOOGLE MAPS JAVASCRIPT API (OFICIAL)
+        // 4. RENDERIZACIÓN DE LA LISTA EN EL SIDEBAR
+        // ==============================================================
+        function renderMnmSidebar(empresas) {
+            const container = document.getElementById('companies-list-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (empresas.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4 px-3 text-muted">
+                        <i class="bi bi-funnel-fill fs-3 text-secondary mb-2 d-block"></i>
+                        <div class="fw-bold small">No se encontraron contribuyentes</div>
+                        <div style="font-size: 0.75rem;">Intente ajustar los filtros de municipio, mineral o ubicación.</div>
+                    </div>`;
+                return;
+            }
+
+            empresas.forEach(empresa => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'company-item-btn';
+                btn.id = `company-btn-${empresa.id}`;
+                if (empresa.id === activeEmpresaId) btn.classList.add('active');
+
+                // Color e ícono del mineral
+                const colorBadge = empresa.color_mineral || '#0b2545';
+                const statusBadge = empresa.activo 
+                    ? '<span class="badge bg-success-subtle text-success border border-success-subtle py-1" style="font-size: 0.65rem;"><i class="bi bi-check-circle-fill me-1"></i>Activo</span>'
+                    : '<span class="badge bg-danger-subtle text-danger border border-danger-subtle py-1" style="font-size: 0.65rem;"><i class="bi bi-x-circle-fill me-1"></i>Inactivo</span>';
+
+                const tieneCoords = Boolean(empresa.geometria && 
+                                            empresa.geometria.lat !== null && 
+                                            empresa.geometria.lng !== null && 
+                                            !isNaN(empresa.geometria.lat) && 
+                                            !isNaN(empresa.geometria.lng) &&
+                                            Number(empresa.geometria.lat) !== 0 &&
+                                            Number(empresa.geometria.lng) !== 0);
+
+                const gpsBadge = tieneCoords
+                    ? '<span class="badge badge-verified-location" title="Coordenadas GPS verificadas en campo"><i class="bi bi-geo-alt-fill me-1"></i>GPS Exacto</span>'
+                    : '<span class="badge badge-pending-location" title="Contribuyente sin coordenadas GPS"><i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i>Pendiente por ubicación</span>';
+
+                btn.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <div class="d-flex align-items-center gap-1 flex-wrap">
+                            <span class="badge text-truncate" style="background-color: ${colorBadge}; color: #ffffff; font-size: 0.68rem; font-weight: 600; max-width: 155px;">
+                                <i class="bi bi-hammer me-1"></i>${empresa.mineral_principal}
+                            </span>
+                            ${gpsBadge}
+                        </div>
+                        ${statusBadge}
+                    </div>
+
+                    <div class="company-name-text mb-1 text-truncate" title="${empresa.razon_social}">${empresa.razon_social}</div>
+
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="company-rif-subtext"><i class="bi bi-file-earmark-text text-primary me-1"></i>RIF: ${empresa.rif}</span>
+                        <span class="font-monospace text-muted" style="font-size: 0.68rem;"><i class="bi bi-hash me-1"></i>${empresa.ritez}</span>
+                    </div>
+
+                    <div class="company-address-box mb-2" title="${empresa.direccion_terreno}">
+                        <i class="bi bi-geo-alt-fill text-danger me-1 flex-shrink-0"></i>
+                        <span><strong>${empresa.municipio}</strong> • ${empresa.direccion_terreno}</span>
+                    </div>
+
+                    <div class="company-card-footer d-flex align-items-center justify-content-between pt-1">
+                        <span class="text-muted" style="font-size: 0.7rem;"><i class="bi bi-folder2-open me-1"></i>Exp: ${empresa.expediente}</span>
+                        ${tieneCoords
+                            ? '<span class="locate-action-cue"><i class="bi bi-crosshair me-1"></i>Ver en mapa <i class="bi bi-chevron-right ms-1"></i></span>'
+                            : '<span class="text-warning-emphasis fw-semibold" style="font-size: 0.71rem;"><i class="bi bi-geo me-1"></i>Ubicar en mapa <i class="bi bi-chevron-right ms-1"></i></span>'
+                        }
+                    </div>
+                `;
+
+                btn.addEventListener('click', () => {
+                    selectAndCenterCompany(empresa.id);
+                });
+
+                container.appendChild(btn);
+            });
+        }
+
+        // ==============================================================
+        // 5. INICIALIZACIÓN Y RENDER DE MAPAS (GOOGLE MAPS & LEAFLET)
         // ==============================================================
         window.onGoogleMapsSDKLoaded = function() {
             isGoogleMapsReady = true;
-            console.log("Google Maps JavaScript API cargada exitosamente con la API Key.");
+            console.log("Google Maps JavaScript API cargada exitosamente.");
             const badge = document.getElementById('badge-map-provider');
             if (badge) {
                 badge.className = "badge bg-success-subtle text-success border border-success-subtle px-2 py-1";
@@ -1223,7 +1662,7 @@
         };
 
         window.gm_authFailure = function() {
-            console.warn("Falla de autenticación en Google Maps (revisar restricciones en Google Cloud). Activando respaldo.");
+            console.warn("Falla de autenticación en Google Maps. Activando respaldo Leaflet.");
             fallbackToLeaflet("API Key con restricciones de dominio. Usando visor de respaldo.");
         };
 
@@ -1231,7 +1670,6 @@
             if (isGoogleMapsReady && typeof google !== 'undefined' && google.maps) {
                 setupGoogleMap();
             } else {
-                // Esperar un momento a Google Maps o cargar fallback
                 setTimeout(() => {
                     if (typeof google !== 'undefined' && google.maps) {
                         setupGoogleMap();
@@ -1243,53 +1681,32 @@
         }
 
         function setupGoogleMap() {
-            const maracaiboCenter = { lat: 10.6427, lng: -71.6125 };
+            const zuliaCenter = { lat: 10.4500, lng: -71.8000 };
             const mapContainer = document.getElementById('map');
 
             try {
                 googleMap = new google.maps.Map(mapContainer, {
-                    center: maracaiboCenter,
-                    zoom: 12,
-                    mapTypeId: 'roadmap',
+                    center: zuliaCenter,
+                    zoom: 9,
+                    mapTypeId: 'hybrid', // Modo Híbrido: Satélite + Nombres de vías y poblaciones
                     mapTypeControl: true,
-                    mapTypeControlOptions: {
-                        position: google.maps.ControlPosition.TOP_LEFT
-                    },
+                    mapTypeControlOptions: { position: google.maps.ControlPosition.TOP_LEFT },
                     zoomControl: true,
-                    zoomControlOptions: {
-                        position: google.maps.ControlPosition.RIGHT_CENTER
-                    },
-                    streetViewControl: true,
-                    streetViewControlOptions: {
-                        position: google.maps.ControlPosition.RIGHT_CENTER
-                    },
+                    zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_CENTER },
+                    streetViewControl: false,
                     fullscreenControl: true,
-                    fullscreenControlOptions: {
-                        position: google.maps.ControlPosition.RIGHT_TOP
-                    },
-                    styles: [
-                        { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
-                        { featureType: "transit", elementType: "labels", stylers: [{ visibility: "off" }] }
-                    ]
+                    fullscreenControlOptions: { position: google.maps.ControlPosition.RIGHT_TOP }
                 });
 
-                renderSidebarAndGoogleMarkers(EMPRESAS_DATA);
-
-                // Controles de ajuste y centrado
-                document.getElementById('btn-fit-all').onclick = () => {
-                    const bounds = new google.maps.LatLngBounds();
-                    let count = 0;
-                    for (let id in googleMarkers) {
-                        bounds.extend(googleMarkers[id].marker.getPosition());
-                        count++;
+                // Listener para el Picker de Coordenadas
+                googleMap.addListener('click', (e) => {
+                    if (isMapPickerActive) {
+                        handleMapLocationPicked(e.latLng.lat(), e.latLng.lng());
                     }
-                    if (count > 0) googleMap.fitBounds(bounds);
-                };
+                });
 
-                document.getElementById('btn-reset-center').onclick = () => {
-                    googleMap.panTo(maracaiboCenter);
-                    googleMap.setZoom(12);
-                };
+                setupMapControls();
+                renderMnmMarkers(MNM_DATA);
 
             } catch (err) {
                 console.error("Error al inicializar Google Maps:", err);
@@ -1297,143 +1714,200 @@
             }
         }
 
-        // ==============================================================
-        // 5. MARCADORES E INFOWINDOWS EN GOOGLE MAPS
-        // ==============================================================
-        function renderSidebarAndGoogleMarkers(empresas) {
-            const sidebarContainer = document.getElementById('companies-list-container');
-            sidebarContainer.innerHTML = '';
-            document.getElementById('map-counter').textContent = empresas.length;
-            const sidebarCounter = document.getElementById('sidebar-counter');
-            if (sidebarCounter) sidebarCounter.textContent = `${empresas.length} empresas`;
+        function setupMapControls() {
+            const btnFit = document.getElementById('btn-fit-all');
+            const btnMcbo = document.getElementById('btn-focus-maracaibo');
+            const btnPerija = document.getElementById('btn-focus-perija');
+            const btnCanada = document.getElementById('btn-focus-canada');
 
-            // Limpiar marcadores anteriores
-            for (let id in googleMarkers) {
-                if (googleMarkers[id].marker) googleMarkers[id].marker.setMap(null);
-            }
-            googleMarkers = {};
-
-            empresas.forEach(empresa => {
-                // 1. Tarjeta/Elemento de la barra lateral (Amplio, elegante y legible)
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'company-item-btn';
-                btn.id = `company-btn-${empresa.id}`;
-                if (empresa.id === activeEmpresaId) {
-                    btn.classList.add('active');
-                }
-
-                const catLabel = empresa.categoria.split('/')[0].trim();
-
-                btn.innerHTML = `
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="company-badge-icon"><i class="bi ${empresa.icon}"></i></span>
-                            <span class="badge company-cat-badge">${catLabel}</span>
-                        </div>
-                        <span class="badge bg-success-subtle text-success border border-success-subtle py-1" style="font-size: 0.68rem;">
-                            <i class="bi bi-check-circle-fill me-1"></i>Activo
-                        </span>
-                    </div>
-
-                    <div class="company-name-text mb-1">${empresa.nombre}</div>
-
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="company-rif-subtext"><i class="bi bi-file-earmark-text text-primary me-1"></i>${empresa.rif}</span>
-                        <span class="company-coords-subtext"><i class="bi bi-geo me-1"></i>${empresa.latitud.toFixed(4)}, ${empresa.longitud.toFixed(4)}</span>
-                    </div>
-
-                    <div class="company-address-box mb-2" title="${empresa.direccion}">
-                        <i class="bi bi-geo-alt-fill text-danger me-1 flex-shrink-0"></i>
-                        <span>${empresa.direccion}</span>
-                    </div>
-
-                    <div class="company-card-footer d-flex align-items-center justify-content-between pt-2">
-                        <span class="text-muted" style="font-size: 0.72rem;"><i class="bi bi-shield-check text-primary me-1"></i>Contribuyente SEDATEZ</span>
-                        <span class="locate-action-cue"><i class="bi bi-crosshair me-1"></i>Ver en mapa <i class="bi bi-chevron-right ms-1"></i></span>
-                    </div>
-                `;
-
-                btn.addEventListener('click', () => {
-                    selectAndCenterCompany(empresa.id);
-                });
-
-                sidebarContainer.appendChild(btn);
-
-                // 2. Marcador Oficial en Google Maps con Pin Personalizado BootstrapBrain Azul
-                const pinSvg = `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="34" height="44" viewBox="0 0 34 44">
-                        <defs>
-                            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0066FF" flood-opacity="0.35"/>
-                            </filter>
-                        </defs>
-                        <path d="M17 2C8.7 2 2 8.7 2 17c0 11.2 15 25 15 25s15-13.8 15-25C32 8.7 25.3 2 17 2z" fill="#0066FF" stroke="#ffffff" stroke-width="2.5" filter="url(#shadow)"/>
-                        <circle cx="17" cy="17" r="7.5" fill="#ffffff"/>
-                        <circle cx="17" cy="17" r="4.5" fill="#0066FF"/>
-                    </svg>
-                `;
-
-                const marker = new google.maps.Marker({
-                    position: { lat: empresa.latitud, lng: empresa.longitud },
-                    map: googleMap,
-                    title: empresa.nombre,
-                    animation: google.maps.Animation.DROP,
-                    icon: {
-                        url: 'data:image/svg+xml;utf-8,' + encodeURIComponent(pinSvg),
-                        scaledSize: new google.maps.Size(34, 44),
-                        anchor: new google.maps.Point(17, 44)
+            if (btnFit) {
+                btnFit.onclick = () => {
+                    if (googleMap) {
+                        const bounds = new google.maps.LatLngBounds();
+                        let count = 0;
+                        for (let id in googleMarkers) {
+                            bounds.extend(googleMarkers[id].marker.getPosition());
+                            count++;
+                        }
+                        if (count > 1) {
+                            googleMap.fitBounds(bounds);
+                        } else if (count === 1) {
+                            for (let id in googleMarkers) {
+                                googleMap.setCenter(googleMarkers[id].marker.getPosition());
+                                googleMap.setZoom(14);
+                                break;
+                            }
+                        } else {
+                            googleMap.setCenter({ lat: 10.4500, lng: -71.8000 });
+                            googleMap.setZoom(9);
+                        }
+                    } else if (leafletMapInstance) {
+                        leafletMapInstance.setView([10.4500, -71.8000], 9);
                     }
-                });
+                };
+            }
 
-                // InfoWindow enriquecida con diseño BootstrapBrain
-                const infoWindowContent = `
-                    <div style="font-family: 'Inter', sans-serif; max-width: 290px; padding: 2px;">
-                        <div style="background: #0066FF; color: white; padding: 12px 14px; border-radius: 8px 8px 0 0; margin: -5px -5px 10px -5px;">
-                            <div style="font-size: 0.9rem; font-weight: 700; line-height: 1.25;">${empresa.nombre}</div>
-                            <div style="display: inline-block; background: #ffffff; color: #0066FF; font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; font-family: monospace; margin-top: 5px;">
-                                RIF: ${empresa.rif}
-                            </div>
-                        </div>
-                        <div style="font-size: 0.76rem; color: #475569; margin-bottom: 8px; line-height: 1.35; padding: 0 4px;">
-                            <i class="bi bi-geo-alt-fill text-danger me-1"></i> ${empresa.direccion}
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 6px 10px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.72rem; margin-bottom: 10px;">
-                            <span style="color: #64748b; font-weight: 600;">Coordenadas:</span>
-                            <span style="font-family: monospace; color: #0066FF; font-weight: 700;">${empresa.latitud.toFixed(4)}, ${empresa.longitud.toFixed(4)}</span>
-                        </div>
-                        <a href="https://www.google.com/maps/search/?api=1&query=${empresa.latitud},${empresa.longitud}" target="_blank" style="display: block; text-align: center; background: #0066FF; color: white; padding: 7px; border-radius: 6px; text-decoration: none; font-size: 0.78rem; font-weight: 600; transition: background 0.2s ease;">
-                            <i class="bi bi-box-arrow-up-right me-1"></i> Ver en Google Maps
-                        </a>
-                    </div>
-                `;
+            if (btnMcbo) {
+                btnMcbo.onclick = () => {
+                    panToCoordinates(10.6589, -71.6296, 13);
+                };
+            }
+            if (btnPerija) {
+                btnPerija.onclick = () => {
+                    panToCoordinates(10.3242, -72.3128, 12);
+                };
+            }
+            if (btnCanada) {
+                btnCanada.onclick = () => {
+                    panToCoordinates(10.4194, -71.7456, 12);
+                };
+            }
+        }
 
-                const infoWindow = new google.maps.InfoWindow({
-                    content: infoWindowContent
-                });
-
-                marker.addListener('click', () => {
-                    selectAndCenterCompany(empresa.id, true);
-                });
-
-                googleMarkers[empresa.id] = { marker, infoWindow, data: empresa };
-            });
-
-            // Inicializar tooltips de Bootstrap
-            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
+        function panToCoordinates(lat, lng, zoomLevel) {
+            if (googleMap) {
+                googleMap.panTo({ lat, lng });
+                googleMap.setZoom(zoomLevel);
+            } else if (leafletMapInstance) {
+                leafletMapInstance.flyTo([lat, lng], zoomLevel);
+            }
         }
 
         // ==============================================================
-        // 6. CENTRADO EN GOOGLE MAPS AL PRESIONAR EN EL SIDEBAR (REQUISITO 2.2)
+        // 6. RENDERIZACIÓN DE MARCADORES MINEROS EN EL MAPA
+        // ==============================================================
+        function renderMnmMarkers(empresas) {
+            // Filtrar únicamente empresas con coordenadas válidas (NO graficar puntos de pendientes)
+            const empresasConCoords = empresas.filter(emp => 
+                emp.geometria && 
+                emp.geometria.lat !== null && 
+                emp.geometria.lng !== null && 
+                emp.geometria.lat !== undefined && 
+                emp.geometria.lng !== undefined && 
+                !isNaN(emp.geometria.lat) && 
+                !isNaN(emp.geometria.lng) &&
+                Number(emp.geometria.lat) !== 0 &&
+                Number(emp.geometria.lng) !== 0
+            );
+
+            // Si está activo Google Maps:
+            if (googleMap) {
+                for (let id in googleMarkers) {
+                    if (googleMarkers[id].marker) googleMarkers[id].marker.setMap(null);
+                }
+                googleMarkers = {};
+
+                empresasConCoords.forEach(emp => {
+                    const lat = Number(emp.geometria.lat);
+                    const lng = Number(emp.geometria.lng);
+                    const pinColor = emp.color_mineral || '#0b2545';
+                    const strokeColor = emp.activo ? '#ffffff' : '#ef4444';
+
+                    const pinSvg = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42">
+                            <defs>
+                                <filter id="s" x="-20%" y="-20%" width="140%" height="140%">
+                                    <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="${pinColor}" flood-opacity="0.4"/>
+                                </filter>
+                            </defs>
+                            <path d="M16 2C8.3 2 2 8.3 2 16c0 10.5 14 24 14 24s14-13.5 14-24C30 8.3 23.7 2 16 2z" fill="${pinColor}" stroke="${strokeColor}" stroke-width="2" filter="url(#s)"/>
+                            <circle cx="16" cy="16" r="6.5" fill="#ffffff"/>
+                            <circle cx="16" cy="16" r="3.5" fill="${pinColor}"/>
+                        </svg>`;
+
+                    const marker = new google.maps.Marker({
+                        position: { lat, lng },
+                        map: googleMap,
+                        title: emp.razon_social,
+                        icon: {
+                            url: 'data:image/svg+xml;utf-8,' + encodeURIComponent(pinSvg),
+                            scaledSize: new google.maps.Size(32, 42),
+                            anchor: new google.maps.Point(16, 42)
+                        }
+                    });
+
+                    // InfoWindow enriquecida con diseño institucional SEDATEZ
+                    const infoContent = `
+                        <div style="font-family: 'Inter', sans-serif; max-width: 310px; padding: 2px;">
+                            <div style="background: linear-gradient(135deg, #0b2545 0%, #134074 100%); color: white; padding: 10px 12px; border-radius: 8px 8px 0 0; margin: -5px -5px 10px -5px;">
+                                <div style="font-size: 0.85rem; font-weight: 700; line-height: 1.25;">${empresaEscape(emp.razon_social)}</div>
+                                <div style="display: flex; gap: 5px; margin-top: 4px;">
+                                    <span style="background: #ffffff; color: #0b2545; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-family: monospace;">RIF: ${emp.rif}</span>
+                                    <span style="background: rgba(255,255,255,0.2); color: #ffffff; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px;">RITEZ: ${emp.ritez}</span>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.75rem; color: #334155; margin-bottom: 6px;">
+                                <strong>Mineral:</strong> <span style="color: ${emp.color_mineral}; font-weight: 600;">${emp.mineral_principal}</span><br>
+                                <strong>Municipio:</strong> ${emp.municipio} • ${emp.parroquia}
+                            </div>
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px; font-size: 0.72rem; margin-bottom: 8px;">
+                                <i class="bi bi-geo-alt-fill text-danger me-1"></i> ${empresaEscape(emp.direccion_terreno)}
+                            </div>
+                            <button type="button" onclick="openTaxpayerOffcanvas(${emp.id})" style="width: 100%; background: #0066FF; color: white; border: none; padding: 7px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">
+                                <i class="bi bi-file-earmark-person me-1"></i> Ver Ficha y Georreferenciar
+                            </button>
+                        </div>`;
+
+                    const infoWindow = new google.maps.InfoWindow({ content: infoContent });
+
+                    marker.addListener('click', () => {
+                        selectAndCenterCompany(emp.id, true);
+                    });
+
+                    googleMarkers[emp.id] = { marker, infoWindow, data: emp };
+                });
+            }
+
+            // Si está activo Leaflet:
+            if (leafletMapInstance) {
+                for (let id in leafletMarkers) {
+                    leafletMapInstance.removeLayer(leafletMarkers[id]);
+                }
+                leafletMarkers = {};
+
+                empresasConCoords.forEach(emp => {
+                    const lat = Number(emp.geometria.lat);
+                    const lng = Number(emp.geometria.lng);
+                    const customIcon = L.divIcon({
+                        className: 'custom-sedatez-pin',
+                        html: `
+                            <div style="background-color: ${emp.color_mineral || '#0066FF'}; border: 2.5px solid ${emp.activo ? '#ffffff' : '#ef4444'}; color: #fff; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                                <i class="bi bi-gem" style="transform: rotate(45deg); font-size: 11px; color: #ffffff;"></i>
+                            </div>`,
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 30],
+                        popupAnchor: [0, -28]
+                    });
+
+                    const marker = L.marker([lat, lng], { icon: customIcon }).addTo(leafletMapInstance);
+                    const popupHtml = `
+                        <div style="font-family: 'Inter', sans-serif; font-size: 0.8rem;">
+                            <strong>${emp.razon_social}</strong><br>
+                            <small class="text-muted">RIF: ${emp.rif} | ${emp.mineral_principal}</small><br>
+                            <small>${emp.municipio}</small><br>
+                            <button class="btn btn-xs btn-primary mt-1 w-100" onclick="openTaxpayerOffcanvas(${emp.id})">Ver Ficha</button>
+                        </div>`;
+                    marker.bindPopup(popupHtml);
+                    leafletMarkers[emp.id] = marker;
+                });
+            }
+        }
+
+        function empresaEscape(str) {
+            if (!str) return '';
+            return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        // ==============================================================
+        // 7. SELECCIÓN Y CENTRADO DE EMPRESA
         // ==============================================================
         function selectAndCenterCompany(empresaId, openPopup = true) {
-            const empresa = EMPRESAS_DATA.find(e => e.id === empresaId);
+            const empresa = MNM_DATA.find(e => e.id === empresaId);
             if (!empresa) return;
 
             activeEmpresaId = empresaId;
 
-            // 1. Resaltar en Sidebar
+            // Resaltar en Sidebar
             document.querySelectorAll('.company-item-btn').forEach(btn => btn.classList.remove('active'));
             const activeBtn = document.getElementById(`company-btn-${empresaId}`);
             if (activeBtn) {
@@ -1441,41 +1915,325 @@
                 activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
 
-            // 2. Si Google Maps está activo:
-            if (googleMap && googleMarkers[empresaId]) {
-                const targetPos = { lat: empresa.latitud, lng: empresa.longitud };
-                googleMap.panTo(targetPos);
-                googleMap.setZoom(16);
+            const tieneCoords = Boolean(empresa.geometria && 
+                                        empresa.geometria.lat !== null && 
+                                        empresa.geometria.lng !== null && 
+                                        !isNaN(empresa.geometria.lat) && 
+                                        !isNaN(empresa.geometria.lng) &&
+                                        Number(empresa.geometria.lat) !== 0 &&
+                                        Number(empresa.geometria.lng) !== 0);
 
+            if (tieneCoords) {
+                const targetPos = { lat: Number(empresa.geometria.lat), lng: Number(empresa.geometria.lng) };
+
+                // Centrar en Google Maps
+                if (googleMap && googleMarkers[empresaId]) {
+                    googleMap.panTo(targetPos);
+                    googleMap.setZoom(14);
+
+                    if (activeInfoWindow) activeInfoWindow.close();
+                    const item = googleMarkers[empresaId];
+                    if (openPopup && item && item.infoWindow) {
+                        item.infoWindow.open(googleMap, item.marker);
+                        activeInfoWindow = item.infoWindow;
+                        item.marker.setAnimation(google.maps.Animation.BOUNCE);
+                        setTimeout(() => item.marker.setAnimation(null), 1400);
+                    }
+                } 
+                // Centrar en Leaflet
+                else if (leafletMapInstance && leafletMarkers[empresaId]) {
+                    leafletMapInstance.flyTo([targetPos.lat, targetPos.lng], 14, { duration: 1.2 });
+                    if (openPopup && leafletMarkers[empresaId].openPopup) {
+                        leafletMarkers[empresaId].openPopup();
+                    }
+                }
+            } else {
+                // Empresa sin coordenadas: NO intentar centrar en punto inválido y cerrar InfoWindow
                 if (activeInfoWindow) activeInfoWindow.close();
 
-                const item = googleMarkers[empresaId];
-                if (openPopup) {
-                    item.infoWindow.open(googleMap, item.marker);
-                    activeInfoWindow = item.infoWindow;
-                    item.marker.setAnimation(google.maps.Animation.BOUNCE);
-                    setTimeout(() => item.marker.setAnimation(null), 1400);
+                // Si tiene centroide referencial de su municipio o parroquia, enfocar el área general
+                if (empresa.centroide_referencial && empresa.centroide_referencial.lat) {
+                    if (googleMap) {
+                        googleMap.panTo({ lat: empresa.centroide_referencial.lat, lng: empresa.centroide_referencial.lng });
+                        googleMap.setZoom(12);
+                    } else if (leafletMapInstance) {
+                        leafletMapInstance.flyTo([empresa.centroide_referencial.lat, empresa.centroide_referencial.lng], 12);
+                    }
                 }
-            } 
-            // Si el visor de contingencia Leaflet está activo:
-            else if (leafletMapInstance && leafletMarkers[empresaId]) {
-                leafletMapInstance.flyTo([empresa.latitud, empresa.longitud], 16, { duration: 1.2 });
-                if (openPopup) leafletMarkers[empresaId].openPopup();
             }
 
-            // 3. Actualizar tarjeta flotante de detalle
+            // Actualizar tarjeta flotante inferior
             const pillCard = document.getElementById('company-detail-card');
-            document.getElementById('pill-company-name').textContent = empresa.nombre;
-            document.getElementById('pill-company-rif').textContent = `RIF: ${empresa.rif}`;
-            document.getElementById('pill-company-category').textContent = empresa.categoria;
-            document.getElementById('pill-company-address').textContent = empresa.direccion;
-            document.getElementById('pill-company-coords').textContent = `${empresa.latitud.toFixed(6)}, ${empresa.longitud.toFixed(6)}`;
-            document.getElementById('pill-google-maps-link').href = `https://www.google.com/maps/search/?api=1&query=${empresa.latitud},${empresa.longitud}`;
-            pillCard.style.display = 'block';
+            if (pillCard) {
+                document.getElementById('pill-company-name').textContent = empresa.razon_social;
+                document.getElementById('pill-company-rif').textContent = `RIF: ${empresa.rif}`;
+                document.getElementById('pill-company-category').textContent = empresa.mineral_principal;
+                document.getElementById('pill-company-status').textContent = empresa.estatus_texto;
+                document.getElementById('pill-company-address').textContent = `${empresa.municipio} • ${empresa.direccion_terreno}`;
+                
+                const pillCoords = document.getElementById('pill-company-coords');
+                if (pillCoords) {
+                    if (tieneCoords) {
+                        pillCoords.className = "font-monospace fw-bold text-success";
+                        pillCoords.innerHTML = `<i class="bi bi-geo-alt-fill me-1"></i>${Number(empresa.geometria.lat).toFixed(6)}, ${Number(empresa.geometria.lng).toFixed(6)}`;
+                    } else {
+                        pillCoords.className = "badge badge-pending-location py-1 px-2";
+                        pillCoords.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i>Pendiente por ubicación`;
+                    }
+                }
+                
+                const btnOffcanvas = document.getElementById('pill-open-offcanvas');
+                if (btnOffcanvas) {
+                    btnOffcanvas.innerHTML = tieneCoords
+                        ? '<i class="bi bi-file-earmark-person me-1"></i> Ver Ficha Técnica'
+                        : '<i class="bi bi-geo me-1"></i> Ubicar / Ficha';
+                    btnOffcanvas.onclick = () => openTaxpayerOffcanvas(empresa.id);
+                }
+                pillCard.style.display = 'block';
+            }
         }
 
         // ==============================================================
-        // 7. RESPALDO RESILIENTE (LEAFLET)
+        // 8. FICHA TÉCNICA Y GEORREFERENCIACIÓN OFFCANVAS
+        // ==============================================================
+        window.openTaxpayerOffcanvas = function(empresaId) {
+            const empresa = MNM_DATA.find(e => e.id === empresaId);
+            if (!empresa) return;
+
+            // Llenar datos de cabecera
+            document.getElementById('oc-rif').textContent = `RIF: ${empresa.rif}`;
+            document.getElementById('oc-razon-social').textContent = empresa.razon_social;
+            document.getElementById('oc-ritez').textContent = empresa.ritez;
+            document.getElementById('oc-expediente').textContent = empresa.expediente;
+
+            // Estatus y Guía
+            const estatusContainer = document.getElementById('oc-estatus-badge');
+            estatusContainer.innerHTML = empresa.activo 
+                ? '<span class="badge bg-success">Activo</span>' 
+                : '<span class="badge bg-danger">Inactivo</span>';
+
+            const guiaContainer = document.getElementById('oc-guia-badge');
+            guiaContainer.innerHTML = empresa.habilitado_guia 
+                ? '<span class="badge bg-info text-dark">Habilitado</span>' 
+                : '<span class="badge bg-secondary">No Habilitado</span>';
+
+            // Chips de Minerales
+            const minChips = document.getElementById('oc-minerales-chips');
+            minChips.innerHTML = '';
+            if (empresa.minerales && empresa.minerales.length > 0) {
+                empresa.minerales.forEach(m => {
+                    const span = document.createElement('span');
+                    span.className = 'badge bg-light text-dark border';
+                    span.style.fontSize = '0.72rem';
+                    span.innerHTML = `<i class="bi bi-check2 text-primary me-1"></i>${m}`;
+                    minChips.appendChild(span);
+                });
+            } else {
+                minChips.innerHTML = '<span class="text-muted small">No especificados</span>';
+            }
+
+            document.getElementById('oc-superficie').textContent = empresa.superficie;
+
+            // Ubicaciones
+            document.getElementById('oc-municipio').textContent = empresa.municipio;
+            document.getElementById('oc-parroquia').textContent = empresa.parroquia;
+            document.getElementById('oc-direccion-terreno').textContent = empresa.direccion_terreno;
+            document.getElementById('oc-direccion-fiscal').textContent = empresa.direccion_fiscal;
+
+            // Contactos
+            document.getElementById('oc-responsable').textContent = empresa.responsable.nombre;
+            document.getElementById('oc-telefono').textContent = empresa.responsable.telefono || empresa.telefono_fijo || 'No registrado';
+            document.getElementById('oc-correo').textContent = empresa.responsable.correo || empresa.correo || 'No registrado';
+            document.getElementById('oc-propietario').textContent = `${empresa.propietario.nombre || ''} (${empresa.propietario.documento || ''})`;
+
+            // Coordenadas y Estado GPS
+            document.getElementById('georef-empresa-id').value = empresa.id;
+
+            const tieneCoords = Boolean(empresa.geometria && 
+                                        empresa.geometria.lat !== null && 
+                                        empresa.geometria.lng !== null && 
+                                        !isNaN(empresa.geometria.lat) && 
+                                        !isNaN(empresa.geometria.lng) &&
+                                        Number(empresa.geometria.lat) !== 0 &&
+                                        Number(empresa.geometria.lng) !== 0);
+
+            const badgeCoord = document.getElementById('oc-tipo-coord-badge');
+
+            if (tieneCoords) {
+                document.getElementById('georef-lat').value = Number(empresa.geometria.lat).toFixed(6);
+                document.getElementById('georef-lng').value = Number(empresa.geometria.lng).toFixed(6);
+                if (badgeCoord) {
+                    badgeCoord.textContent = empresa.geometria.tipo_coordenada || 'GPS_EXACTO';
+                    badgeCoord.className = 'badge bg-success text-white';
+                }
+            } else {
+                document.getElementById('georef-lat').value = '';
+                document.getElementById('georef-lng').value = '';
+                if (badgeCoord) {
+                    badgeCoord.textContent = 'PENDIENTE POR UBICACIÓN';
+                    badgeCoord.className = 'badge bg-warning text-dark';
+                }
+            }
+
+            const gpsAlert = document.getElementById('oc-gps-alert');
+            const gpsText = document.getElementById('oc-gps-status-text');
+            const gpsIcon = document.getElementById('oc-gps-icon');
+
+            if (tieneCoords) {
+                gpsAlert.className = 'alert alert-success py-2 px-3 small d-flex align-items-center justify-content-between mb-3';
+                gpsText.textContent = `Coordenadas GPS Exactas verificadas en campo (${Number(empresa.geometria.lat).toFixed(6)}, ${Number(empresa.geometria.lng).toFixed(6)}).`;
+                gpsIcon.className = 'bi bi-check-circle-fill text-success me-1';
+            } else {
+                gpsAlert.className = 'alert alert-warning py-2 px-3 small d-flex align-items-center justify-content-between mb-3';
+                gpsText.textContent = 'Pendiente por ubicación. Puede hacer clic en el mapa o ingresar las coordenadas para ubicarla.';
+                gpsIcon.className = 'bi bi-exclamation-triangle-fill text-warning me-1';
+            }
+
+            // Ocultar feedback anterior
+            const fb = document.getElementById('georef-feedback');
+            if (fb) fb.classList.add('d-none');
+
+            // Abrir Offcanvas de Bootstrap
+            const ocEl = document.getElementById('offcanvasTaxpayer');
+            const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(ocEl);
+            bsOffcanvas.show();
+        };
+
+        // Activador del Modo Selección en Mapa
+        function activateMapPicker() {
+            isMapPickerActive = true;
+            const banner = document.getElementById('map-picker-banner');
+            if (banner) banner.classList.remove('d-none');
+            
+            // Cerrar temporalmente el offcanvas para ver el mapa
+            const ocEl = document.getElementById('offcanvasTaxpayer');
+            const bsOffcanvas = bootstrap.Offcanvas.getInstance(ocEl);
+            if (bsOffcanvas) bsOffcanvas.hide();
+
+            // Si la empresa no tiene coordenadas y tiene centroide referencial, enfocar el mapa en la zona
+            const activeEmp = MNM_DATA.find(e => e.id === activeEmpresaId);
+            if (activeEmp && (!activeEmp.geometria || activeEmp.geometria.lat === null)) {
+                if (activeEmp.centroide_referencial && activeEmp.centroide_referencial.lat) {
+                    if (googleMap) {
+                        googleMap.panTo({ lat: activeEmp.centroide_referencial.lat, lng: activeEmp.centroide_referencial.lng });
+                        googleMap.setZoom(13);
+                    } else if (leafletMapInstance) {
+                        leafletMapInstance.setView([activeEmp.centroide_referencial.lat, activeEmp.centroide_referencial.lng], 13);
+                    }
+                }
+            }
+
+            // Cambiar cursor del mapa
+            const mapEl = document.getElementById('map');
+            if (mapEl) mapEl.style.cursor = 'crosshair';
+        }
+
+        const btnPick1 = document.getElementById('btn-pick-location');
+        const btnPick2 = document.getElementById('btn-activate-map-picker');
+        const btnCancelPicker = document.getElementById('btn-cancel-picker');
+
+        if (btnPick1) btnPick1.addEventListener('click', activateMapPicker);
+        if (btnPick2) btnPick2.addEventListener('click', activateMapPicker);
+        if (btnCancelPicker) {
+            btnCancelPicker.addEventListener('click', () => {
+                isMapPickerActive = false;
+                document.getElementById('map-picker-banner').classList.add('d-none');
+                document.getElementById('map').style.cursor = 'default';
+                const ocEl = document.getElementById('offcanvasTaxpayer');
+                const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(ocEl);
+                bsOffcanvas.show();
+            });
+        }
+
+        function handleMapLocationPicked(lat, lng) {
+            isMapPickerActive = false;
+            document.getElementById('map-picker-banner').classList.add('d-none');
+            document.getElementById('map').style.cursor = 'default';
+
+            document.getElementById('georef-lat').value = lat.toFixed(6);
+            document.getElementById('georef-lng').value = lng.toFixed(6);
+
+            // Reabrir Offcanvas
+            const ocEl = document.getElementById('offcanvasTaxpayer');
+            const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(ocEl);
+            bsOffcanvas.show();
+
+            const fb = document.getElementById('georef-feedback');
+            if (fb) {
+                fb.className = 'alert alert-info py-1 px-2 small mt-2';
+                fb.innerHTML = `<i class="bi bi-info-circle me-1"></i> Punto capturado: ${lat.toFixed(6)}, ${lng.toFixed(6)}. Presione "Guardar BD" para confirmar.`;
+                fb.classList.remove('d-none');
+            }
+        }
+
+        // Envío de Formulario para Guardar Coordenadas en BD
+        const formGeoref = document.getElementById('form-georef');
+        if (formGeoref) {
+            formGeoref.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('georef-empresa-id').value;
+                const lat = parseFloat(document.getElementById('georef-lat').value);
+                const lng = parseFloat(document.getElementById('georef-lng').value);
+                const btnSaveText = document.getElementById('btn-save-coords-text');
+                const btnSaveSpinner = document.getElementById('btn-save-coords-spinner');
+                const fb = document.getElementById('georef-feedback');
+
+                btnSaveText.classList.add('d-none');
+                btnSaveSpinner.classList.remove('d-none');
+
+                try {
+                    const response = await fetch('api_actualizar_coordenadas.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: id, latitud: lat, longitud: lng })
+                    });
+                    const resData = await response.json();
+
+                    if (response.ok && resData.success) {
+                        fb.className = 'alert alert-success py-1 px-2 small mt-2';
+                        fb.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> ¡Coordenadas GPS guardadas con éxito en PostgreSQL!';
+                        fb.classList.remove('d-none');
+
+                        // Actualizar objeto en memoria
+                        const empIndex = MNM_DATA.findIndex(e => String(e.id) === String(id));
+                        if (empIndex !== -1) {
+                            MNM_DATA[empIndex].latitud = lat;
+                            MNM_DATA[empIndex].longitud = lng;
+                            MNM_DATA[empIndex].tiene_coordenadas = true;
+                            MNM_DATA[empIndex].geometria.lat = lat;
+                            MNM_DATA[empIndex].geometria.lng = lng;
+                            MNM_DATA[empIndex].geometria.tiene_coordenadas = true;
+                            MNM_DATA[empIndex].geometria.es_gps_exacto = true;
+                            MNM_DATA[empIndex].geometria.tipo_coordenada = 'GPS_EXACTO';
+                        }
+
+                        // Actualizar KPIs si es posible
+                        if (MNM_KPIS && MNM_KPIS.resumen) {
+                            MNM_KPIS.resumen.gps_verificado = (MNM_KPIS.resumen.gps_verificado || 0) + 1;
+                            MNM_KPIS.resumen.pendientes_gps = Math.max(0, (MNM_KPIS.resumen.pendientes_gps || 1) - 1);
+                            actualizarContadoresGenerales(MNM_KPIS.resumen);
+                        }
+
+                        applyMnmFilters();
+                        selectAndCenterCompany(parseInt(id), true);
+                    } else {
+                        fb.className = 'alert alert-danger py-1 px-2 small mt-2';
+                        fb.textContent = resData.message || 'Error al actualizar las coordenadas.';
+                        fb.classList.remove('d-none');
+                    }
+                } catch (err) {
+                    fb.className = 'alert alert-danger py-1 px-2 small mt-2';
+                    fb.textContent = 'Error de comunicación con el servidor.';
+                    fb.classList.remove('d-none');
+                } finally {
+                    btnSaveSpinner.classList.add('d-none');
+                    btnSaveText.classList.remove('d-none');
+                }
+            });
+        }
+
+        // ==============================================================
+        // 9. RESPALDO RESILIENTE LEAFLET
         // ==============================================================
         function fallbackToLeaflet(msg) {
             if (leafletMapInstance) return;
@@ -1483,88 +2241,32 @@
             const badge = document.getElementById('badge-map-provider');
             if (badge) {
                 badge.className = "badge bg-warning-subtle text-dark border border-warning-subtle px-2 py-1";
-                badge.innerHTML = '<i class="bi bi-geo-alt-fill text-primary me-1"></i> Visor Cartográfico (Modo Local)';
+                badge.innerHTML = '<i class="bi bi-geo-alt-fill text-primary me-1"></i> Visor Cartográfico (Modo Respaldo)';
             }
 
-            const maracaiboCenter = [10.6427, -71.6125];
-            leafletMapInstance = L.map('map', { center: maracaiboCenter, zoom: 12, zoomControl: true });
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap | SEDATEZ Zulia',
+            const zuliaCenter = [10.4500, -71.8000];
+            leafletMapInstance = L.map('map', { center: zuliaCenter, zoom: 9, zoomControl: true });
+            
+            // Capa Satelital ESRI World Imagery
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '&copy; ESRI Satellite | SEDATEZ Zulia',
                 maxZoom: 19
             }).addTo(leafletMapInstance);
 
-            // Replicar marcadores en Leaflet
-            EMPRESAS_DATA.forEach(empresa => {
-                const customIcon = L.divIcon({
-                    className: 'custom-sedatez-pin',
-                    html: `
-                        <div style="background-color: #0066FF; border: 2.5px solid #ffffff; color: #fff; width: 32px; height: 32px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,102,255,0.35);">
-                            <i class="bi ${empresa.icon}" style="transform: rotate(45deg); font-size: 13px; color: #ffffff;"></i>
-                        </div>`,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 32],
-                    popupAnchor: [0, -30]
-                });
-                const marker = L.marker([empresa.latitud, empresa.longitud], { icon: customIcon }).addTo(leafletMapInstance);
-                marker.bindPopup(`<b>${empresa.nombre}</b><br><small>${empresa.rif}</small>`);
-                leafletMarkers[empresa.id] = marker;
+            // Listener para Picker en Leaflet
+            leafletMapInstance.on('click', (e) => {
+                if (isMapPickerActive) {
+                    handleMapLocationPicked(e.latlng.lat, e.latlng.lng);
+                }
             });
+
+            setupMapControls();
+            renderMnmMarkers(MNM_DATA);
         }
 
         // ==============================================================
-        // 8. FILTRO, BÚSQUEDA Y CONTROL DE ANCHO DEL SIDEBAR
+        // 10. CONTROL INTERACTIVO DE ANCHO DEL SIDEBAR
         // ==============================================================
-        const searchInput = document.getElementById('sidebar-search');
-        const clearBtn = document.getElementById('sidebar-search-clear');
-        let currentFilterCategory = 'all';
-
-        function applySidebarFilters() {
-            const term = (searchInput ? searchInput.value : '').toLowerCase().trim();
-            
-            // Mostrar u ocultar botón de limpiar
-            if (clearBtn) {
-                clearBtn.style.display = term ? 'block' : 'none';
-            }
-
-            const filtered = EMPRESAS_DATA.filter(emp => {
-                const matchesTerm = !term || 
-                    emp.nombre.toLowerCase().includes(term) || 
-                    emp.rif.toLowerCase().includes(term) ||
-                    emp.categoria.toLowerCase().includes(term) ||
-                    emp.direccion.toLowerCase().includes(term);
-
-                const matchesCat = (currentFilterCategory === 'all') || 
-                    emp.categoria.toLowerCase().includes(currentFilterCategory.toLowerCase());
-
-                return matchesTerm && matchesCat;
-            });
-
-            renderSidebarAndGoogleMarkers(filtered);
-        }
-
-        if (searchInput) {
-            searchInput.addEventListener('input', applySidebarFilters);
-        }
-
-        if (clearBtn) {
-            clearBtn.addEventListener('click', () => {
-                searchInput.value = '';
-                applySidebarFilters();
-                searchInput.focus();
-            });
-        }
-
-        // Filtro por Chips de Categoría
-        document.querySelectorAll('.category-chip').forEach(chip => {
-            chip.addEventListener('click', () => {
-                document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
-                chip.classList.add('active');
-                currentFilterCategory = chip.getAttribute('data-cat');
-                applySidebarFilters();
-            });
-        });
-
-        // Control Interactivo de Ancho (340px, 400px, 460px)
         function setSidebarWidth(widthPx) {
             document.documentElement.style.setProperty('--sidebar-width', `${widthPx}px`);
             const tag = document.getElementById('sidebar-dimension-tag');
@@ -1583,7 +2285,6 @@
                 activeBtn.classList.add('btn-primary', 'active');
             }
 
-            // Recalcular dimensiones del mapa
             setTimeout(() => {
                 if (googleMap && typeof google !== 'undefined' && google.maps) {
                     google.maps.event.trigger(googleMap, 'resize');
@@ -1601,13 +2302,10 @@
         if (btnW400) btnW400.addEventListener('click', () => setSidebarWidth(400));
         if (btnW460) btnW460.addEventListener('click', () => setSidebarWidth(460));
 
-        // Actualizar etiqueta de ancho en resize
         window.addEventListener('resize', () => {
             const sidebar = document.getElementById('companies-sidebar');
             const tag = document.getElementById('sidebar-dimension-tag');
-            if (sidebar && tag) {
-                tag.textContent = `${sidebar.offsetWidth}px`;
-            }
+            if (sidebar && tag) tag.textContent = `${sidebar.offsetWidth}px`;
         });
     </script>
 

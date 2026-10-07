@@ -41,7 +41,15 @@ class LoginController extends Controller
             ], 401);
         }
 
-        // 3. Validar estatus de la cuenta
+        // 3. Validar tipo de usuario: Solo perfil Administrativo (id_tab_tipo_usuario = 1)
+        if ((int)$usuario->id_tab_tipo_usuario !== 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Acceso denegado: solo los usuarios con perfil administrativo (tipo 1) pueden ingresar a este sistema.'
+            ], 403);
+        }
+
+        // 4. Validar estatus de la cuenta
         if (!$usuario->in_estatus) {
             return response()->json([
                 'success' => false,
@@ -84,6 +92,7 @@ class LoginController extends Controller
                 'iniciales' => $usuario->iniciales,
                 'cargo'     => $cargo,
                 'tipo'      => optional($usuario->tipoUsuario)->de_tipo_usuario ?? 'Funcionario',
+                'id_tab_tipo_usuario' => (int)$usuario->id_tab_tipo_usuario,
                 'cedula'    => optional($usuario->funcionario)->nu_cedula,
             ],
             'redirect' => '/dashboard'

@@ -124,7 +124,7 @@ try {
     $pdo = getDbConnection();
 
     // Buscar en autenticacion.tab_usuarios por usuario O correo
-    $sql = "SELECT u.id, u.da_usuario, u.da_email, u.da_password, u.in_estatus,
+    $sql = "SELECT u.id, u.da_usuario, u.da_email, u.da_password, u.in_estatus, u.id_tab_tipo_usuario,
                    f.nb_funcionario, f.ap_funcionario, f.nu_cedula,
                    c.de_cargo,
                    tu.de_tipo_usuario,
@@ -153,7 +153,18 @@ try {
         exit;
     }
 
-    // 3.2 Cuenta inactiva
+    // 3.2 Restricción por tipo de usuario: Solo perfil Administrativo (id_tab_tipo_usuario = 1)
+    if (!isset($user['id_tab_tipo_usuario']) || (int)$user['id_tab_tipo_usuario'] !== 1) {
+        recordFailedAttempt($clientIp);
+        http_response_code(403);
+        echo json_encode(array(
+            'success' => false,
+            'message' => 'Acceso denegado: solo los usuarios con perfil administrativo (tipo 1) pueden ingresar a este sistema.'
+        ));
+        exit;
+    }
+
+    // 3.3 Cuenta inactiva
     if (empty($user['in_estatus'])) {
         http_response_code(403);
         echo json_encode(array(
@@ -210,7 +221,8 @@ try {
         'cargo' => $cargo,
         'rol' => isset($user['de_rol']) ? $user['de_rol'] : null,
         'cedula' => isset($user['nu_cedula']) ? $user['nu_cedula'] : null,
-        'tipo' => isset($user['de_tipo_usuario']) ? $user['de_tipo_usuario'] : 'Funcionario'
+        'tipo' => isset($user['de_tipo_usuario']) ? $user['de_tipo_usuario'] : 'Funcionario',
+        'id_tab_tipo_usuario' => (int)$user['id_tab_tipo_usuario']
     );
 
     $_SESSION['auth_user'] = $sessionUser;
