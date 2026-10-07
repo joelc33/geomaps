@@ -312,7 +312,16 @@
             position: relative;
             z-index: 500;
             box-shadow: 2px 0 12px rgba(0, 0, 0, 0.04);
-            transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), flex 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), flex 0.25s cubic-bezier(0.16, 1, 0.3, 1), margin-left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Estado Colapsado / Oculto de la Barra Lateral */
+        .dashboard-body.sidebar-collapsed #companies-sidebar {
+            margin-left: calc(-1 * var(--sidebar-width));
+            min-width: 0;
+            border-right: none;
+            visibility: hidden;
+            pointer-events: none;
         }
 
         .sidebar-header {
@@ -624,6 +633,49 @@
             height: 100%;
             position: relative;
             background-color: #f1f5f9;
+            transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .dashboard-body.sidebar-collapsed #map-container {
+            width: 100vw;
+        }
+
+        .btn-toggle-sidebar {
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 5px 11px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-floating-expand-sidebar {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            z-index: 1000;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--bb-border);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 13px;
+            transition: all 0.2s ease;
+            color: var(--bb-text-dark);
+        }
+
+        .btn-floating-expand-sidebar:hover {
+            background: #ffffff;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+            color: var(--bb-primary);
+            transform: translateY(-1px);
         }
 
         #map {
@@ -764,6 +816,14 @@
         <!-- 2.3 BANNER SUPERIOR INSTITUCIONAL SEDATEZ -->
         <header id="top-banner">
             <div class="brand-logos-container">
+                <!-- Botón de Ocultar / Mostrar Barra Lateral -->
+                <button type="button" class="btn btn-outline-secondary btn-sm btn-toggle-sidebar" id="btn-toggle-sidebar" title="Ocultar barra lateral">
+                    <i class="bi bi-layout-sidebar-inset" id="icon-toggle-sidebar"></i>
+                    <span class="d-none d-md-inline" id="text-toggle-sidebar">Ocultar panel</span>
+                </button>
+
+                <div class="brand-divider"></div>
+
                 <!-- LOGO OFICIAL SEDATEZ -->
                 <div class="sedatez-badge d-flex align-items-center">
                     <img src="logo_sedatez.png" alt="SEDATEZ - Zulia" style="height: 56px; max-height: 58px; width: auto; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.06));">
@@ -819,11 +879,17 @@
                             <span class="fw-bold" style="font-size: 0.88rem; color: #1e293b;">Empresas</span>
                             <span class="badge" style="background: var(--bb-primary-light); color: var(--bb-primary); font-size: 0.72rem; font-weight: 700;" id="sidebar-counter">54</span>
                         </div>
-                        <!-- Selector de Ancho Interactivo -->
-                        <div class="btn-group btn-group-sm" role="group" aria-label="Ancho del listado">
-                            <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2" id="btn-w-340" title="Ancho 340px" style="font-size: 0.68rem;">340px</button>
-                            <button type="button" class="btn btn-primary btn-xs py-0 px-2 active" id="btn-w-400" title="Ancho 400px (Recomendado)" style="font-size: 0.68rem;">400px</button>
-                            <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2" id="btn-w-460" title="Ancho 460px (Ultra Amplio)" style="font-size: 0.68rem;">460px</button>
+                        <div class="d-flex align-items-center gap-1">
+                            <!-- Selector de Ancho Interactivo -->
+                            <div class="btn-group btn-group-sm" role="group" aria-label="Ancho del listado">
+                                <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2" id="btn-w-340" title="Ancho 340px" style="font-size: 0.68rem;">340px</button>
+                                <button type="button" class="btn btn-primary btn-xs py-0 px-2 active" id="btn-w-400" title="Ancho 400px (Recomendado)" style="font-size: 0.68rem;">400px</button>
+                                <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2" id="btn-w-460" title="Ancho 460px (Ultra Amplio)" style="font-size: 0.68rem;">460px</button>
+                            </div>
+                            <!-- Botón Colapsar Barra Lateral -->
+                            <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2" id="btn-collapse-sidebar" title="Ocultar barra lateral" style="font-size: 0.72rem;">
+                                <i class="bi bi-chevron-bar-left"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -894,6 +960,12 @@
             <main id="map-container">
                 <!-- Div donde se monta el mapa interactivo -->
                 <div id="map"></div>
+
+                <!-- Botón Flotante para Mostrar Barra Lateral cuando está oculta -->
+                <button type="button" id="btn-expand-sidebar-floating" class="btn btn-floating-expand-sidebar d-none" title="Mostrar panel lateral de empresas">
+                    <i class="bi bi-layout-sidebar-inset text-primary"></i>
+                    <span>Mostrar Directorio</span>
+                </button>
 
                 <!-- Banner de Modo Selección de Coordenadas (GPS Picker Mode) -->
                 <div id="map-picker-banner" class="alert alert-primary py-2 px-3 small shadow position-absolute d-none" style="top: 15px; left: 50%; transform: translateX(-50%); z-index: 1050; border-radius: 30px;">
@@ -2306,6 +2378,79 @@
             const sidebar = document.getElementById('companies-sidebar');
             const tag = document.getElementById('sidebar-dimension-tag');
             if (sidebar && tag) tag.textContent = `${sidebar.offsetWidth}px`;
+        });
+
+        // ==============================================================
+        // 11. CONTROL DE OCULTAR / MOSTRAR BARRA LATERAL IZQUIERDA
+        // ==============================================================
+        let isSidebarCollapsed = false;
+
+        function toggleSidebar(forceState) {
+            const dashboardBody = document.querySelector('.dashboard-body');
+            const floatingBtn = document.getElementById('btn-expand-sidebar-floating');
+            const textToggle = document.getElementById('text-toggle-sidebar');
+            const iconToggle = document.getElementById('icon-toggle-sidebar');
+            const btnToggle = document.getElementById('btn-toggle-sidebar');
+
+            if (typeof forceState === 'boolean') {
+                isSidebarCollapsed = forceState;
+            } else {
+                isSidebarCollapsed = !isSidebarCollapsed;
+            }
+
+            if (isSidebarCollapsed) {
+                if (dashboardBody) dashboardBody.classList.add('sidebar-collapsed');
+                if (floatingBtn) floatingBtn.classList.remove('d-none');
+                if (textToggle) textToggle.textContent = 'Mostrar panel';
+                if (iconToggle) iconToggle.className = 'bi bi-layout-sidebar';
+                if (btnToggle) {
+                    btnToggle.title = 'Mostrar barra lateral';
+                    btnToggle.classList.add('btn-primary', 'text-white');
+                    btnToggle.classList.remove('btn-outline-secondary');
+                }
+            } else {
+                if (dashboardBody) dashboardBody.classList.remove('sidebar-collapsed');
+                if (floatingBtn) floatingBtn.classList.add('d-none');
+                if (textToggle) textToggle.textContent = 'Ocultar panel';
+                if (iconToggle) iconToggle.className = 'bi bi-layout-sidebar-inset';
+                if (btnToggle) {
+                    btnToggle.title = 'Ocultar barra lateral';
+                    btnToggle.classList.remove('btn-primary', 'text-white');
+                    btnToggle.classList.add('btn-outline-secondary');
+                }
+            }
+
+            try {
+                localStorage.setItem('sedatez_sidebar_collapsed', isSidebarCollapsed ? '1' : '0');
+            } catch (e) {}
+
+            // Recalcular dimensiones del mapa
+            setTimeout(() => {
+                if (googleMap && typeof google !== 'undefined' && google.maps) {
+                    google.maps.event.trigger(googleMap, 'resize');
+                }
+                if (leafletMapInstance) {
+                    leafletMapInstance.invalidateSize();
+                }
+            }, 280);
+        }
+
+        const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+        if (btnToggleSidebar) btnToggleSidebar.addEventListener('click', () => toggleSidebar());
+
+        const btnCollapseSidebar = document.getElementById('btn-collapse-sidebar');
+        if (btnCollapseSidebar) btnCollapseSidebar.addEventListener('click', () => toggleSidebar(true));
+
+        const btnExpandSidebarFloating = document.getElementById('btn-expand-sidebar-floating');
+        if (btnExpandSidebarFloating) btnExpandSidebarFloating.addEventListener('click', () => toggleSidebar(false));
+
+        // Atajo de teclado: Ctrl + B para alternar barra lateral
+        window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+                if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+                e.preventDefault();
+                toggleSidebar();
+            }
         });
     </script>
 
