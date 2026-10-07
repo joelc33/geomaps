@@ -835,7 +835,7 @@
                         Impulsamos la gestión tributaria digital del Zulia.
                     </h2>
                     <p class="login-hero-subtitle">
-                        Georreferenciación inteligente, fiscalización en tiempo real y administración cartográfica de empresas y contribuyentes del Estado Zulia.
+                        Georreferenciación inteligente, fiscalización en tiempo real y administración cartográfica de contribuyentes de minerales no metálicos del Estado Zulia.
                     </p>
                 </div>
             </div>
@@ -898,12 +898,12 @@
                 <!-- Resumen Rápido de Minerales No Metálicos -->
                 <div class="d-none d-lg-flex align-items-center gap-2">
                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-size: 0.72rem;">
-                        <i class="bi bi-building me-1"></i> <span id="header-total-mnm">54</span> Empresas
+                        <i class="bi bi-building me-1"></i> <span id="header-total-mnm">54</span> Contribuyentes
                     </span>
                     <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.72rem;">
-                        <i class="bi bi-check-circle-fill me-1"></i> <span id="header-active-mnm">51</span> Activas
+                        <i class="bi bi-check-circle-fill me-1"></i> <span id="header-active-mnm">51</span> Activos
                     </span>
-                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1" style="font-size: 0.72rem;" title="Empresas pendientes por coordenadas GPS">
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1" style="font-size: 0.72rem;" title="Contribuyentes pendientes por coordenadas GPS">
                         <i class="bi bi-geo me-1 text-warning"></i> <span id="header-pending-mnm">52</span> Pendientes Ubicación
                     </span>
                 </div>
@@ -931,7 +931,7 @@
         <div class="dashboard-body">
 
             <!-- ============================================================ -->
-            <!-- 2.1 LISTADO LATERAL DE EMPRESAS MNM (SEDATEZ)               -->
+            <!-- 2.1 LISTADO LATERAL DE CONTRIBUYENTES MNM (SEDATEZ)          -->
             <!-- ============================================================ -->
             <aside id="companies-sidebar" aria-label="Directorio Lateral de Contribuyentes MNM">
                 <!-- Encabezado del Sidebar Amplio -->
@@ -939,7 +939,7 @@
                     <div class="sidebar-title">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-building text-primary"></i>
-                            <span class="fw-bold" style="font-size: 0.88rem; color: #1e293b;">Empresas</span>
+                            <span class="fw-bold" style="font-size: 0.88rem; color: #1e293b;">Contribuyentes</span>
                             <span class="badge" style="background: var(--bb-primary-light); color: var(--bb-primary); font-size: 0.72rem; font-weight: 700;" id="sidebar-counter">54</span>
                         </div>
                         <!-- Botón Ocultar Barra Lateral (Llamativo y Táctil para Tablets) -->
@@ -952,7 +952,7 @@
                     <!-- Buscador Cómodo con botón de limpiar -->
                     <div class="sidebar-search-box mb-2">
                         <i class="bi bi-search sidebar-search-icon"></i>
-                        <input type="text" id="sidebar-search" class="sidebar-search-input" placeholder="Buscar por Razón Social, RIF, RITEZ o Expediente..." title="Escriba para filtrar empresas">
+                        <input type="text" id="sidebar-search" class="sidebar-search-input" placeholder="Buscar por Razón Social, RIF, RITEZ o Expediente..." title="Escriba para filtrar contribuyentes">
                         <button type="button" class="sidebar-search-clear" id="sidebar-search-clear" title="Limpiar búsqueda"><i class="bi bi-x-circle-fill"></i></button>
                     </div>
 
@@ -1024,7 +1024,7 @@
 
                 <!-- Banner de Modo Selección de Coordenadas (GPS Picker Mode) -->
                 <div id="map-picker-banner" class="alert alert-primary py-2 px-3 small shadow position-absolute d-none" style="top: 15px; left: 50%; transform: translateX(-50%); z-index: 1050; border-radius: 30px;">
-                    <i class="bi bi-cursor-fill me-1"></i> Haga clic sobre el mapa para fijar la ubicación exacta de la empresa.
+                    <i class="bi bi-cursor-fill me-1"></i> Haga clic sobre el mapa para fijar la ubicación exacta del contribuyente.
                     <button type="button" class="btn btn-xs btn-outline-dark ms-2 py-0 px-2" id="btn-cancel-picker" style="font-size: 0.72rem;">Cancelar</button>
                 </div>
 
@@ -1051,10 +1051,10 @@
                     </div>
                 </div>
 
-                <!-- Tarjeta Flotante Inferior de Empresa Seleccionada (Estilo BootstrapBrain) -->
+                <!-- Tarjeta Flotante Inferior de Contribuyente Seleccionado -->
                 <div class="active-company-floating-pill" id="company-detail-card">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h6 class="fw-bold mb-0 text-truncate" style="color: var(--bb-primary); font-size: 0.95rem; max-width: 320px;" id="pill-company-name">Empresa</h6>
+                        <h6 class="fw-bold mb-0 text-truncate" style="color: var(--bb-primary); font-size: 0.95rem; max-width: 320px;" id="pill-company-name">Contribuyente</h6>
                         <button type="button" class="btn-close" style="font-size: 0.65rem;" onclick="document.getElementById('company-detail-card').style.display='none'"></button>
                     </div>
                     <div class="d-flex align-items-center gap-2 mb-2">
@@ -1192,7 +1192,7 @@
                     </div>
                     <div class="d-flex justify-content-between mb-1">
                         <span class="text-muted small" style="font-size: 0.72rem;">Correo Electrónico:</span>
-                        <span class="font-monospace text-primary text-truncate" style="max-width: 250px;" id="oc-correo">correo@empresa.com</span>
+                        <span class="font-monospace text-primary text-truncate" style="max-width: 250px;" id="oc-correo">correo@contribuyente.com</span>
                     </div>
                     <div class="d-flex justify-content-between pt-1 border-top">
                         <span class="text-muted small" style="font-size: 0.72rem;">Propietario del Terreno:</span>
@@ -1701,7 +1701,7 @@
             const activosEnFiltrados = filtered.filter(e => e.activo).length;
             const inactivosEnFiltrados = filtered.length - activosEnFiltrados;
 
-            if (sideCount) sideCount.textContent = `${filtered.length} empresas`;
+            if (sideCount) sideCount.textContent = `${filtered.length} contribuyentes`;
             if (mapCount) mapCount.textContent = conCoordsEnFiltrados;
             const floatingCount = document.getElementById('floating-btn-counter');
             if (floatingCount) floatingCount.textContent = filtered.length;

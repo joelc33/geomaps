@@ -32,7 +32,7 @@ if ($id <= 0 || $lat === null || $lng === null) {
     http_response_code(422);
     echo json_encode(array(
         'success' => false,
-        'message' => 'Parámetros incompletos. Debe indicar el ID de la empresa, latitud y longitud.'
+        'message' => 'Parámetros incompletos. Debe indicar el ID del contribuyente, latitud y longitud.'
     ));
     exit;
 }
@@ -59,7 +59,7 @@ try {
         http_response_code(404);
         echo json_encode(array(
             'success' => false,
-            'message' => 'El registro de la empresa no fue encontrado en la base de datos.'
+            'message' => 'El registro del contribuyente no fue encontrado en la base de datos.'
         ));
         exit;
     }
@@ -81,7 +81,7 @@ try {
 
     // 3. Auditoría en log
     error_log(sprintf(
-        "[SEDATEZ GIS] Coordenadas actualizadas para empresa ID %d (%s, RIF %s) por usuario %s: Lat %f, Lng %f",
+        "[SEDATEZ GIS] Coordenadas actualizadas para contribuyente ID %d (%s, RIF %s) por usuario %s: Lat %f, Lng %f",
         $id,
         $empresa['de_razon_social'],
         $empresa['nu_documento_rif'],

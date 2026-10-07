@@ -235,7 +235,7 @@ try {
         $empresas[] = array(
             'id' => $id,
             'rif' => $row['rif'],
-            'razon_social' => $row['razon_social'] ? $row['razon_social'] : 'EMPRESA SIN DENOMINACIÓN',
+            'razon_social' => $row['razon_social'] ? $row['razon_social'] : 'CONTRIBUYENTE SIN DENOMINACIÓN',
             'ritez' => $row['ritez'] ? $row['ritez'] : 'PENDIENTE',
             'expediente' => $row['expediente'] ? $row['expediente'] : 'S/E',
             'fecha_registro' => $row['fecha_registro'],
@@ -298,6 +298,6 @@ try {
     http_response_code(500);
     echo json_encode(array(
         'success' => false,
-        'message' => 'Error al consultar las empresas de Minerales No Metálicos: ' . $e->getMessage()
+        'message' => 'Error al consultar los contribuyentes de Minerales No Metálicos: ' . $e->getMessage()
     ));
 }
