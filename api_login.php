@@ -95,8 +95,6 @@ if (!is_array($input)) {
 $identificador = '';
 if (isset($input['identificador']) && trim($input['identificador']) !== '') {
     $identificador = trim($input['identificador']);
-} elseif (isset($input['email']) && trim($input['email']) !== '') {
-    $identificador = trim($input['email']);
 } elseif (isset($input['usuario']) && trim($input['usuario']) !== '') {
     $identificador = trim($input['usuario']);
 }
@@ -112,7 +110,7 @@ if ($identificador === '' || $password === '') {
     http_response_code(422);
     echo json_encode(array(
         'success' => false,
-        'message' => 'Debe ingresar su usuario o correo electrónico y contraseña.'
+        'message' => 'Debe ingresar su usuario y contraseña.'
     ));
     exit;
 }
@@ -123,7 +121,7 @@ if ($identificador === '' || $password === '') {
 try {
     $pdo = getDbConnection();
 
-    // Buscar en autenticacion.tab_usuarios por usuario O correo
+    // Buscar en autenticacion.tab_usuarios únicamente por nombre de usuario (da_usuario)
     $sql = "SELECT u.id, u.da_usuario, u.da_email, u.da_password, u.in_estatus, u.id_tab_tipo_usuario,
                    f.nb_funcionario, f.ap_funcionario, f.nu_cedula,
                    c.de_cargo,
@@ -135,11 +133,11 @@ try {
             LEFT JOIN mantenimiento.tab_tipo_usuario tu ON tu.id = u.id_tab_tipo_usuario
             LEFT JOIN autenticacion.tab_usuario_rol ur ON ur.id_tab_usuarios = u.id
             LEFT JOIN autenticacion.tab_rol r ON r.id = ur.id_tab_rol
-            WHERE LOWER(u.da_usuario) = LOWER(:id1) OR LOWER(u.da_email) = LOWER(:id2)
+            WHERE LOWER(u.da_usuario) = LOWER(:usuario)
             LIMIT 1";
 
     $stmt = $pdo->prepare($sql);
-    $stmt->execute(array(':id1' => $identificador, ':id2' => $identificador));
+    $stmt->execute(array(':usuario' => $identificador));
     $user = $stmt->fetch();
 
     // 3.1 Usuario inexistente

@@ -20,17 +20,16 @@ class LoginController extends Controller
             'identificador' => 'required|string|max:100',
             'password' => 'required|string',
         ], [
-            'identificador.required' => 'Debe ingresar su usuario o correo electrónico.',
+            'identificador.required' => 'Debe ingresar su usuario.',
             'password.required' => 'Debe ingresar su contraseña.',
         ]);
 
         $identificador = trim($request->input('identificador'));
         $password = $request->input('password');
 
-        // 1. Localizar usuario por da_usuario O por da_email (insensible a mayúsculas)
+        // 1. Localizar usuario exclusivamente por da_usuario (insensible a mayúsculas)
         $usuario = Usuario::with(['funcionario.cargo', 'tipoUsuario'])
             ->whereRaw('LOWER(da_usuario) = LOWER(?)', [$identificador])
-            ->orWhereRaw('LOWER(da_email) = LOWER(?)', [$identificador])
             ->first();
 
         // 2. Si no existe o la contraseña no coincide
