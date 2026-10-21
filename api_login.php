@@ -60,31 +60,45 @@ function resetRateLimit($ip) {
 }
 
 // -------------------------------------------------------------
-// Validación del Método HTTP
+// Helper para Responder (JSON o Redirección en Formularios POST)
 // -------------------------------------------------------------
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(array(
-        'success' => false,
-        'message' => 'Método no permitido. Utilice POST.'
-    ));
+$isJsonRequest = (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) 
+    || (isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVER['CONTENT_TYPE'], 'application/json') !== false)
+    || !empty($_SERVER['HTTP_X_REQUESTED_WITH']);
+
+function sendAuthResponse($success, $message, $statusCode = 200, $extra = array()) {
+    global $isJsonRequest;
+    if (!$isJsonRequest) {
+        if ($success) {
+            header('Location: index.html');
+            exit;
+        } else {
+            header('Location: index.html?error=' . urlencode($message));
+            exit;
+        }
+    }
+    http_response_code($statusCode);
+    echo json_encode(array_merge(array(
+        'success' => $success,
+        'message' => $message
+    ), $extra));
     exit;
+}
+
+// Validación estricta del método HTTP: SOLO POST
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    sendAuthResponse(false, 'Método no permitido. La autenticación solo acepta solicitudes por método POST.', 405);
 }
 
 // -------------------------------------------------------------
 // 1. Verificación de Rate Limiting
 // -------------------------------------------------------------
 if (!checkRateLimit($clientIp, 5, 60)) {
-    http_response_code(429);
-    echo json_encode(array(
-        'success' => false,
-        'message' => 'Demasiados intentos de acceso fallidos. Por favor espere 1 minuto antes de reintentar.'
-    ));
-    exit;
+    sendAuthResponse(false, 'Demasiados intentos de acceso fallidos. Por favor espere 1 minuto antes de reintentar.', 429);
 }
 
 // -------------------------------------------------------------
-// 2. Procesamiento de Parámetros de Entrada
+// 2. Procesamiento de Parámetros de Entrada (JSON o $_POST)
 // -------------------------------------------------------------
 $rawInput = file_get_contents('php://input');
 $input = json_decode($rawInput, true);
@@ -107,12 +121,7 @@ if (isset($input['password'])) {
 }
 
 if ($identificador === '' || $password === '') {
-    http_response_code(422);
-    echo json_encode(array(
-        'success' => false,
-        'message' => 'Debe ingresar su usuario y contraseña.'
-    ));
-    exit;
+    sendAuthResponse(false, 'Debe ingresar su usuario y contraseña por método POST.', 422);
 }
 
 // -------------------------------------------------------------
@@ -121,7 +130,7 @@ if ($identificador === '' || $password === '') {
 try {
     $pdo = getDbConnection();
 
-    // Buscar en autenticacion.tab_usuarios únicamente por nombre de usuario (da_usuario)
+    // Buscar en autenticacion.tab_usuarios por nombre de usuario (da_usuario), correo (da_email) o cédula (nu_cedula)
     $sql = "SELECT u.id, u.da_usuario, u.da_email, u.da_password, u.in_estatus, u.id_tab_tipo_usuario,
                    f.nb_funcionario, f.ap_funcionario, f.nu_cedula,
                    c.de_cargo,
@@ -134,6 +143,9 @@ try {
             LEFT JOIN autenticacion.tab_usuario_rol ur ON ur.id_tab_usuarios = u.id
             LEFT JOIN autenticacion.tab_rol r ON r.id = ur.id_tab_rol
             WHERE LOWER(u.da_usuario) = LOWER(:usuario)
+               OR LOWER(u.da_email) = LOWER(:usuario)
+               OR CAST(f.nu_cedula AS TEXT) = :usuario
+            ORDER BY CASE WHEN u.id_tab_tipo_usuario = 1 THEN 0 ELSE 1 END, u.id ASC
             LIMIT 1";
 
     $stmt = $pdo->prepare($sql);
@@ -143,44 +155,24 @@ try {
     // 3.1 Usuario inexistente
     if (!$user) {
         recordFailedAttempt($clientIp);
-        http_response_code(401);
-        echo json_encode(array(
-            'success' => false,
-            'message' => 'Las credenciales ingresadas no coinciden con nuestros registros.'
-        ));
-        exit;
+        sendAuthResponse(false, 'Las credenciales ingresadas no coinciden con nuestros registros.', 401);
     }
 
     // 3.2 Restricción por tipo de usuario: Solo perfil Administrativo (id_tab_tipo_usuario = 1)
     if (!isset($user['id_tab_tipo_usuario']) || (int)$user['id_tab_tipo_usuario'] !== 1) {
         recordFailedAttempt($clientIp);
-        http_response_code(403);
-        echo json_encode(array(
-            'success' => false,
-            'message' => 'Acceso denegado: solo los usuarios con perfil administrativo (tipo 1) pueden ingresar a este sistema.'
-        ));
-        exit;
+        sendAuthResponse(false, 'Acceso denegado: solo los usuarios con perfil administrativo (tipo 1) pueden ingresar a este sistema.', 403);
     }
 
     // 3.3 Cuenta inactiva
     if (empty($user['in_estatus'])) {
-        http_response_code(403);
-        echo json_encode(array(
-            'success' => false,
-            'message' => 'Su cuenta se encuentra inactiva. Comuníquese con la administración de SEDATEZ.'
-        ));
-        exit;
+        sendAuthResponse(false, 'Su cuenta se encuentra inactiva. Comuníquese con la administración de SEDATEZ.', 403);
     }
 
     // 3.3 Verificación de contraseña Bcrypt
     if (!password_verify($password, $user['da_password'])) {
         recordFailedAttempt($clientIp);
-        http_response_code(401);
-        echo json_encode(array(
-            'success' => false,
-            'message' => 'Las credenciales ingresadas no coinciden con nuestros registros.'
-        ));
-        exit;
+        sendAuthResponse(false, 'Las credenciales ingresadas no coinciden con nuestros registros.', 401);
     }
 
     // ---------------------------------------------------------
@@ -242,19 +234,13 @@ try {
     }
 
     // ---------------------------------------------------------
-    // 6. Respuesta JSON Exitosa (Conforme al Spec)
+    // 6. Respuesta Exitosa por POST (JSON o Redirección)
     // ---------------------------------------------------------
-    echo json_encode(array(
-        'success' => true,
-        'message' => 'Autenticación exitosa',
+    sendAuthResponse(true, 'Autenticación exitosa', 200, array(
         'user' => $sessionUser,
         'redirect' => 'index.html#dashboard'
     ));
 
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(array(
-        'success' => false,
-        'message' => 'Error de conexión con la base de datos: ' . $e->getMessage()
-    ));
+    sendAuthResponse(false, 'Error de conexión con la base de datos: ' . $e->getMessage(), 500);
 }

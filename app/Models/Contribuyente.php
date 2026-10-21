@@ -32,4 +32,9 @@ class Contribuyente extends Model
     {
         return $this->hasMany(ContribuyenteMnm::class, 'id_tab_contribuyente', 'id');
     }
+
+    public function registroOficioMinas()
+    {
+        return $this->hasMany(ContribuyenteOficio::class, 'id_tab_contribuyente', 'id');
+    }
 }

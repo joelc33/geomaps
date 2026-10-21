@@ -1,7 +1,7 @@
 <?php
 /**
- * SEDATEZ - API de Contribuyentes de Minerales No Metálicos (MNM)
- * Conforme a PLAN_DASHBOARD_MNM_SPEC.md
+ * SEDATEZ - API de Contribuyentes de Minerales No Metálicos (MNM) y Registro de Oficio
+ * Conforme a PLAN_DASHBOARD_MNM_SPEC.md y requerimiento de Registro de Oficio (preregistro.tab_minas)
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -61,17 +61,27 @@ try {
     $mineralParam   = isset($_GET['mineral']) ? trim($_GET['mineral']) : '';
     $estatusParam   = isset($_GET['estatus']) ? trim($_GET['estatus']) : '';
     $searchParam    = isset($_GET['q']) ? trim($_GET['q']) : '';
+    $grupoParam     = isset($_GET['grupo']) ? trim($_GET['grupo']) : '';
 
     $whereClauses = array();
     $params = array();
 
+    // Filtro por Grupo de Contribuyentes (RITEZ o Registro de Oficio)
+    if ($grupoParam !== '' && $grupoParam !== 'all') {
+        if ($grupoParam === 'oficio' || $grupoParam === 'registro_oficio') {
+            $whereClauses[] = "uni.grupo_codigo = 'oficio'";
+        } elseif ($grupoParam === 'ritez' || $grupoParam === 'mnm') {
+            $whereClauses[] = "uni.grupo_codigo = 'ritez'";
+        }
+    }
+
     // Filtro por Municipio
     if ($municipioParam !== '' && $municipioParam !== 'all') {
         if (is_numeric($municipioParam)) {
-            $whereClauses[] = "m.id_tab_municipio = :municipio";
+            $whereClauses[] = "uni.id_municipio = :municipio";
             $params[':municipio'] = (int)$municipioParam;
         } else {
-            $whereClauses[] = "LOWER(mun.de_municipio) = LOWER(:municipio)";
+            $whereClauses[] = "LOWER(uni.municipio) = LOWER(:municipio)";
             $params[':municipio'] = $municipioParam;
         }
     }
@@ -79,13 +89,13 @@ try {
     // Filtro por Mineral
     if ($mineralParam !== '' && $mineralParam !== 'all') {
         if (stripos($mineralParam, 'Menito') !== false) {
-            $whereClauses[] = "m.da_mineral ILIKE :mineral";
+            $whereClauses[] = "uni.minerales_raw ILIKE :mineral";
             $params[':mineral'] = '%Menito%';
         } elseif (stripos($mineralParam, 'Lago') !== false) {
-            $whereClauses[] = "m.da_mineral ILIKE :mineral";
+            $whereClauses[] = "uni.minerales_raw ILIKE :mineral";
             $params[':mineral'] = '%Lago%';
         } else {
-            $whereClauses[] = "m.da_mineral ILIKE :mineral";
+            $whereClauses[] = "uni.minerales_raw ILIKE :mineral";
             $params[':mineral'] = '%' . $mineralParam . '%';
         }
     }
@@ -93,15 +103,15 @@ try {
     // Filtro por Estatus (Activo/Inactivo)
     if ($estatusParam !== '' && $estatusParam !== 'all') {
         if ($estatusParam === '1' || $estatusParam === 'true' || $estatusParam === 'activo') {
-            $whereClauses[] = "m.in_activo = true";
+            $whereClauses[] = "uni.activo = true";
         } elseif ($estatusParam === '0' || $estatusParam === 'false' || $estatusParam === 'inactivo') {
-            $whereClauses[] = "m.in_activo = false";
+            $whereClauses[] = "uni.activo = false";
         }
     }
 
     // Filtro de Búsqueda de Texto
     if ($searchParam !== '') {
-        $whereClauses[] = "(m.de_razon_social ILIKE :q OR m.nu_documento_rif ILIKE :q OR c.co_ritez ILIKE :q OR c.nu_expediente ILIKE :q OR mun.de_municipio ILIKE :q)";
+        $whereClauses[] = "(uni.razon_social ILIKE :q OR uni.rif ILIKE :q OR uni.ritez ILIKE :q OR uni.expediente ILIKE :q OR uni.municipio ILIKE :q OR uni.grupo_nombre ILIKE :q OR uni.minerales_raw ILIKE :q)";
         $params[':q'] = '%' . $searchParam . '%';
     }
 
@@ -110,58 +120,115 @@ try {
         $whereSql = 'WHERE ' . implode(' AND ', $whereClauses);
     }
 
-    $sql = "SELECT 
-                m.id,
-                m.nu_documento_rif AS rif,
-                m.de_razon_social AS razon_social,
-                c.co_ritez AS ritez,
-                c.nu_expediente AS expediente,
-                c.fe_registro AS fecha_registro,
-                m.in_activo AS activo,
-                m.in_llenado_guia AS habilitado_guia,
-                m.da_mineral AS minerales_raw,
-                m.da_superficie AS superficie,
-                m.dr_fiscal AS direccion_fiscal,
-                m.dr_terreno AS direccion_terreno,
-                m.id_tab_municipio AS id_municipio,
-                mun.de_municipio AS municipio,
-                m.id_tab_parroquia AS id_parroquia,
-                par.de_parroquia AS parroquia,
-                m.tl_fijo AS telefono_fijo,
-                m.da_correo AS correo_empresa,
-                m.nb_responsable1 AS responsable_nombre,
-                m.ap_responsable1 AS responsable_apellido,
-                m.tl_movil_resp AS responsable_telefono,
-                m.da_correo_resp AS responsable_correo,
-                m.nb_propietario AS propietario_nombre,
-                m.doc_propietario AS propietario_documento,
-                m.nu_latitud AS latitud_db,
-                m.nu_longitud AS longitud_db,
-                m.created_at,
-                m.updated_at
-            FROM contribuyente.tab_mnm m
-            LEFT JOIN contribuyente.tab_contribuyente c ON c.id = m.id_tab_contribuyente
-            LEFT JOIN mantenimiento.tab_municipio mun ON mun.id = m.id_tab_municipio
-            LEFT JOIN mantenimiento.tab_parroquia par ON par.id = m.id_tab_parroquia
+    $sql = "SELECT * FROM (
+                SELECT 
+                    m.id,
+                    m.nu_documento_rif AS rif,
+                    m.de_razon_social AS razon_social,
+                    c.co_ritez AS ritez,
+                    c.nu_expediente AS expediente,
+                    c.fe_registro AS fecha_registro,
+                    m.in_activo AS activo,
+                    m.in_llenado_guia AS habilitado_guia,
+                    m.da_mineral AS minerales_raw,
+                    m.da_superficie AS superficie,
+                    m.dr_fiscal AS direccion_fiscal,
+                    m.dr_terreno AS direccion_terreno,
+                    m.id_tab_municipio AS id_municipio,
+                    mun.de_municipio AS municipio,
+                    m.id_tab_parroquia AS id_parroquia,
+                    par.de_parroquia AS parroquia,
+                    m.tl_fijo AS telefono_fijo,
+                    m.da_correo AS correo_empresa,
+                    m.nb_responsable1 AS responsable_nombre,
+                    m.ap_responsable1 AS responsable_apellido,
+                    m.tl_movil_resp AS responsable_telefono,
+                    m.da_correo_resp AS responsable_correo,
+                    m.nb_propietario AS propietario_nombre,
+                    m.doc_propietario AS propietario_documento,
+                    m.nu_latitud AS latitud_db,
+                    m.nu_longitud AS longitud_db,
+                    m.created_at,
+                    m.updated_at,
+                    'ritez' AS grupo_codigo,
+                    'Minerales No Metálicos' AS grupo_nombre,
+                    'contribuyente.tab_mnm' AS origen_tabla
+                FROM contribuyente.tab_mnm m
+                LEFT JOIN contribuyente.tab_contribuyente c ON c.id = m.id_tab_contribuyente
+                LEFT JOIN mantenimiento.tab_municipio mun ON mun.id = m.id_tab_municipio
+                LEFT JOIN mantenimiento.tab_parroquia par ON par.id = m.id_tab_parroquia
+
+                UNION ALL
+
+                SELECT 
+                    m.id,
+                    m.nu_documento_rif AS rif,
+                    m.de_razon_social AS razon_social,
+                    c.co_ritez AS ritez,
+                    c.nu_expediente AS expediente,
+                    c.fe_registro AS fecha_registro,
+                    m.in_activo AS activo,
+                    COALESCE(c.in_habilitado_guia, false) AS habilitado_guia,
+                    m.da_mineral AS minerales_raw,
+                    m.da_superficie AS superficie,
+                    m.dr_fiscal AS direccion_fiscal,
+                    m.dr_terreno AS direccion_terreno,
+                    m.id_tab_municipio AS id_municipio,
+                    mun.de_municipio AS municipio,
+                    m.id_tab_parroquia AS id_parroquia,
+                    par.de_parroquia AS parroquia,
+                    m.tl_fijo AS telefono_fijo,
+                    m.da_correo AS correo_empresa,
+                    m.nb_responsable1 AS responsable_nombre,
+                    m.ap_responsable1 AS responsable_apellido,
+                    m.tl_movil_resp AS responsable_telefono,
+                    m.da_correo_resp AS responsable_correo,
+                    m.nb_propietario AS propietario_nombre,
+                    m.doc_propietario AS propietario_documento,
+                    m.nu_latitud AS latitud_db,
+                    m.nu_longitud AS longitud_db,
+                    m.created_at,
+                    m.updated_at,
+                    'oficio' AS grupo_codigo,
+                    'Registro de Oficio de Usuarios de Minerales No Metálicos' AS grupo_nombre,
+                    'preregistro.tab_minas' AS origen_tabla
+                FROM preregistro.tab_minas m
+                LEFT JOIN contribuyente.tab_contribuyente c ON c.id = m.id_tab_contribuyente
+                LEFT JOIN mantenimiento.tab_municipio mun ON mun.id = m.id_tab_municipio
+                LEFT JOIN mantenimiento.tab_parroquia par ON par.id = m.id_tab_parroquia
+            ) uni
             $whereSql
-            ORDER BY m.de_razon_social ASC";
+            ORDER BY uni.razon_social ASC";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $rows = $stmt->fetchAll();
 
-    // Consulta de Total General en BD
-    $countSql = "SELECT COUNT(*) as total, 
-                        COUNT(CASE WHEN in_activo = true THEN 1 END) as activos,
-                        COUNT(CASE WHEN in_activo = false THEN 1 END) as inactivos,
-                        COUNT(CASE WHEN nu_latitud IS NOT NULL AND nu_latitud != '' THEN 1 END) as con_gps
-                 FROM contribuyente.tab_mnm";
+    // Consulta de Totales Generales y Desglose por Grupo en BD
+    $countSql = "SELECT 
+                    COUNT(*) as total, 
+                    COUNT(CASE WHEN activo = true THEN 1 END) as activos,
+                    COUNT(CASE WHEN activo = false THEN 1 END) as inactivos,
+                    COUNT(CASE WHEN latitud_db IS NOT NULL AND latitud_db != '' THEN 1 END) as con_gps,
+                    COUNT(CASE WHEN grupo_codigo = 'ritez' THEN 1 END) as total_ritez,
+                    COUNT(CASE WHEN grupo_codigo = 'ritez' AND activo = true THEN 1 END) as activos_ritez,
+                    COUNT(CASE WHEN grupo_codigo = 'ritez' AND latitud_db IS NOT NULL AND latitud_db != '' THEN 1 END) as con_gps_ritez,
+                    COUNT(CASE WHEN grupo_codigo = 'oficio' THEN 1 END) as total_oficio,
+                    COUNT(CASE WHEN grupo_codigo = 'oficio' AND activo = true THEN 1 END) as activos_oficio,
+                    COUNT(CASE WHEN grupo_codigo = 'oficio' AND latitud_db IS NOT NULL AND latitud_db != '' THEN 1 END) as con_gps_oficio
+                 FROM (
+                    SELECT id, in_activo as activo, nu_latitud as latitud_db, 'ritez' as grupo_codigo FROM contribuyente.tab_mnm
+                    UNION ALL
+                    SELECT id, in_activo as activo, nu_latitud as latitud_db, 'oficio' as grupo_codigo FROM preregistro.tab_minas
+                 ) uni_stats";
     $statsRow = $pdo->query($countSql)->fetch();
 
     $empresas = array();
 
     foreach ($rows as $row) {
         $id = (int)$row['id'];
+        $grupoCodigo = $row['grupo_codigo'];
+        $uid = $grupoCodigo . '_' . $id;
         $hasExactGps = false;
         $lat = null;
         $lng = null;
@@ -214,7 +281,7 @@ try {
         }
 
         // Determinar categoría y color visual predominante
-        $categoriaColor = '#0b2545'; // Navy por defecto
+        $categoriaColor = ($grupoCodigo === 'oficio') ? '#6366f1' : '#0b2545';
         $mineralPrincipal = !empty($mineralesArr) ? $mineralesArr[0] : 'Mineral No Metálico';
         $minLower = strtolower($mineralPrincipal);
 
@@ -233,7 +300,11 @@ try {
         $nombreResponsable = trim((isset($row['responsable_nombre']) ? $row['responsable_nombre'] : '') . ' ' . (isset($row['responsable_apellido']) ? $row['responsable_apellido'] : ''));
 
         $empresas[] = array(
+            'uid' => $uid,
             'id' => $id,
+            'grupo_codigo' => $grupoCodigo,
+            'grupo_nombre' => $row['grupo_nombre'],
+            'origen_tabla' => $row['origen_tabla'],
             'rif' => $row['rif'],
             'razon_social' => $row['razon_social'] ? $row['razon_social'] : 'CONTRIBUYENTE SIN DENOMINACIÓN',
             'ritez' => $row['ritez'] ? $row['ritez'] : 'PENDIENTE',
@@ -291,6 +362,26 @@ try {
         'total_con_gps' => (int)$statsRow['con_gps'],
         'total_pendientes_gps' => (int)($statsRow['total'] - $statsRow['con_gps']),
         'total_filtrados' => count($empresas),
+        'grupos' => array(
+            'ritez' => array(
+                'codigo' => 'ritez',
+                'nombre' => 'Minerales No Metálicos',
+                'total' => (int)$statsRow['total_ritez'],
+                'activos' => (int)$statsRow['activos_ritez'],
+                'inactivos' => (int)($statsRow['total_ritez'] - $statsRow['activos_ritez']),
+                'con_gps' => (int)$statsRow['con_gps_ritez'],
+                'pendientes_gps' => (int)($statsRow['total_ritez'] - $statsRow['con_gps_ritez'])
+            ),
+            'oficio' => array(
+                'codigo' => 'oficio',
+                'nombre' => 'Registro de Oficio de Usuarios de Minerales No Metálicos',
+                'total' => (int)$statsRow['total_oficio'],
+                'activos' => (int)$statsRow['activos_oficio'],
+                'inactivos' => (int)($statsRow['total_oficio'] - $statsRow['activos_oficio']),
+                'con_gps' => (int)$statsRow['con_gps_oficio'],
+                'pendientes_gps' => (int)($statsRow['total_oficio'] - $statsRow['con_gps_oficio'])
+            )
+        ),
         'data' => $empresas
     ));
 
@@ -298,6 +389,6 @@ try {
     http_response_code(500);
     echo json_encode(array(
         'success' => false,
-        'message' => 'Error al consultar los contribuyentes de Minerales No Metálicos: ' . $e->getMessage()
+        'message' => 'Error al consultar los contribuyentes: ' . $e->getMessage()
     ));
 }

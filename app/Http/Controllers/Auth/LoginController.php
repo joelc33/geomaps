@@ -27,9 +27,16 @@ class LoginController extends Controller
         $identificador = trim($request->input('identificador'));
         $password = $request->input('password');
 
-        // 1. Localizar usuario exclusivamente por da_usuario (insensible a mayúsculas)
+        // 1. Localizar usuario por da_usuario, da_email o cédula de funcionario
         $usuario = Usuario::with(['funcionario.cargo', 'tipoUsuario'])
-            ->whereRaw('LOWER(da_usuario) = LOWER(?)', [$identificador])
+            ->where(function($query) use ($identificador) {
+                $query->whereRaw('LOWER(da_usuario) = LOWER(?)', [$identificador])
+                      ->orWhereRaw('LOWER(da_email) = LOWER(?)', [$identificador])
+                      ->orWhereHas('funcionario', function($q) use ($identificador) {
+                          $q->whereRaw('CAST(nu_cedula AS TEXT) = ?', [$identificador]);
+                      });
+            })
+            ->orderByRaw('CASE WHEN id_tab_tipo_usuario = 1 THEN 0 ELSE 1 END, id ASC')
             ->first();
 
         // 2. Si no existe o la contraseña no coincide
