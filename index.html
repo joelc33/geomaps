@@ -920,9 +920,6 @@
             <div class="d-flex align-items-center gap-3">
                 <!-- Resumen Rápido de Minerales No Metálicos -->
                 <div class="d-none d-lg-flex align-items-center gap-2">
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-size: 0.72rem;">
-                        <i class="bi bi-building me-1"></i> <span id="header-total-mnm">57</span> Contribuyentes
-                    </span>
                     <span class="badge px-2 py-1" style="background: rgba(11, 37, 69, 0.08); color: #0b2545; border: 1px solid rgba(11, 37, 69, 0.2); font-size: 0.72rem;" title="Minerales No Metálicos">
                         <i class="bi bi-award-fill me-1"></i> <span id="header-ritez-mnm">54</span> Minerales No Metálicos
                     </span>
@@ -943,8 +940,7 @@
                         US
                     </div>
                     <div class="d-none d-sm-block text-end">
-                        <div id="user-fullname" style="font-size: 0.78rem; font-weight: 700; color: #1e293b; line-height: 1.1;">Funcionario</div>
-                        <div id="user-role-label" style="font-size: 0.68rem; color: #64748b;">SEDATEZ</div>
+                        <div id="user-fullname" style="font-size: 0.8rem; font-weight: 700; color: #1e293b;">Funcionario</div>
                     </div>
                 </div>
 
@@ -1432,15 +1428,15 @@
             });
         }
 
-        // Actualizar datos del usuario en la interfaz
+        // Actualizar datos del usuario en la interfaz (solo muestra el nombre del usuario)
         function updateUserData(user) {
             if (!user) return;
             const avatar = document.getElementById('user-avatar-initials') || document.getElementById('user-display-avatar');
             const nameEl = document.getElementById('user-fullname') || document.getElementById('user-display-name');
-            const roleEl = document.getElementById('user-role-label') || document.getElementById('user-display-cargo');
             if (avatar) avatar.textContent = user.iniciales || 'US';
             if (nameEl) nameEl.textContent = user.nombre || user.usuario || 'Funcionario';
-            if (roleEl) roleEl.textContent = user.cargo || user.tipo || user.rol || 'Funcionario SEDATEZ';
+            const roleEl = document.getElementById('user-role-label') || document.getElementById('user-display-cargo');
+            if (roleEl) roleEl.remove();
         }
 
         // Chequear sesión existente al cargar la página
