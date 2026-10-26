@@ -24,13 +24,11 @@ try {
         COUNT(CASE WHEN grupo_codigo = 'ritez' AND latitud_db IS NOT NULL AND latitud_db != '' THEN 1 END) AS gps_ritez,
         -- Desglose Registro de Oficio
         COUNT(CASE WHEN grupo_codigo = 'oficio' THEN 1 END) AS total_oficio,
-        COUNT(CASE WHEN grupo_codigo = 'oficio' AND activo = true THEN 1 END) AS activas_oficio,
-        COUNT(CASE WHEN grupo_codigo = 'oficio' AND activo = false THEN 1 END) AS inactivas_oficio,
         COUNT(CASE WHEN grupo_codigo = 'oficio' AND latitud_db IS NOT NULL AND latitud_db != '' THEN 1 END) AS gps_oficio
     FROM (
         SELECT id, in_activo AS activo, in_llenado_guia AS habilitado_guia, nu_latitud AS latitud_db, 'ritez' AS grupo_codigo FROM contribuyente.tab_mnm
         UNION ALL
-        SELECT id, in_activo AS activo, false AS habilitado_guia, nu_latitud AS latitud_db, 'oficio' AS grupo_codigo FROM preregistro.tab_minas
+        SELECT id, NULL::boolean AS activo, false AS habilitado_guia, nu_latitud AS latitud_db, 'oficio' AS grupo_codigo FROM preregistro.tab_minas
     ) uni_summary";
     $summary = $pdo->query($summarySql)->fetch();
 
@@ -123,8 +121,6 @@ try {
                 'oficio' => array(
                     'nombre' => 'Registro de Oficio de Usuarios de Minerales No Metálicos',
                     'total' => (int)$summary['total_oficio'],
-                    'activas' => (int)$summary['activas_oficio'],
-                    'inactivas' => (int)$summary['inactivas_oficio'],
                     'gps_verificado' => (int)$summary['gps_oficio'],
                     'pendientes_gps' => (int)($summary['total_oficio'] - $summary['gps_oficio'])
                 )

@@ -71,6 +71,12 @@ class MnmDashboardController extends Controller
                 $item->grupo_nombre = 'Registro de Oficio de Usuarios de Minerales No Metálicos';
                 $item->origen_tabla = 'preregistro.tab_minas';
                 $item->uid = 'oficio_' . $item->id;
+                // No debe aparecer información de Código RITEZ, Expediente SADL, Estatus Tributario ni Guías de Transporte
+                $item->co_ritez = null;
+                $item->nu_expediente = null;
+                $item->in_activo = null;
+                $item->in_habilitado_guia = null;
+                $item->contribuyente = null;
                 return $item;
             });
             $empresas = $empresas->concat($oficioList);
@@ -96,13 +102,11 @@ class MnmDashboardController extends Controller
         $conGpsRitez = ContribuyenteMnm::whereNotNull('nu_latitud')->where('nu_latitud', '!=', '')->count();
 
         $totalOficio = ContribuyenteOficio::count();
-        $activasOficio = ContribuyenteOficio::where('in_activo', true)->count();
-        $inactivasOficio = ContribuyenteOficio::where('in_activo', false)->count();
         $conGpsOficio = ContribuyenteOficio::whereNotNull('nu_latitud')->where('nu_latitud', '!=', '')->count();
 
         $totalGeneral = $totalRitez + $totalOficio;
-        $activasGeneral = $activasRitez + $activasOficio;
-        $inactivasGeneral = $inactivasRitez + $inactivasOficio;
+        $activasGeneral = $activasRitez;
+        $inactivasGeneral = $inactivasRitez;
         $conGpsGeneral = $conGpsRitez + $conGpsOficio;
 
         $municipios = Municipio::where('id_tab_estado', 23)->orderBy('de_municipio')->get();
@@ -126,8 +130,6 @@ class MnmDashboardController extends Controller
                     'oficio' => [
                         'nombre' => 'Registro de Oficio de Usuarios de Minerales No Metálicos',
                         'total' => $totalOficio,
-                        'activas' => $activasOficio,
-                        'inactivas' => $inactivasOficio,
                         'con_gps' => $conGpsOficio,
                     ]
                 ]

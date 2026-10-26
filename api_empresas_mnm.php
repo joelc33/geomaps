@@ -164,11 +164,11 @@ try {
                     m.id,
                     m.nu_documento_rif AS rif,
                     m.de_razon_social AS razon_social,
-                    c.co_ritez AS ritez,
-                    c.nu_expediente AS expediente,
-                    c.fe_registro AS fecha_registro,
-                    m.in_activo AS activo,
-                    COALESCE(c.in_habilitado_guia, false) AS habilitado_guia,
+                    NULL::varchar AS ritez,
+                    NULL::varchar AS expediente,
+                    NULL::date AS fecha_registro,
+                    NULL::boolean AS activo,
+                    false AS habilitado_guia,
                     m.da_mineral AS minerales_raw,
                     m.da_superficie AS superficie,
                     m.dr_fiscal AS direccion_fiscal,
@@ -193,7 +193,6 @@ try {
                     'Registro de Oficio de Usuarios de Minerales No Metálicos' AS grupo_nombre,
                     'preregistro.tab_minas' AS origen_tabla
                 FROM preregistro.tab_minas m
-                LEFT JOIN contribuyente.tab_contribuyente c ON c.id = m.id_tab_contribuyente
                 LEFT JOIN mantenimiento.tab_municipio mun ON mun.id = m.id_tab_municipio
                 LEFT JOIN mantenimiento.tab_parroquia par ON par.id = m.id_tab_parroquia
             ) uni
@@ -214,12 +213,11 @@ try {
                     COUNT(CASE WHEN grupo_codigo = 'ritez' AND activo = true THEN 1 END) as activos_ritez,
                     COUNT(CASE WHEN grupo_codigo = 'ritez' AND latitud_db IS NOT NULL AND latitud_db != '' THEN 1 END) as con_gps_ritez,
                     COUNT(CASE WHEN grupo_codigo = 'oficio' THEN 1 END) as total_oficio,
-                    COUNT(CASE WHEN grupo_codigo = 'oficio' AND activo = true THEN 1 END) as activos_oficio,
                     COUNT(CASE WHEN grupo_codigo = 'oficio' AND latitud_db IS NOT NULL AND latitud_db != '' THEN 1 END) as con_gps_oficio
                  FROM (
                     SELECT id, in_activo as activo, nu_latitud as latitud_db, 'ritez' as grupo_codigo FROM contribuyente.tab_mnm
                     UNION ALL
-                    SELECT id, in_activo as activo, nu_latitud as latitud_db, 'oficio' as grupo_codigo FROM preregistro.tab_minas
+                    SELECT id, NULL::boolean as activo, nu_latitud as latitud_db, 'oficio' as grupo_codigo FROM preregistro.tab_minas
                  ) uni_stats";
     $statsRow = $pdo->query($countSql)->fetch();
 
@@ -307,12 +305,12 @@ try {
             'origen_tabla' => $row['origen_tabla'],
             'rif' => $row['rif'],
             'razon_social' => $row['razon_social'] ? $row['razon_social'] : 'CONTRIBUYENTE SIN DENOMINACIÓN',
-            'ritez' => $row['ritez'] ? $row['ritez'] : 'PENDIENTE',
-            'expediente' => $row['expediente'] ? $row['expediente'] : 'S/E',
-            'fecha_registro' => $row['fecha_registro'],
-            'activo' => !empty($row['activo']),
-            'estatus_texto' => !empty($row['activo']) ? 'Activo' : 'Inactivo',
-            'habilitado_guia' => !empty($row['habilitado_guia']),
+            'ritez' => ($grupoCodigo === 'oficio') ? null : ($row['ritez'] ? $row['ritez'] : 'PENDIENTE'),
+            'expediente' => ($grupoCodigo === 'oficio') ? null : ($row['expediente'] ? $row['expediente'] : 'S/E'),
+            'fecha_registro' => ($grupoCodigo === 'oficio') ? null : $row['fecha_registro'],
+            'activo' => ($grupoCodigo === 'oficio') ? null : !empty($row['activo']),
+            'estatus_texto' => ($grupoCodigo === 'oficio') ? null : (!empty($row['activo']) ? 'Activo' : 'Inactivo'),
+            'habilitado_guia' => ($grupoCodigo === 'oficio') ? null : !empty($row['habilitado_guia']),
             'minerales' => $mineralesArr,
             'minerales_raw' => $mineralesRaw,
             'mineral_principal' => $mineralPrincipal,
@@ -376,8 +374,6 @@ try {
                 'codigo' => 'oficio',
                 'nombre' => 'Registro de Oficio de Usuarios de Minerales No Metálicos',
                 'total' => (int)$statsRow['total_oficio'],
-                'activos' => (int)$statsRow['activos_oficio'],
-                'inactivos' => (int)($statsRow['total_oficio'] - $statsRow['activos_oficio']),
                 'con_gps' => (int)$statsRow['con_gps_oficio'],
                 'pendientes_gps' => (int)($statsRow['total_oficio'] - $statsRow['con_gps_oficio'])
             )

@@ -1010,7 +1010,7 @@
                     </div>
 
                     <!-- Segmentador de Estatus -->
-                    <div class="d-flex align-items-center justify-content-between bg-light p-1 rounded border mb-1">
+                    <div id="status-filter-container" class="d-flex align-items-center justify-content-between bg-light p-1 rounded border mb-1">
                         <span class="small text-muted ps-1" style="font-size: 0.7rem; font-weight: 600;">Estatus:</span>
                         <div class="btn-group btn-group-sm" role="group">
                             <button type="button" class="btn btn-xs py-0 px-2 btn-primary active" id="status-btn-all" data-status="all" style="font-size: 0.68rem;">Todos</button>
@@ -1146,7 +1146,7 @@
             </div>
 
             <!-- Fila de Identificación Rápida -->
-            <div class="row g-2 mb-3">
+            <div class="row g-2 mb-3" id="oc-row-identificacion">
                 <div class="col-6">
                     <div class="p-2 border rounded bg-light">
                         <div class="text-muted small" style="font-size: 0.7rem;">Código RITEZ:</div>
@@ -1697,9 +1697,9 @@
                     return false;
                 }
 
-                // Filtro por Estatus
-                if (currentStatusFilter === '1' && !emp.activo) return false;
-                if (currentStatusFilter === '0' && emp.activo) return false;
+                // Filtro por Estatus (aplica solo para contribuyentes con estatus tributario; Registro de Oficio no tiene estatus tributario)
+                if (currentStatusFilter === '1' && (emp.activo !== true || emp.grupo_codigo === 'oficio')) return false;
+                if (currentStatusFilter === '0' && (emp.activo !== false || emp.grupo_codigo === 'oficio')) return false;
 
                 // Filtro por Ubicación GPS
                 if (currentGeoFilter === 'located' && !tieneCoords) return false;
@@ -1724,8 +1724,8 @@
                 if (term) {
                     const matchText = (emp.razon_social || '').toLowerCase().includes(term) ||
                                       (emp.rif || '').toLowerCase().includes(term) ||
-                                      (emp.ritez || '').toLowerCase().includes(term) ||
-                                      (emp.expediente || '').toLowerCase().includes(term) ||
+                                      (emp.grupo_codigo !== 'oficio' && (emp.ritez || '').toLowerCase().includes(term)) ||
+                                      (emp.grupo_codigo !== 'oficio' && (emp.expediente || '').toLowerCase().includes(term)) ||
                                       (emp.municipio || '').toLowerCase().includes(term) ||
                                       (emp.parroquia || '').toLowerCase().includes(term) ||
                                       (emp.direccion_terreno || '').toLowerCase().includes(term) ||
@@ -1776,8 +1776,8 @@
             // Conteo de empresas ubicadas en el conjunto filtrado
             const conCoordsEnFiltrados = filtered.filter(e => e.geometria && e.geometria.lat !== null && e.geometria.lng !== null && !isNaN(e.geometria.lat) && Number(e.geometria.lat) !== 0).length;
             const sinCoordsEnFiltrados = filtered.length - conCoordsEnFiltrados;
-            const activosEnFiltrados = filtered.filter(e => e.activo).length;
-            const inactivosEnFiltrados = filtered.length - activosEnFiltrados;
+            const activosEnFiltrados = filtered.filter(e => e.grupo_codigo !== 'oficio' && e.activo === true).length;
+            const inactivosEnFiltrados = filtered.filter(e => e.grupo_codigo !== 'oficio' && e.activo === false).length;
 
             // Conteo por grupos
             const totalRitez = MNM_DATA.filter(e => e.grupo_codigo === 'ritez').length;
@@ -1840,6 +1840,41 @@
                     btn.classList.remove('btn-outline-secondary');
                     btn.classList.add('btn-primary', 'active');
                     currentGroupFilter = btn.getAttribute('data-group');
+
+                    // Si se selecciona Registro de Oficio, deshabilitar visualmente el filtro de Estatus ya que no aplica
+                    const statusButtons = document.querySelectorAll('#companies-sidebar .btn-group button[data-status]');
+                    const statusGroup = document.getElementById('status-filter-container');
+                    if (currentGroupFilter === 'oficio') {
+                        currentStatusFilter = 'all';
+                        statusButtons.forEach(b => {
+                            b.classList.remove('btn-primary', 'active');
+                            b.classList.add('btn-outline-secondary');
+                            b.style.pointerEvents = 'none';
+                            b.style.opacity = '0.45';
+                        });
+                        const btnAllStatus = document.getElementById('status-btn-all');
+                        if (btnAllStatus) {
+                            btnAllStatus.classList.remove('btn-outline-secondary');
+                            btnAllStatus.classList.add('btn-secondary', 'active');
+                        }
+                        if (statusGroup) statusGroup.title = "El estatus tributario solo aplica para contribuyentes RITEZ";
+                    } else {
+                        statusButtons.forEach(b => {
+                            b.style.pointerEvents = 'auto';
+                            b.style.opacity = '1';
+                        });
+                        const currentStatusBtn = document.querySelector(`#companies-sidebar button[data-status="${currentStatusFilter}"]`) || document.getElementById('status-btn-all');
+                        if (currentStatusBtn) {
+                            statusButtons.forEach(b => {
+                                b.classList.remove('btn-primary', 'btn-secondary', 'active');
+                                b.classList.add('btn-outline-secondary');
+                            });
+                            currentStatusBtn.classList.remove('btn-outline-secondary');
+                            currentStatusBtn.classList.add('btn-primary', 'active');
+                        }
+                        if (statusGroup) statusGroup.removeAttribute('title');
+                    }
+
                     applyMnmFilters();
                 });
             }
@@ -1931,9 +1966,11 @@
                 const badgeMineralName = isMineralFiltered ? currentMineralFilter : (empresa.mineral_principal || 'Mineral');
                 const colorBadge = isOficio ? '#6366f1' : getMineralColor(badgeMineralName);
 
-                const statusBadge = empresa.activo 
-                    ? '<span class="badge bg-success-subtle text-success border border-success-subtle py-1" style="font-size: 0.65rem;"><i class="bi bi-check-circle-fill me-1"></i>Activo</span>'
-                    : '<span class="badge bg-danger-subtle text-danger border border-danger-subtle py-1" style="font-size: 0.65rem;"><i class="bi bi-x-circle-fill me-1"></i>Inactivo</span>';
+                const statusBadge = (!isOficio && empresa.activo !== null && empresa.activo !== undefined)
+                    ? (empresa.activo 
+                        ? '<span class="badge bg-success-subtle text-success border border-success-subtle py-1" style="font-size: 0.65rem;"><i class="bi bi-check-circle-fill me-1"></i>Activo</span>'
+                        : '<span class="badge bg-danger-subtle text-danger border border-danger-subtle py-1" style="font-size: 0.65rem;"><i class="bi bi-x-circle-fill me-1"></i>Inactivo</span>')
+                    : '';
 
                 const tieneCoords = Boolean(empresa.geometria && 
                                             empresa.geometria.lat !== null && 
@@ -1951,6 +1988,14 @@
                 const multiBadge = (!isMineralFiltered && cantMinerales > 1) 
                     ? `<span class="badge bg-light text-secondary border py-1" style="font-size: 0.62rem;" title="${empresaEscape(empresa.minerales_raw)}">+${cantMinerales - 1} más</span>` 
                     : (isMineralFiltered && cantMinerales > 1 ? `<span class="badge bg-primary-subtle text-primary border border-primary-subtle py-1" style="font-size: 0.62rem;">${cantMinerales} minerales</span>` : '');
+
+                const ritezBadge = (!isOficio && empresa.ritez)
+                    ? `<span class="font-monospace text-muted" style="font-size: 0.68rem;"><i class="bi bi-hash me-1"></i>${empresa.ritez}</span>`
+                    : '';
+
+                const expedienteBadge = (!isOficio && empresa.expediente)
+                    ? `<span class="text-muted" style="font-size: 0.7rem;"><i class="bi bi-folder2-open me-1"></i>Exp: ${empresa.expediente}</span>`
+                    : '<span style="font-size: 0.7rem;"></span>';
 
                 btn.innerHTML = `
                     <div class="d-flex align-items-center justify-content-between mb-1">
@@ -1976,7 +2021,7 @@
 
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="company-rif-subtext"><i class="bi bi-file-earmark-text text-primary me-1"></i>RIF: ${empresa.rif}</span>
-                        <span class="font-monospace text-muted" style="font-size: 0.68rem;"><i class="bi bi-hash me-1"></i>${empresa.ritez}</span>
+                        ${ritezBadge}
                     </div>
 
                     <div class="company-address-box mb-2" title="${empresa.direccion_terreno}">
@@ -1985,7 +2030,7 @@
                     </div>
 
                     <div class="company-card-footer d-flex align-items-center justify-content-between pt-1">
-                        <span class="text-muted" style="font-size: 0.7rem;"><i class="bi bi-folder2-open me-1"></i>Exp: ${empresa.expediente}</span>
+                        ${expedienteBadge}
                         ${tieneCoords
                             ? '<span class="locate-action-cue"><i class="bi bi-crosshair me-1"></i>Ver en mapa <i class="bi bi-chevron-right ms-1"></i></span>'
                             : '<span class="text-warning-emphasis fw-semibold" style="font-size: 0.71rem;"><i class="bi bi-geo me-1"></i>Ubicar en mapa <i class="bi bi-chevron-right ms-1"></i></span>'
@@ -2199,9 +2244,9 @@
                                     <span style="background: #ffffff; color: #0b2545; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-family: monospace;">RIF: ${emp.rif}</span>
                                 </div>
                                 <div style="font-size: 0.86rem; font-weight: 700; line-height: 1.25;">${empresaEscape(emp.razon_social)}</div>
-                                <div style="display: flex; gap: 5px; margin-top: 4px;">
+                                ${(!isOficio && emp.ritez) ? `<div style="display: flex; gap: 5px; margin-top: 4px;">
                                     <span style="background: rgba(255,255,255,0.18); color: #ffffff; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px;">RITEZ: ${emp.ritez}</span>
-                                </div>
+                                </div>` : ''}
                             </div>
                             <div style="font-size: 0.75rem; color: #334155; margin-bottom: 6px;">
                                 <strong>Minerales:</strong> <span style="color: ${pinColor}; font-weight: 600;">${empresaEscape(emp.minerales_raw || emp.mineral_principal)}</span><br>
@@ -2241,7 +2286,7 @@
                     const customIcon = L.divIcon({
                         className: 'custom-sedatez-pin',
                         html: `
-                            <div style="background-color: ${pinColor}; border: 2.5px solid ${emp.activo ? '#ffffff' : '#ef4444'}; color: #fff; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                            <div style="background-color: ${pinColor}; border: 2.5px solid ${isOficio ? '#ffffff' : (emp.activo ? '#ffffff' : '#ef4444')}; color: #fff; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
                                 <i class="bi ${iconClass}" style="transform: rotate(45deg); font-size: 11px; color: #ffffff;"></i>
                             </div>`,
                         iconSize: [30, 30],
@@ -2344,7 +2389,19 @@
                 document.getElementById('pill-company-name').textContent = empresa.razon_social;
                 document.getElementById('pill-company-rif').textContent = `RIF: ${empresa.rif}`;
                 document.getElementById('pill-company-category').textContent = empresa.mineral_principal;
-                document.getElementById('pill-company-status').textContent = empresa.estatus_texto;
+                
+                const pillStatus = document.getElementById('pill-company-status');
+                if (pillStatus) {
+                    if (empresa.grupo_codigo === 'oficio' || !empresa.estatus_texto) {
+                        pillStatus.style.display = 'none';
+                    } else {
+                        pillStatus.style.display = 'inline-block';
+                        pillStatus.textContent = empresa.estatus_texto;
+                        pillStatus.className = empresa.activo 
+                            ? 'badge bg-success-subtle text-success border border-success-subtle' 
+                            : 'badge bg-danger-subtle text-danger border border-danger-subtle';
+                    }
+                }
                 document.getElementById('pill-company-address').textContent = `${empresa.municipio} • ${empresa.direccion_terreno}`;
 
                 const pillGroup = document.getElementById('pill-company-group');
@@ -2390,12 +2447,41 @@
             // Llenar datos de cabecera
             document.getElementById('oc-rif').textContent = `RIF: ${empresa.rif}`;
             document.getElementById('oc-razon-social').textContent = empresa.razon_social;
-            document.getElementById('oc-ritez').textContent = empresa.ritez;
-            document.getElementById('oc-expediente').textContent = empresa.expediente;
+
+            const isOficio = (empresa.grupo_codigo === 'oficio');
+
+            // Fila de Identificación Rápida: Código RITEZ, Expediente SADL, Estatus Tributario y Guías de Transporte
+            // En los registros de Registro de Oficio, no debe aparecer esta información
+            const rowIdent = document.getElementById('oc-row-identificacion');
+            if (rowIdent) {
+                if (isOficio) {
+                    rowIdent.style.display = 'none';
+                } else {
+                    rowIdent.style.display = 'flex';
+                    const elRitez = document.getElementById('oc-ritez');
+                    const elExp = document.getElementById('oc-expediente');
+                    if (elRitez) elRitez.textContent = empresa.ritez || 'PENDIENTE';
+                    if (elExp) elExp.textContent = empresa.expediente || 'S/E';
+
+                    const estatusContainer = document.getElementById('oc-estatus-badge');
+                    if (estatusContainer) {
+                        estatusContainer.innerHTML = empresa.activo 
+                            ? '<span class="badge bg-success">Activo</span>' 
+                            : '<span class="badge bg-danger">Inactivo</span>';
+                    }
+
+                    const guiaContainer = document.getElementById('oc-guia-badge');
+                    if (guiaContainer) {
+                        guiaContainer.innerHTML = empresa.habilitado_guia 
+                            ? '<span class="badge bg-info text-dark">Habilitado</span>' 
+                            : '<span class="badge bg-secondary">No Habilitado</span>';
+                    }
+                }
+            }
 
             const ocGrupo = document.getElementById('oc-grupo-badge');
             if (ocGrupo) {
-                if (empresa.grupo_codigo === 'oficio') {
+                if (isOficio) {
                     ocGrupo.className = "badge badge-group-oficio";
                     ocGrupo.innerHTML = '<i class="bi bi-journal-bookmark-fill me-1"></i>Registro de Oficio (preregistro.tab_minas)';
                 } else {
@@ -2403,17 +2489,6 @@
                     ocGrupo.innerHTML = '<i class="bi bi-award-fill me-1"></i>Minerales No Metálicos (contribuyente.tab_mnm)';
                 }
             }
-
-            // Estatus y Guía
-            const estatusContainer = document.getElementById('oc-estatus-badge');
-            estatusContainer.innerHTML = empresa.activo 
-                ? '<span class="badge bg-success">Activo</span>' 
-                : '<span class="badge bg-danger">Inactivo</span>';
-
-            const guiaContainer = document.getElementById('oc-guia-badge');
-            guiaContainer.innerHTML = empresa.habilitado_guia 
-                ? '<span class="badge bg-info text-dark">Habilitado</span>' 
-                : '<span class="badge bg-secondary">No Habilitado</span>';
 
             // Chips de Minerales
             const minChips = document.getElementById('oc-minerales-chips');
