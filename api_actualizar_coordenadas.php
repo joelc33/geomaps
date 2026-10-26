@@ -46,7 +46,7 @@ if ($id <= 0 || $lat === null || $lng === null) {
     http_response_code(422);
     echo json_encode(array(
         'success' => false,
-        'message' => 'Parámetros incompletos. Debe indicar el ID del contribuyente, latitud y longitud.'
+        'message' => 'Parámetros incompletos. Debe indicar el ID del registrado, latitud y longitud.'
     ));
     exit;
 }
@@ -106,7 +106,7 @@ try {
         http_response_code(404);
         echo json_encode(array(
             'success' => false,
-            'message' => "El registro del contribuyente ID {$id} no fue encontrado en {$targetTable}."
+            'message' => "El registro ID {$id} no fue encontrado en {$targetTable}."
         ));
         exit;
     }
@@ -128,7 +128,7 @@ try {
 
     // 3. Auditoría en log del sistema
     error_log(sprintf(
-        "[SEDATEZ GIS] Coordenadas actualizadas en %s para contribuyente ID %d (%s, RIF %s) [Grupo: %s] por usuario %s: Lat %f, Lng %f",
+        "[SEDATEZ GIS] Coordenadas actualizadas en %s para registrado ID %d (%s, RIF %s) [Grupo: %s] por usuario %s: Lat %f, Lng %f",
         $targetTable,
         $id,
         $empresa['de_razon_social'],

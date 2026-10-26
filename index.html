@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEDATEZ • Sistema de Georreferenciación de Contribuyentes</title>
+    <title>SEDATEZ • Sistema de Georreferenciación de Registrados</title>
     <!-- Favicon Oficial SEDATEZ -->
     <link rel="icon" type="image/png" href="logo_sedatez.png">
     
@@ -858,7 +858,7 @@
                         Impulsamos la gestión tributaria digital del Zulia.
                     </h2>
                     <p class="login-hero-subtitle">
-                        Georreferenciación inteligente, fiscalización en tiempo real y administración cartográfica de contribuyentes de minerales no metálicos del Estado Zulia.
+                        Georreferenciación inteligente, fiscalización en tiempo real y administración cartográfica de registrados de minerales no metálicos del Estado Zulia.
                     </p>
                 </div>
             </div>
@@ -929,7 +929,7 @@
                     <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.72rem;">
                         <i class="bi bi-check-circle-fill me-1"></i> <span id="header-active-mnm">54</span> Activos
                     </span>
-                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1" style="font-size: 0.72rem;" title="Contribuyentes pendientes por coordenadas GPS">
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1" style="font-size: 0.72rem;" title="Registrados pendientes por coordenadas GPS">
                         <i class="bi bi-geo me-1 text-warning"></i> <span id="header-pending-mnm">52</span> Pendientes Ubicación
                     </span>
                 </div>
@@ -956,15 +956,15 @@
         <div class="dashboard-body">
 
             <!-- ============================================================ -->
-            <!-- 2.1 LISTADO LATERAL DE CONTRIBUYENTES MNM (SEDATEZ)          -->
+            <!-- 2.1 LISTADO LATERAL DE REGISTRADOS MNM (SEDATEZ)             -->
             <!-- ============================================================ -->
-            <aside id="companies-sidebar" aria-label="Directorio Lateral de Contribuyentes MNM">
+            <aside id="companies-sidebar" aria-label="Directorio Lateral de Registrados MNM">
                 <!-- Encabezado del Sidebar Amplio -->
                 <div class="sidebar-header">
                     <div class="sidebar-title">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-building text-primary"></i>
-                            <span class="fw-bold" style="font-size: 0.88rem; color: #1e293b;">Contribuyentes</span>
+                            <span class="fw-bold" style="font-size: 0.88rem; color: #1e293b;">Registrados</span>
                             <span class="badge" style="background: var(--bb-primary-light); color: var(--bb-primary); font-size: 0.72rem; font-weight: 700;" id="sidebar-counter">54</span>
                         </div>
                         <!-- Botón Ocultar Barra Lateral (Llamativo y Táctil para Tablets) -->
@@ -977,11 +977,11 @@
                     <!-- Buscador Cómodo con botón de limpiar -->
                     <div class="sidebar-search-box mb-2">
                         <i class="bi bi-search sidebar-search-icon"></i>
-                        <input type="text" id="sidebar-search" class="sidebar-search-input" placeholder="Buscar por Razón Social, RIF, RITEZ o Expediente..." title="Escriba para filtrar contribuyentes">
+                        <input type="text" id="sidebar-search" class="sidebar-search-input" placeholder="Buscar por Razón Social, RIF, RITEZ o Expediente..." title="Escriba para filtrar registrados">
                         <button type="button" class="sidebar-search-clear" id="sidebar-search-clear" title="Limpiar búsqueda"><i class="bi bi-x-circle-fill"></i></button>
                     </div>
 
-                    <!-- Segmentador de Grupo de Contribuyentes -->
+                    <!-- Segmentador de Grupo de Registrados -->
                     <div class="d-flex align-items-center justify-content-between bg-light p-1 rounded border mb-2">
                         <span class="small text-muted ps-1" style="font-size: 0.7rem; font-weight: 600;">Grupo:</span>
                         <div class="btn-group btn-group-sm" role="group">
@@ -1051,15 +1051,15 @@
                 <div id="map"></div>
 
                 <!-- Botón Flotante Ultra Llamativo para Tablets: Mostrar Barra Lateral cuando está oculta -->
-                <button type="button" id="btn-expand-sidebar-floating" class="btn btn-floating-expand-sidebar d-none" title="Toca aquí para ver el listado de contribuyentes">
+                <button type="button" id="btn-expand-sidebar-floating" class="btn btn-floating-expand-sidebar d-none" title="Toca aquí para ver el listado de registrados">
                     <i class="bi bi-building-fill fs-6"></i>
-                    <span>Ver Contribuyentes</span>
+                    <span>Ver Registrados</span>
                     <span class="floating-counter-badge" id="floating-btn-counter">54</span>
                 </button>
 
                 <!-- Banner de Modo Selección de Coordenadas (GPS Picker Mode) -->
                 <div id="map-picker-banner" class="alert alert-primary py-2 px-3 small shadow position-absolute d-none" style="top: 15px; left: 50%; transform: translateX(-50%); z-index: 1050; border-radius: 30px;">
-                    <i class="bi bi-cursor-fill me-1"></i> Haga clic sobre el mapa para fijar la ubicación exacta del contribuyente.
+                    <i class="bi bi-cursor-fill me-1"></i> Haga clic sobre el mapa para fijar la ubicación exacta del registrado.
                     <button type="button" class="btn btn-xs btn-outline-dark ms-2 py-0 px-2" id="btn-cancel-picker" style="font-size: 0.72rem;">Cancelar</button>
                 </div>
 
@@ -1086,10 +1086,10 @@
                     </div>
                 </div>
 
-                <!-- Tarjeta Flotante Inferior de Contribuyente Seleccionado -->
+                <!-- Tarjeta Flotante Inferior de Registrado Seleccionado -->
                 <div class="active-company-floating-pill" id="company-detail-card">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h6 class="fw-bold mb-0 text-truncate" style="color: var(--bb-primary); font-size: 0.95rem; max-width: 320px;" id="pill-company-name">Contribuyente</h6>
+                        <h6 class="fw-bold mb-0 text-truncate" style="color: var(--bb-primary); font-size: 0.95rem; max-width: 320px;" id="pill-company-name">Registrado</h6>
                         <button type="button" class="btn-close" style="font-size: 0.65rem;" onclick="document.getElementById('company-detail-card').style.display='none'"></button>
                     </div>
                     <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
@@ -1115,7 +1115,7 @@
 
 
     <!-- ============================================================== -->
-    <!-- OFFCANVAS: FICHA TÉCNICA Y GEORREFERENCIACIÓN DE CONTRIBUYENTE -->
+    <!-- OFFCANVAS: FICHA TÉCNICA Y GEORREFERENCIACIÓN DE REGISTRADO -->
     <!-- ============================================================== -->
     <div class="offcanvas offcanvas-end shadow-lg" tabindex="-1" id="offcanvasTaxpayer" aria-labelledby="offcanvasTaxpayerLabel" style="width: 520px; max-width: 95vw; z-index: 1060;">
         <div class="offcanvas-header text-white" style="background: linear-gradient(135deg, #0b2545 0%, #134074 100%);">
@@ -1231,7 +1231,7 @@
                     </div>
                     <div class="d-flex justify-content-between mb-1">
                         <span class="text-muted small" style="font-size: 0.72rem;">Correo Electrónico:</span>
-                        <span class="font-monospace text-primary text-truncate" style="max-width: 250px;" id="oc-correo">correo@contribuyente.com</span>
+                        <span class="font-monospace text-primary text-truncate" style="max-width: 250px;" id="oc-correo">contacto@empresa.com</span>
                     </div>
                     <div class="d-flex justify-content-between pt-1 border-top">
                         <span class="text-muted small" style="font-size: 0.72rem;">Propietario del Terreno:</span>
@@ -1619,7 +1619,7 @@
         }
 
         // ==============================================================
-        // 3. NORMALIZACIÓN Y FILTRADO REACTIVO DE CONTRIBUYENTES
+        // 3. NORMALIZACIÓN Y FILTRADO REACTIVO DE REGISTRADOS
         // ==============================================================
         function normalizeMineralText(str) {
             if (!str) return '';
@@ -1688,12 +1688,12 @@
                                             Number(emp.geometria.lat) !== 0 &&
                                             Number(emp.geometria.lng) !== 0);
 
-                // Filtro por Grupo de Contribuyentes (RITEZ o Registro de Oficio)
+                // Filtro por Grupo de Registrados (RITEZ o Registro de Oficio)
                 if (currentGroupFilter !== 'all' && emp.grupo_codigo !== currentGroupFilter) {
                     return false;
                 }
 
-                // Filtro por Estatus (aplica solo para contribuyentes con estatus tributario; Registro de Oficio no tiene estatus tributario)
+                // Filtro por Estatus (aplica solo para registrados con estatus tributario; Registro de Oficio no tiene estatus tributario)
                 if (currentStatusFilter === '1' && (emp.activo !== true || emp.grupo_codigo === 'oficio')) return false;
                 if (currentStatusFilter === '0' && (emp.activo !== false || emp.grupo_codigo === 'oficio')) return false;
 
@@ -1785,7 +1785,7 @@
             if (countGroupRitez) countGroupRitez.textContent = totalRitez;
             if (countGroupOficio) countGroupOficio.textContent = totalOficio;
 
-            if (sideCount) sideCount.textContent = `${filtered.length} contribuyentes`;
+            if (sideCount) sideCount.textContent = `${filtered.length} registrados`;
             if (mapCount) mapCount.textContent = conCoordsEnFiltrados;
             const floatingCount = document.getElementById('floating-btn-counter');
             if (floatingCount) floatingCount.textContent = filtered.length;
@@ -1853,7 +1853,7 @@
                             btnAllStatus.classList.remove('btn-outline-secondary');
                             btnAllStatus.classList.add('btn-secondary', 'active');
                         }
-                        if (statusGroup) statusGroup.title = "El estatus tributario solo aplica para contribuyentes RITEZ";
+                        if (statusGroup) statusGroup.title = "El estatus tributario solo aplica para registrados RITEZ";
                     } else {
                         statusButtons.forEach(b => {
                             b.style.pointerEvents = 'auto';
@@ -1938,7 +1938,7 @@
                 container.innerHTML = `
                     <div class="text-center py-4 px-3 text-muted">
                         <i class="bi bi-funnel-fill fs-3 text-secondary mb-2 d-block"></i>
-                        <div class="fw-bold small">No se encontraron contribuyentes</div>
+                        <div class="fw-bold small">No se encontraron registrados</div>
                         <div style="font-size: 0.75rem;">Intente ajustar los filtros de municipio, mineral o ubicación.</div>
                     </div>`;
                 return;
@@ -1956,7 +1956,7 @@
                 const isOficio = (empresa.grupo_codigo === 'oficio');
                 const badgeGroup = isOficio
                     ? '<span class="badge badge-group-oficio" title="Registro de Oficio de Usuarios de Minerales No Metálicos (preregistro.tab_minas)"><i class="bi bi-journal-bookmark-fill me-1"></i>Reg. de Oficio</span>'
-                    : '<span class="badge badge-group-ritez" title="Minerales No Metálicos (contribuyente.tab_mnm)"><i class="bi bi-award-fill me-1"></i>Minerales No Metálicos</span>';
+                    : '<span class="badge badge-group-ritez" title="Minerales No Metálicos (tab_mnm)"><i class="bi bi-award-fill me-1"></i>Minerales No Metálicos</span>';
 
                 // Si hay un mineral filtrado seleccionado, destacamos ese mineral en el badge principal de la tarjeta
                 const badgeMineralName = isMineralFiltered ? currentMineralFilter : (empresa.mineral_principal || 'Mineral');
@@ -1978,7 +1978,7 @@
 
                 const gpsBadge = tieneCoords
                     ? '<span class="badge badge-verified-location" title="Coordenadas GPS verificadas en campo"><i class="bi bi-geo-alt-fill me-1"></i>GPS Exacto</span>'
-                    : '<span class="badge badge-pending-location" title="Contribuyente sin coordenadas GPS"><i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i>Pendiente por ubicación</span>';
+                    : '<span class="badge badge-pending-location" title="Registrado sin coordenadas GPS"><i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i>Pendiente por ubicación</span>';
 
                 const cantMinerales = (empresa.minerales && empresa.minerales.length > 0) ? empresa.minerales.length : 1;
                 const multiBadge = (!isMineralFiltered && cantMinerales > 1) 
@@ -2482,7 +2482,7 @@
                     ocGrupo.innerHTML = '<i class="bi bi-journal-bookmark-fill me-1"></i>Registro de Oficio (preregistro.tab_minas)';
                 } else {
                     ocGrupo.className = "badge badge-group-ritez";
-                    ocGrupo.innerHTML = '<i class="bi bi-award-fill me-1"></i>Minerales No Metálicos (contribuyente.tab_mnm)';
+                    ocGrupo.innerHTML = '<i class="bi bi-award-fill me-1"></i>Minerales No Metálicos (tab_mnm)';
                 }
             }
 

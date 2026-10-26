@@ -304,7 +304,7 @@ try {
             'grupo_nombre' => $row['grupo_nombre'],
             'origen_tabla' => $row['origen_tabla'],
             'rif' => $row['rif'],
-            'razon_social' => $row['razon_social'] ? $row['razon_social'] : 'CONTRIBUYENTE SIN DENOMINACIÓN',
+            'razon_social' => $row['razon_social'] ? $row['razon_social'] : 'REGISTRADO SIN DENOMINACIÓN',
             'ritez' => ($grupoCodigo === 'oficio') ? null : ($row['ritez'] ? $row['ritez'] : 'PENDIENTE'),
             'expediente' => ($grupoCodigo === 'oficio') ? null : ($row['expediente'] ? $row['expediente'] : 'S/E'),
             'fecha_registro' => ($grupoCodigo === 'oficio') ? null : $row['fecha_registro'],
