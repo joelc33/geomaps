@@ -67,8 +67,17 @@ try {
     $whereClauses = array();
     $params = array();
 
+    // Verificar existencia de la tabla mantenimiento.tab_poligonos_ejes para tolerancia a fallos en producción
+    $hasPoligonosTable = false;
+    try {
+        $chk = $pdo->query("SELECT 1 FROM information_schema.tables WHERE table_schema = 'mantenimiento' AND table_name = 'tab_poligonos_ejes' LIMIT 1");
+        $hasPoligonosTable = (bool)$chk->fetchColumn();
+    } catch (Exception $e) {
+        $hasPoligonosTable = false;
+    }
+
     // Filtro por Eje Territorial
-    if ($ejeParam !== '' && $ejeParam !== 'all') {
+    if ($hasPoligonosTable && $ejeParam !== '' && $ejeParam !== 'all') {
         if (is_numeric($ejeParam)) {
             $whereClauses[] = "uni.codigo_eje = :eje";
             $params[':eje'] = 'EJE ' . (int)$ejeParam;
@@ -132,6 +141,17 @@ try {
         $whereSql = 'WHERE ' . implode(' AND ', $whereClauses);
     }
 
+    $polJoin = $hasPoligonosTable 
+        ? "LEFT JOIN mantenimiento.tab_poligonos_ejes pol ON pol.id_tab_municipio = m.id_tab_municipio" 
+        : "";
+    $polSelect = $hasPoligonosTable
+        ? "pol.codigo_eje,
+                    pol.nombre_eje,
+                    pol.color_hex AS color_eje,"
+        : "NULL::varchar AS codigo_eje,
+                    NULL::varchar AS nombre_eje,
+                    NULL::varchar AS color_eje,";
+
     $sql = "SELECT * FROM (
                 SELECT 
                     m.id,
@@ -150,9 +170,7 @@ try {
                     mun.de_municipio AS municipio,
                     m.id_tab_parroquia AS id_parroquia,
                     par.de_parroquia AS parroquia,
-                    pol.codigo_eje,
-                    pol.nombre_eje,
-                    pol.color_hex AS color_eje,
+                    $polSelect
                     m.tl_fijo AS telefono_fijo,
                     m.da_correo AS correo_empresa,
                     m.nb_responsable1 AS responsable_nombre,
@@ -172,7 +190,7 @@ try {
                 LEFT JOIN contribuyente.tab_contribuyente c ON c.id = m.id_tab_contribuyente
                 LEFT JOIN mantenimiento.tab_municipio mun ON mun.id = m.id_tab_municipio
                 LEFT JOIN mantenimiento.tab_parroquia par ON par.id = m.id_tab_parroquia
-                LEFT JOIN mantenimiento.tab_poligonos_ejes pol ON pol.id_tab_municipio = m.id_tab_municipio
+                $polJoin
 
                 UNION ALL
 
@@ -193,9 +211,7 @@ try {
                     mun.de_municipio AS municipio,
                     m.id_tab_parroquia AS id_parroquia,
                     par.de_parroquia AS parroquia,
-                    pol.codigo_eje,
-                    pol.nombre_eje,
-                    pol.color_hex AS color_eje,
+                    $polSelect
                     m.tl_fijo AS telefono_fijo,
                     m.da_correo AS correo_empresa,
                     m.nb_responsable1 AS responsable_nombre,
@@ -214,7 +230,7 @@ try {
                 FROM preregistro.tab_minas m
                 LEFT JOIN mantenimiento.tab_municipio mun ON mun.id = m.id_tab_municipio
                 LEFT JOIN mantenimiento.tab_parroquia par ON par.id = m.id_tab_parroquia
-                LEFT JOIN mantenimiento.tab_poligonos_ejes pol ON pol.id_tab_municipio = m.id_tab_municipio
+                $polJoin
             ) uni
             $whereSql
             ORDER BY uni.razon_social ASC";

@@ -34,6 +34,30 @@ try {
         $countsPorMunicipio[(int)$row['id_tab_municipio']] = (int)$row['total_empresas'];
     }
 
+    // Verificar si la tabla de polígonos existe en PostgreSQL
+    $hasPoligonosTable = false;
+    try {
+        $chk = $pdo->query("SELECT 1 FROM information_schema.tables WHERE table_schema = 'mantenimiento' AND table_name = 'tab_poligonos_ejes' LIMIT 1");
+        $hasPoligonosTable = (bool)$chk->fetchColumn();
+    } catch (Exception $e) {
+        $hasPoligonosTable = false;
+    }
+
+    if (!$hasPoligonosTable) {
+        $fallbackGeoJson = __DIR__ . '/assets/geo/zulia_municipios_ejes.geojson';
+        if (file_exists($fallbackGeoJson)) {
+            $fallbackData = json_decode(file_get_contents($fallbackGeoJson), true);
+            if (isset($fallbackData['features']) && is_array($fallbackData['features'])) {
+                foreach ($fallbackData['features'] as &$feat) {
+                    $mId = isset($feat['properties']['id_municipio']) ? (int)$feat['properties']['id_municipio'] : 0;
+                    $feat['properties']['total_empresas'] = isset($countsPorMunicipio[$mId]) ? $countsPorMunicipio[$mId] : 0;
+                }
+            }
+            echo json_encode($fallbackData, JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+    }
+
     // 2. Consultar la tabla de polígonos
     $whereClauses = ["in_activo = 1"];
     $params = [];

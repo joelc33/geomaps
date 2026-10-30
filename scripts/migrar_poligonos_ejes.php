@@ -41,93 +41,21 @@ try {
     ";
 
     $pdo->exec($sqlTable);
-    echo "   -> Tabla y vista creadas exitosamente.\n";
+    echo "   -> Tabla y vista verificadas exitosamente.\n";
 
-    // 2. Definición de Ejes y Leyendas según plano institucional ME-01
-    $ejesConfig = [
-        'EJE 1' => [
-            'nombre' => 'EJE 1: Metropolitano y Perijá',
-            'color' => '#E05677', // Magenta / Rosado
-            'color_borde' => '#FFFFFF',
-            'opacidad' => 0.38,
-            'leyenda_municipios' => 'JESÚS ENRIQUE LOSSADA, LA CAÑADA, MARACAIBO, MACHIQUES DE PERIJÁ, ROSARIO DE PERIJÁ, SAN FRANCISCO',
-            'leyenda_minerales' => 'Arcilla, Arena, Arena de mina, Arena de río, Arena Roja, Arena y Manto, Caliza, Carbón, Grava, Grava de río y arena, Piedra ornamental',
-            'minerales' => [
-                'Arcilla', 'Arena', 'Arena de mina', 'Arena de río', 'Arena Roja',
-                'Arena y Manto', 'Caliza', 'Carbón', 'Grava', 'Grava de río y arena', 'Piedra ornamental'
-            ],
-            'municipios' => [
-                ['id_mun' => 317, 'nombre' => 'JESÚS ENRIQUE LOSSADA', 'geojson_idx' => 95,  'orden' => 1],
-                ['id_mun' => 318, 'nombre' => 'LA CAÑADA DE URDANETA', 'geojson_idx' => 116, 'orden' => 2],
-                ['id_mun' => 322, 'nombre' => 'MARACAIBO',              'geojson_idx' => 133, 'orden' => 3],
-                ['id_mun' => 320, 'nombre' => 'MACHIQUES DE PERIJÁ',   'geojson_idx' => 128, 'orden' => 4],
-                ['id_mun' => 325, 'nombre' => 'ROSARIO DE PERIJÁ',     'geojson_idx' => 185, 'orden' => 5],
-                ['id_mun' => 331, 'nombre' => 'SAN FRANCISCO',          'geojson_idx' => 302, 'orden' => 6]
-            ]
-        ],
-        'EJE 2' => [
-            'nombre' => 'EJE 2: Guajira y Costa Norte',
-            'color' => '#1B8A43', // Verde
-            'color_borde' => '#FFFFFF',
-            'opacidad' => 0.38,
-            'leyenda_municipios' => 'ALMIRANTE PADILLA, GUAJIRA, MARA, MIRANDA, SANTA RITA',
-            'leyenda_minerales' => 'Arena, Carbón, Sal, Yeso',
-            'minerales' => ['Arena', 'Carbón', 'Sal', 'Yeso'],
-            'municipios' => [
-                ['id_mun' => 312, 'nombre' => 'ALMIRANTE PADILLA',      'geojson_idx' => 331, 'orden' => 7],
-                ['id_mun' => 324, 'nombre' => 'GUAJIRA',                'geojson_idx' => 292, 'orden' => 8],
-                ['id_mun' => 321, 'nombre' => 'MARA',                   'geojson_idx' => 132, 'orden' => 9],
-                ['id_mun' => 323, 'nombre' => 'MIRANDA',                'geojson_idx' => 332, 'orden' => 10],
-                ['id_mun' => 326, 'nombre' => 'SANTA RITA',              'geojson_idx' => 206, 'orden' => 11]
-            ]
-        ],
-        'EJE 3' => [
-            'nombre' => 'EJE 3: Costa Oriental del Lago',
-            'color' => '#0284C7', // Azul / Celeste
-            'color_borde' => '#FFFFFF',
-            'opacidad' => 0.38,
-            'leyenda_municipios' => 'BARALT, CABIMAS, LAGUNILLAS, SIMÓN BOLÍVAR, VALMORE RODRÍGUEZ',
-            'leyenda_minerales' => 'Arena silícea, Arcilla, Capa vegetal y arena roja, Caliza',
-            'minerales' => ['Arena silícea', 'Arcilla', 'Capa vegetal y arena roja', 'Caliza'],
-            'municipios' => [
-                ['id_mun' => 313, 'nombre' => 'BARALT',                 'geojson_idx' => 27,  'orden' => 12],
-                ['id_mun' => 314, 'nombre' => 'CABIMAS',                'geojson_idx' => 39,  'orden' => 13],
-                ['id_mun' => 319, 'nombre' => 'LAGUNILLAS',              'geojson_idx' => 119, 'orden' => 14],
-                ['id_mun' => 332, 'nombre' => 'SIMÓN BOLÍVAR',          'geojson_idx' => 304, 'orden' => 15],
-                ['id_mun' => 328, 'nombre' => 'VALMORE RODRÍGUEZ',      'geojson_idx' => 234, 'orden' => 16]
-            ]
-        ],
-        'EJE 4' => [
-            'nombre' => 'EJE 4: Sur del Lago',
-            'color' => '#CA8A04', // Amarillo Mostaza / Ocre
-            'color_borde' => '#FFFFFF',
-            'opacidad' => 0.38,
-            'leyenda_municipios' => 'COLÓN, CATATUMBO, JESÚS MARÍA SEMPRÚM, JAVIER PULGAR, SUCRE',
-            'leyenda_minerales' => 'Arena, Carbón',
-            'minerales' => ['Arena', 'Carbón'],
-            'municipios' => [
-                ['id_mun' => 316, 'nombre' => 'COLÓN',                  'geojson_idx' => 60,  'orden' => 17],
-                ['id_mun' => 315, 'nombre' => 'CATATUMBO',              'geojson_idx' => 55,  'orden' => 18],
-                ['id_mun' => 330, 'nombre' => 'JESÚS MARÍA SEMPRÚM',    'geojson_idx' => 96,  'orden' => 19],
-                ['id_mun' => 329, 'nombre' => 'FRANCISCO JAVIER PULGAR', 'geojson_idx' => 78,  'orden' => 20],
-                ['id_mun' => 327, 'nombre' => 'SUCRE',                  'geojson_idx' => 333, 'orden' => 21]
-            ]
-        ]
-    ];
-
-    // 3. Cargar el GeoJSON descargado
-    $sourceGeoJsonPath = '/tmp/ven_adm2.geojson';
-    if (!file_exists($sourceGeoJsonPath)) {
-        throw new Exception("No se encontró el archivo $sourceGeoJsonPath");
+    // 2. Ruta del GeoJSON institucional
+    $localGeoJson = __DIR__ . '/../assets/geo/zulia_municipios_ejes.geojson';
+    if (!file_exists($localGeoJson)) {
+        throw new Exception("No se encontró el archivo $localGeoJson");
     }
 
-    echo "2. Leyendo geometrías desde $sourceGeoJsonPath...\n";
-    $sourceData = json_decode(file_get_contents($sourceGeoJsonPath), true);
-    if (!$sourceData || !isset($sourceData['features'])) {
-        throw new Exception("El archivo GeoJSON es inválido.");
+    echo "2. Leyendo geometrías oficiales desde $localGeoJson...\n";
+    $data = json_decode(file_get_contents($localGeoJson), true);
+    if (!$data || !isset($data['features']) || empty($data['features'])) {
+        throw new Exception("El archivo GeoJSON está vacío o es inválido.");
     }
 
-    // 4. Limpiar tabla previa si existían datos para asegurar consistencia
+    // 3. Limpiar tabla previa si existían datos para asegurar consistencia
     $pdo->exec("TRUNCATE TABLE mantenimiento.tab_poligonos_ejes RESTART IDENTITY;");
 
     $insertStmt = $pdo->prepare("
@@ -142,79 +70,30 @@ try {
         )
     ");
 
-    $featureCollection = [
-        'type' => 'FeatureCollection',
-        'metadata' => [
-            'plano' => 'ME-01',
-            'titulo' => 'MAPA DE MUNICIPIOS POR EJES DEL ESTADO ZULIA',
-            'ente' => 'SEDATEZ - GEOTECH.ca',
-            'fecha' => 'AGOSTO 2026',
-            'total_municipios' => 21,
-            'total_ejes' => 4
-        ],
-        'features' => []
-    ];
-
     $totalInsertados = 0;
+    foreach ($data['features'] as $feature) {
+        $p = $feature['properties'];
+        $geom = $feature['geometry'];
 
-    foreach ($ejesConfig as $codEje => $cfg) {
-        echo "   Procesando $codEje ({$cfg['nombre']})...\n";
-        foreach ($cfg['municipios'] as $mun) {
-            $idx = $mun['geojson_idx'];
-            if (!isset($sourceData['features'][$idx])) {
-                throw new Exception("Índice de feature $idx no existe.");
-            }
-
-            $feature = $sourceData['features'][$idx];
-            $geom = $feature['geometry'];
-
-            $insertStmt->execute([
-                ':codigo_eje' => $codEje,
-                ':nombre_eje' => $cfg['nombre'],
-                ':id_tab_municipio' => $mun['id_mun'],
-                ':nombre_municipio' => $mun['nombre'],
-                ':color_hex' => $cfg['color'],
-                ':color_borde' => $cfg['color_borde'],
-                ':opacidad' => $cfg['opacidad'],
-                ':leyenda_municipios' => $cfg['leyenda_municipios'],
-                ':leyenda_minerales' => $cfg['leyenda_minerales'],
-                ':minerales_json' => json_encode($cfg['minerales'], JSON_UNESCAPED_UNICODE),
-                ':geometria_geojson' => json_encode($geom),
-                ':in_activo' => 1,
-                ':orden' => $mun['orden']
-            ]);
-
-            $totalInsertados++;
-
-            // Agregar al FeatureCollection para exportación local
-            $featureCollection['features'][] = [
-                'type' => 'Feature',
-                'properties' => [
-                    'id_poligono' => $mun['id_mun'],
-                    'codigo_eje' => $codEje,
-                    'nombre_eje' => $cfg['nombre'],
-                    'id_municipio' => $mun['id_mun'],
-                    'nombre_municipio' => $mun['nombre'],
-                    'color_hex' => $cfg['color'],
-                    'color_borde' => $cfg['color_borde'],
-                    'opacidad' => $cfg['opacidad'],
-                    'leyenda_municipios' => $cfg['leyenda_municipios'],
-                    'leyenda_minerales' => $cfg['leyenda_minerales'],
-                    'minerales' => $cfg['minerales'],
-                    'orden' => $mun['orden']
-                ],
-                'geometry' => $geom
-            ];
-        }
+        $insertStmt->execute([
+            ':codigo_eje' => $p['codigo_eje'],
+            ':nombre_eje' => $p['nombre_eje'],
+            ':id_tab_municipio' => $p['id_municipio'],
+            ':nombre_municipio' => $p['nombre_municipio'],
+            ':color_hex' => $p['color_hex'],
+            ':color_borde' => isset($p['color_borde']) ? $p['color_borde'] : '#FFFFFF',
+            ':opacidad' => isset($p['opacidad']) ? $p['opacidad'] : 0.38,
+            ':leyenda_municipios' => $p['leyenda_municipios'],
+            ':leyenda_minerales' => $p['leyenda_minerales'],
+            ':minerales_json' => json_encode(isset($p['minerales']) ? $p['minerales'] : [], JSON_UNESCAPED_UNICODE),
+            ':geometria_geojson' => json_encode($geom),
+            ':in_activo' => 1,
+            ':orden' => isset($p['orden']) ? $p['orden'] : ($totalInsertados + 1)
+        ]);
+        $totalInsertados++;
     }
 
     echo "3. Insertados exitosamente $totalInsertados polígonos municipales en 'mantenimiento.tab_poligonos_ejes'.\n";
-
-    // 5. Guardar archivo local GeoJSON de respaldo en assets/geo/
-    $targetGeoJson = __DIR__ . '/../assets/geo/zulia_municipios_ejes.geojson';
-    file_put_contents($targetGeoJson, json_encode($featureCollection, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    echo "4. Archivo GeoJSON institucional generado en: $targetGeoJson\n";
-
     echo "=== MIGRACIÓN COMPLETADA CON ÉXITO ===\n";
 
 } catch (Exception $e) {
