@@ -820,6 +820,111 @@
             overflow-x: auto;
         }
 
+        /* ============================================================== */
+        /* PANEL FLOTANTE DE CAPAS Y LEYENDA OFICIAL (PLANO ME-01)        */
+        /* ============================================================== */
+        .ejes-legend-panel {
+            position: absolute;
+            top: 60px;
+            right: 14px;
+            z-index: 1000;
+            width: 370px;
+            max-width: calc(100vw - 28px);
+            max-height: calc(100vh - 120px);
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 12px;
+            border: 1px solid rgba(203, 213, 225, 0.9);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(0, 102, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .ejes-legend-panel.collapsed {
+            max-height: 44px;
+            width: 250px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .ejes-legend-panel.collapsed .ejes-legend-body,
+        .ejes-legend-panel.collapsed .ejes-legend-controls-bar {
+            display: none !important;
+        }
+        .ejes-legend-header {
+            background: linear-gradient(135deg, #0b2545 0%, #134074 100%);
+            color: #ffffff;
+            padding: 9px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+        }
+        .ejes-legend-header:hover {
+            background: linear-gradient(135deg, #134074 0%, #1d4ed8 100%);
+        }
+        .ejes-legend-body {
+            padding: 10px 12px;
+            overflow-y: auto;
+            max-height: calc(100vh - 210px);
+            font-size: 0.76rem;
+        }
+        .eje-badge-pill {
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 4px;
+            color: #ffffff;
+            letter-spacing: 0.02em;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .eje-row-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 10px;
+            margin-bottom: 8px;
+            background: #ffffff;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .eje-row-item:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transform: translateY(-1px);
+        }
+        .eje-row-item.active-eje {
+            border-color: #0066FF;
+            background: #f8faff;
+            box-shadow: 0 0 0 1px #0066FF;
+        }
+        .mineral-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+            vertical-align: middle;
+            border: 1px solid rgba(0,0,0,0.15);
+        }
+        .custom-polygon-tooltip {
+            background: rgba(11, 37, 69, 0.95) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 8px !important;
+            padding: 8px 12px !important;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3) !important;
+        }
+        .custom-polygon-tooltip .leaflet-tooltip-top:before,
+        .custom-polygon-tooltip .leaflet-tooltip-bottom:before,
+        .custom-polygon-tooltip .leaflet-tooltip-left:before,
+        .custom-polygon-tooltip .leaflet-tooltip-right:before {
+            border-top-color: rgba(11, 37, 69, 0.95) !important;
+        }
+
+
         /* Responsive Mobile */
         @media (max-width: 768px) {
             .login-wrapper-card {
@@ -991,6 +1096,17 @@
                         </div>
                     </div>
 
+                    <!-- Filtro por Eje Territorial Oficial (Plano ME-01) -->
+                    <div class="mb-2">
+                        <select id="filter-eje" class="form-select form-select-sm" style="font-size: 0.73rem; background-color: #f8fafc; border-color: #cbd5e1; font-weight: 600;">
+                            <option value="all">🗺️ Eje Territorial: Todos</option>
+                            <option value="EJE 1" style="color: #E05677; font-weight: 700;">● EJE 1: Metropolitano y Perijá</option>
+                            <option value="EJE 2" style="color: #1B8A43; font-weight: 700;">● EJE 2: Guajira y Costa Norte</option>
+                            <option value="EJE 3" style="color: #0284C7; font-weight: 700;">● EJE 3: Costa Oriental del Lago</option>
+                            <option value="EJE 4" style="color: #CA8A04; font-weight: 700;">● EJE 4: Sur del Lago</option>
+                        </select>
+                    </div>
+
                     <!-- Filtros Territoriales y Mineros -->
                     <div class="row g-2 mb-2">
                         <div class="col-6">
@@ -1083,6 +1199,56 @@
                                 <i class="bi bi-water"></i> La Cañada
                             </button>
                         </div>
+                        <button class="btn btn-sm btn-primary py-0 px-2 fw-semibold" id="btn-toggle-legend-card" title="Mostrar u Ocultar Leyenda y Capas">
+                            <i class="bi bi-layers-fill me-1"></i> Capas y Leyenda
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Panel Flotante de Leyenda Oficial de Ejes y Capas (Plano ME-01) -->
+                <div class="ejes-legend-panel" id="ejes-legend-panel">
+                    <div class="ejes-legend-header" id="btn-toggle-legend-header" title="Haga clic para minimizar o expandir">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-layers-half text-warning fs-6"></i>
+                            <div>
+                                <div class="fw-bold" style="font-size: 0.78rem; line-height: 1.1;">MUNICIPIOS POR EJES</div>
+                                <div style="font-size: 0.65rem; opacity: 0.85;">Plano ME-01 • SEDATEZ / GEOTECH.ca</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-1">
+                            <button type="button" class="btn btn-xs btn-outline-light py-0 px-1 border-0" id="btn-toggle-legend-collapse" title="Minimizar / Expandir Leyenda">
+                                <i class="bi bi-chevron-down" id="icon-legend-collapse"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Barra de Controles de Capas -->
+                    <div class="ejes-legend-controls-bar bg-light px-3 py-2 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" role="switch" id="switch-capas-ejes" checked>
+                            <label class="form-check-label fw-bold small text-dark" for="switch-capas-ejes" style="font-size: 0.73rem; cursor: pointer;">
+                                Ver Capas
+                            </label>
+                        </div>
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="text-muted small" style="font-size: 0.68rem;">Opacidad:</span>
+                            <input type="range" class="form-range" id="range-capas-opacity" min="10" max="90" value="38" style="width: 70px; height: 16px;">
+                            <span class="badge bg-secondary-subtle text-dark font-monospace" id="label-capas-opacity" style="font-size: 0.65rem;">38%</span>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Filtro Rápido por Eje -->
+                    <div class="ejes-legend-controls-bar px-2 pt-2 pb-1 border-bottom bg-white d-flex gap-1 justify-content-between flex-wrap" id="legend-eje-filter-btns">
+                        <button type="button" class="btn btn-xs btn-primary py-0 px-2 active" data-eje-filter="all" style="font-size: 0.68rem;">Todos</button>
+                        <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" data-eje-filter="EJE 1" style="font-size: 0.68rem; border-color: #E05677; color: #E05677; font-weight: 700;">EJE 1</button>
+                        <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" data-eje-filter="EJE 2" style="font-size: 0.68rem; border-color: #1B8A43; color: #1B8A43; font-weight: 700;">EJE 2</button>
+                        <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" data-eje-filter="EJE 3" style="font-size: 0.68rem; border-color: #0284C7; color: #0284C7; font-weight: 700;">EJE 3</button>
+                        <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" data-eje-filter="EJE 4" style="font-size: 0.68rem; border-color: #CA8A04; color: #CA8A04; font-weight: 700;">EJE 4</button>
+                    </div>
+
+                    <!-- Contenido scrolleable de Leyenda -->
+                    <div class="ejes-legend-body" id="ejes-legend-items-container">
+                        <!-- Generado dinámicamente con los 4 Ejes y Yacimientos Minerales No Metálicos -->
                     </div>
                 </div>
 
@@ -1403,8 +1569,18 @@
         let currentGeoFilter = 'all';
         let currentMunicipioFilter = 'all';
         let currentMineralFilter = 'all';
+        let currentEjeFilter = 'all'; // 'all', 'EJE 1', 'EJE 2', 'EJE 3', 'EJE 4'
         let currentSearchTerm = '';
         let activeEmpresaUid = null;
+
+        // Capas de Polígonos de Municipios por Ejes (Plano ME-01)
+        let capasEjesData = null;
+        let isCapasEjesVisible = true;
+        let capasOpacity = 0.38;
+        let leafletPolygonsLayer = null;
+        let googleDataLoaded = false;
+        let hoveredMunId = null;
+        let polygonInfoWindow = null;
 
         // Modo Picker de Coordenadas
         let isMapPickerActive = false;
@@ -1558,6 +1734,9 @@
                     MNM_DATA = empData.data;
                     applyMnmFilters();
                 }
+
+                // 3. Cargar Capas Poligonales y Leyenda Oficial (Plano ME-01)
+                await loadCapasEjes();
             } catch (err) {
                 console.error("Error cargando datos del dashboard MNM:", err);
             }
@@ -1701,6 +1880,11 @@
                 if (currentGeoFilter === 'located' && !tieneCoords) return false;
                 if (currentGeoFilter === 'pending' && tieneCoords) return false;
 
+                // Filtro por Eje Territorial Oficial (Plano ME-01)
+                if (currentEjeFilter !== 'all') {
+                    if (emp.codigo_eje !== currentEjeFilter) return false;
+                }
+
                 // Filtro por Municipio
                 if (currentMunicipioFilter !== 'all') {
                     if (String(emp.id_municipio) !== String(currentMunicipioFilter) && 
@@ -1765,6 +1949,35 @@
                 }
             }
 
+            // Resaltar visualmente el select de Ejes si está activo
+            const selEje = document.getElementById('filter-eje');
+            if (selEje) {
+                if (currentEjeFilter !== 'all') {
+                    selEje.value = currentEjeFilter;
+                    selEje.style.borderColor = '#0066FF';
+                    selEje.style.backgroundColor = '#eff6ff';
+                    selEje.style.fontWeight = '700';
+                    selEje.style.color = '#0047b3';
+                } else {
+                    selEje.value = 'all';
+                    selEje.style.borderColor = '#cbd5e1';
+                    selEje.style.backgroundColor = '#f8fafc';
+                    selEje.style.fontWeight = '600';
+                    selEje.style.color = '';
+                }
+            }
+
+            // Sincronizar botones de la leyenda flotante
+            document.querySelectorAll('#legend-eje-filter-btns button[data-eje-filter]').forEach(b => {
+                if (b.getAttribute('data-eje-filter') === currentEjeFilter) {
+                    b.classList.add('btn-primary', 'active');
+                    b.classList.remove('btn-outline-secondary');
+                } else {
+                    b.classList.remove('btn-primary', 'active');
+                    b.classList.add('btn-outline-secondary');
+                }
+            });
+
             // Actualizar contadores
             const sideCount = document.getElementById('sidebar-counter');
             const mapCount = document.getElementById('map-counter');
@@ -1802,6 +2015,7 @@
 
             renderMnmSidebar(filtered);
             renderMnmMarkers(filtered);
+            updateCapasEjesStyles();
         }
 
         // Eventos de Filtro
@@ -1875,6 +2089,17 @@
                 });
             }
         });
+
+        const selEje = document.getElementById('filter-eje');
+        if (selEje) {
+            selEje.addEventListener('change', (e) => {
+                currentEjeFilter = e.target.value;
+                applyMnmFilters();
+                if (currentEjeFilter !== 'all') {
+                    focusEjeOnMap(currentEjeFilter);
+                }
+            });
+        }
 
         const selMun = document.getElementById('filter-municipio');
         if (selMun) {
@@ -2104,6 +2329,9 @@
 
                 setupMapControls();
                 renderMnmMarkers(MNM_DATA);
+                if (capasEjesData) {
+                    renderGoogleCapasEjes();
+                }
 
             } catch (err) {
                 console.error("Error al inicializar Google Maps:", err);
@@ -2737,6 +2965,9 @@
 
             setupMapControls();
             renderMnmMarkers(MNM_DATA);
+            if (capasEjesData) {
+                renderLeafletCapasEjes();
+            }
         }
 
         // ==============================================================
@@ -2791,6 +3022,605 @@
                 toggleSidebar();
             }
         });
+
+        // ==============================================================
+        // 11. CAPAS POLIGONALES DE MUNICIPIOS POR EJES (PLANO ME-01)
+        // ==============================================================
+
+        async function loadCapasEjes() {
+            try {
+                let data = null;
+                try {
+                    const res = await fetch('api_capas_ejes.php');
+                    if (res.ok) {
+                        const json = await res.json();
+                        if (json.success && json.features && json.features.length > 0) {
+                            data = json;
+                        }
+                    }
+                } catch (apiErr) {
+                    console.warn("Falla al conectar con api_capas_ejes.php, intentando respaldo local GeoJSON:", apiErr);
+                }
+
+                // Fallback a archivo estático institucional si la API no respondió
+                if (!data) {
+                    const resGeo = await fetch('assets/geo/zulia_municipios_ejes.geojson');
+                    if (resGeo.ok) {
+                        data = await resGeo.json();
+                    }
+                }
+
+                if (!data || !data.features) {
+                    console.error("No se pudieron cargar las geometrías de las capas de ejes.");
+                    return;
+                }
+
+                capasEjesData = data;
+                console.log(`Capas de municipios por ejes cargadas: ${data.features.length} polígonos.`);
+
+                // Renderizar en el mapa activo
+                if (googleMap) {
+                    renderGoogleCapasEjes();
+                } else if (leafletMapInstance) {
+                    renderLeafletCapasEjes();
+                }
+
+                // Renderizar la leyenda oficial
+                renderEjesLegend(data);
+
+                // Configurar controles de capas
+                setupCapasControls();
+
+            } catch (err) {
+                console.error("Error al procesar capas de ejes:", err);
+            }
+        }
+
+        // Renderizado en Google Maps Data Layer
+        function renderGoogleCapasEjes() {
+            if (!googleMap || !capasEjesData) return;
+
+            try {
+                // Si ya había datos cargados previamente, eliminarlos
+                if (googleDataLoaded) {
+                    googleMap.data.forEach(f => googleMap.data.remove(f));
+                    googleDataLoaded = false;
+                }
+
+                googleMap.data.addGeoJson(capasEjesData);
+                googleDataLoaded = true;
+
+                updateCapasEjesStyles();
+
+                if (!googleMap._hasCapasListeners) {
+                    googleMap._hasCapasListeners = true;
+
+                    // Mouseover: Resalte del polígono
+                    googleMap.data.addListener('mouseover', (event) => {
+                        if (!isCapasEjesVisible) return;
+                        googleMap.data.overrideStyle(event.feature, {
+                            strokeWeight: 2.8,
+                            strokeColor: '#FFFFFF',
+                            zIndex: 10
+                        });
+                    });
+
+                    // Mouseout: Restaurar estilo
+                    googleMap.data.addListener('mouseout', (event) => {
+                        if (!isCapasEjesVisible) return;
+                        googleMap.data.revertStyle(event.feature);
+                        updateCapasEjesStyles();
+                    });
+
+                    // Click: Desplegar InfoWindow y permitir filtrado
+                    googleMap.data.addListener('click', (event) => {
+                        if (!isCapasEjesVisible) return;
+                        const f = event.feature;
+                        const munNombre = f.getProperty('nombre_municipio');
+                        const ejeCodigo = f.getProperty('codigo_eje');
+                        const ejeNombre = f.getProperty('nombre_eje');
+                        const colorHex = f.getProperty('color_hex') || '#0066FF';
+                        const munId = f.getProperty('id_municipio');
+                        const minerales = f.getProperty('minerales') || [];
+                        const totalEmp = f.getProperty('total_empresas') || 0;
+                        const leyendaMin = f.getProperty('leyenda_minerales') || '';
+
+                        const minBadges = Array.isArray(minerales) && minerales.length > 0
+                            ? minerales.map(m => `<span class="badge bg-light text-dark border me-1 mb-1" style="font-size:0.67rem;"><i class="bi bi-hammer me-1 text-primary"></i>${m}</span>`).join('')
+                            : `<span class="small text-muted">${leyendaMin}</span>`;
+
+                        const content = `
+                            <div style="font-family: 'Inter', sans-serif; max-width: 330px; padding: 2px;">
+                                <div style="background: ${colorHex}; color: white; padding: 9px 12px; border-radius: 6px 6px 0 0; margin: -5px -5px 10px -5px;">
+                                    <div class="d-flex align-items-center justify-content-between mb-1">
+                                        <span class="badge bg-white text-dark font-monospace fw-bold" style="font-size: 0.65rem;">${ejeCodigo}</span>
+                                        <span style="font-size: 0.68rem; opacity: 0.9;">Plano ME-01</span>
+                                    </div>
+                                    <div style="font-size: 0.95rem; font-weight: 800; line-height: 1.2;">${munNombre}</div>
+                                    <div style="font-size: 0.72rem; opacity: 0.92; margin-top: 2px;">${ejeNombre}</div>
+                                </div>
+                                <div class="mb-2" style="font-size: 0.74rem; color: #334155;">
+                                    <strong>Minerales No Metálicos (ME-01):</strong>
+                                    <div class="mt-1 d-flex flex-wrap">${minBadges}</div>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between mb-2 p-2 bg-light rounded border" style="font-size: 0.74rem;">
+                                    <span class="text-muted"><i class="bi bi-buildings me-1"></i>Contribuyentes registrados:</span>
+                                    <span class="badge bg-primary fs-6 font-monospace">${totalEmp}</span>
+                                </div>
+                                <div class="d-flex gap-1">
+                                    <button type="button" class="btn btn-sm btn-primary py-1 w-100" style="font-size: 0.73rem; font-weight: 600;" onclick="filterByMunFromMap(${munId}, '${munNombre}')">
+                                        <i class="bi bi-funnel-fill me-1"></i> Filtrar ${munNombre}
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary py-1" style="font-size: 0.73rem; font-weight: 600;" onclick="filterByEjeFromMap('${ejeCodigo}')" title="Filtrar todo ${ejeCodigo}">
+                                        Ver ${ejeCodigo}
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+
+                        if (!polygonInfoWindow) {
+                            polygonInfoWindow = new google.maps.InfoWindow();
+                        }
+                        polygonInfoWindow.setContent(content);
+                        polygonInfoWindow.setPosition(event.latLng);
+                        polygonInfoWindow.open(googleMap);
+                    });
+                }
+            } catch (err) {
+                console.error("Error al renderizar capas en Google Maps:", err);
+            }
+        }
+
+        // Renderizado en Leaflet
+        function renderLeafletCapasEjes() {
+            if (!leafletMapInstance || !capasEjesData) return;
+
+            try {
+                if (leafletPolygonsLayer) {
+                    leafletMapInstance.removeLayer(leafletPolygonsLayer);
+                    leafletPolygonsLayer = null;
+                }
+
+                leafletPolygonsLayer = L.geoJSON(capasEjesData, {
+                    style: (feature) => getFeatureLeafletStyle(feature),
+                    onEachFeature: (feature, layer) => {
+                        const p = feature.properties;
+                        const munNombre = p.nombre_municipio;
+                        const ejeCodigo = p.codigo_eje;
+                        const ejeNombre = p.nombre_eje;
+                        const colorHex = p.color_hex || '#0066FF';
+                        const munId = p.id_municipio;
+                        const minerales = p.minerales || [];
+                        const totalEmp = p.total_empresas || 0;
+                        const leyendaMin = p.leyenda_minerales || '';
+
+                        layer.bindTooltip(`
+                            <div style="font-weight: 800; font-size: 0.82rem; margin-bottom: 2px;">${munNombre}</div>
+                            <div style="font-size: 0.72rem; color: ${colorHex}; font-weight: 700;">${ejeCodigo}: ${ejeNombre}</div>
+                            <div style="font-size: 0.68rem; color: #94a3b8;"><i class="bi bi-buildings me-1"></i>${totalEmp} contribuyentes</div>
+                        `, {
+                            className: 'custom-polygon-tooltip',
+                            sticky: true,
+                            direction: 'top'
+                        });
+
+                        layer.on({
+                            mouseover: (e) => {
+                                const l = e.target;
+                                l.setStyle({
+                                    weight: 2.8,
+                                    color: '#FFFFFF',
+                                    fillOpacity: Math.min(1, capasOpacity + 0.25)
+                                });
+                                if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                                    l.bringToFront();
+                                }
+                            },
+                            mouseout: (e) => {
+                                if (leafletPolygonsLayer) {
+                                    leafletPolygonsLayer.resetStyle(e.target);
+                                }
+                            },
+                            click: (e) => {
+                                const minBadges = Array.isArray(minerales) && minerales.length > 0
+                                    ? minerales.map(m => `<span class="badge bg-light text-dark border me-1 mb-1" style="font-size:0.65rem;">${m}</span>`).join('')
+                                    : `<span class="small text-muted">${leyendaMin}</span>`;
+
+                                const popupHtml = `
+                                    <div style="font-family: 'Inter', sans-serif; min-width: 260px; padding: 2px;">
+                                        <div style="background: ${colorHex}; color: white; padding: 8px 10px; border-radius: 6px 6px 0 0; margin: -5px -5px 8px -5px;">
+                                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                                <span class="badge bg-white text-dark font-monospace fw-bold" style="font-size: 0.65rem;">${ejeCodigo}</span>
+                                                <span style="font-size: 0.65rem; opacity: 0.9;">Plano ME-01</span>
+                                            </div>
+                                            <div style="font-size: 0.95rem; font-weight: 800; line-height: 1.2;">${munNombre}</div>
+                                            <div style="font-size: 0.7rem; opacity: 0.9;">${ejeNombre}</div>
+                                        </div>
+                                        <div class="mb-2" style="font-size: 0.72rem; color: #334155;">
+                                            <strong>Minerales (ME-01):</strong>
+                                            <div class="mt-1 d-flex flex-wrap">${minBadges}</div>
+                                        </div>
+                                        <div class="d-flex align-items-center justify-content-between mb-2 p-1 bg-light rounded border" style="font-size: 0.72rem;">
+                                            <span class="text-muted"><i class="bi bi-buildings me-1"></i>Contribuyentes:</span>
+                                            <span class="badge bg-primary font-monospace">${totalEmp}</span>
+                                        </div>
+                                        <div class="d-flex gap-1">
+                                            <button type="button" class="btn btn-xs btn-primary w-100 py-1" onclick="filterByMunFromMap(${munId}, '${munNombre}')">
+                                                <i class="bi bi-funnel-fill me-1"></i> Filtrar ${munNombre}
+                                            </button>
+                                            <button type="button" class="btn btn-xs btn-outline-secondary py-1" onclick="filterByEjeFromMap('${ejeCodigo}')">
+                                                ${ejeCodigo}
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                                L.popup()
+                                    .setLatLng(e.latlng)
+                                    .setContent(popupHtml)
+                                    .openOn(leafletMapInstance);
+                            }
+                        });
+                    }
+                });
+
+                if (isCapasEjesVisible) {
+                    leafletPolygonsLayer.addTo(leafletMapInstance);
+                }
+            } catch (err) {
+                console.error("Error al renderizar capas en Leaflet:", err);
+            }
+        }
+
+        // Estilos para Leaflet
+        function getFeatureLeafletStyle(feature) {
+            if (!isCapasEjesVisible) {
+                return { opacity: 0, fillOpacity: 0 };
+            }
+
+            const p = feature.properties;
+            const fEje = p.codigo_eje;
+            const colorHex = p.color_hex || '#0066FF';
+            const isSelectedEje = (currentEjeFilter === 'all' || currentEjeFilter === fEje);
+
+            let fillOpacity = capasOpacity;
+            let strokeColor = p.color_borde || '#FFFFFF';
+            let strokeWeight = 1.2;
+
+            if (currentEjeFilter !== 'all') {
+                if (isSelectedEje) {
+                    fillOpacity = Math.min(0.85, capasOpacity + 0.28);
+                    strokeWeight = 2.4;
+                    strokeColor = '#FFFFFF';
+                } else {
+                    fillOpacity = 0.06;
+                    strokeWeight = 0.6;
+                    strokeColor = '#94a3b8';
+                }
+            }
+
+            return {
+                fillColor: colorHex,
+                fillOpacity: fillOpacity,
+                color: strokeColor,
+                weight: strokeWeight,
+                opacity: isSelectedEje ? 0.9 : 0.3
+            };
+        }
+
+        // Actualizar estilos dinámicamente en ambos mapas
+        function updateCapasEjesStyles() {
+            // 1. Google Maps
+            if (googleMap && googleDataLoaded) {
+                googleMap.data.setStyle((feature) => {
+                    if (!isCapasEjesVisible) {
+                        return { visible: false };
+                    }
+
+                    const fEje = feature.getProperty('codigo_eje');
+                    const colorHex = feature.getProperty('color_hex') || '#0066FF';
+                    const isSelectedEje = (currentEjeFilter === 'all' || currentEjeFilter === fEje);
+
+                    let fillOpacity = capasOpacity;
+                    let strokeColor = feature.getProperty('color_borde') || '#FFFFFF';
+                    let strokeWeight = 1.2;
+
+                    if (currentEjeFilter !== 'all') {
+                        if (isSelectedEje) {
+                            fillOpacity = Math.min(0.85, capasOpacity + 0.28);
+                            strokeWeight = 2.4;
+                            strokeColor = '#FFFFFF';
+                        } else {
+                            fillOpacity = 0.06;
+                            strokeWeight = 0.6;
+                            strokeColor = '#94a3b8';
+                        }
+                    }
+
+                    return {
+                        visible: true,
+                        fillColor: colorHex,
+                        fillOpacity: fillOpacity,
+                        strokeColor: strokeColor,
+                        strokeWeight: strokeWeight,
+                        clickable: true,
+                        zIndex: isSelectedEje ? 3 : 1
+                    };
+                });
+            }
+
+            // 2. Leaflet
+            if (leafletPolygonsLayer && leafletMapInstance) {
+                if (!isCapasEjesVisible) {
+                    if (leafletMapInstance.hasLayer(leafletPolygonsLayer)) {
+                        leafletMapInstance.removeLayer(leafletPolygonsLayer);
+                    }
+                } else {
+                    if (!leafletMapInstance.hasLayer(leafletPolygonsLayer)) {
+                        leafletPolygonsLayer.addTo(leafletMapInstance);
+                    }
+                    leafletPolygonsLayer.setStyle((feature) => getFeatureLeafletStyle(feature));
+                }
+            }
+        }
+
+        // Renderizado del contenido del panel de leyenda oficial
+        function renderEjesLegend(data) {
+            const container = document.getElementById('ejes-legend-items-container');
+            if (!container) return;
+
+            // Extraer ejes desde metadata o sintetizar desde features
+            let ejes = [];
+            if (data.metadata && Array.isArray(data.metadata.ejes) && data.metadata.ejes.length > 0) {
+                ejes = data.metadata.ejes;
+            } else if (data.features) {
+                const mapEjes = {};
+                data.features.forEach(f => {
+                    const p = f.properties;
+                    if (!mapEjes[p.codigo_eje]) {
+                        mapEjes[p.codigo_eje] = {
+                            codigo: p.codigo_eje,
+                            nombre: p.nombre_eje,
+                            color: p.color_hex,
+                            leyenda_municipios: p.leyenda_municipios,
+                            leyenda_minerales: p.leyenda_minerales,
+                            minerales: p.minerales || [],
+                            municipios: []
+                        };
+                    }
+                    mapEjes[p.codigo_eje].municipios.push({
+                        id_municipio: p.id_municipio,
+                        nombre: p.nombre_municipio,
+                        total_empresas: p.total_empresas || 0
+                    });
+                });
+                ejes = Object.values(mapEjes);
+            }
+
+            container.innerHTML = '';
+
+            ejes.forEach(eje => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = `eje-row-item ${currentEjeFilter === eje.codigo ? 'active-eje' : ''}`;
+                itemDiv.id = `eje-card-${eje.codigo.replace(/\s+/g, '')}`;
+
+                // Lista de municipios en chips interactivos
+                const munChipsHtml = (eje.municipios || []).map(m => {
+                    return `<button type="button" class="btn btn-xs btn-light border py-0 px-1 me-1 mb-1" 
+                                    style="font-size: 0.65rem;" 
+                                    onclick="event.stopPropagation(); filterByMunFromMap(${m.id_municipio}, '${m.nombre}')" 
+                                    title="Filtrar por ${m.nombre} (${m.total_empresas} contribuyentes)">
+                                <i class="bi bi-geo-alt text-danger me-1"></i>${m.nombre}
+                                ${m.total_empresas > 0 ? `<span class="badge bg-primary ms-1" style="font-size: 0.6rem;">${m.total_empresas}</span>` : ''}
+                            </button>`;
+                }).join('');
+
+                // Minerales del eje
+                const minChipsHtml = (eje.minerales || []).map(min => {
+                    const minColor = getMineralColor(min);
+                    return `<span class="badge bg-white text-dark border me-1 mb-1" style="font-size: 0.64rem;">
+                                <span class="mineral-dot" style="background-color: ${minColor};"></span>${min}
+                            </span>`;
+                }).join('');
+
+                const totalEmpresasEje = (eje.municipios || []).reduce((acc, m) => acc + (m.total_empresas || 0), 0);
+
+                itemDiv.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="eje-badge-pill" style="background: ${eje.color};">
+                                <i class="bi bi-layers-fill"></i> ${eje.codigo}
+                            </span>
+                            <span class="fw-bold text-dark" style="font-size: 0.77rem;">${eje.nombre.replace(/^EJE\s*\d+:\s*/i, '')}</span>
+                        </div>
+                        <span class="badge bg-secondary-subtle text-dark font-monospace" style="font-size: 0.65rem;" title="Total contribuyentes en este Eje">
+                            ${totalEmpresasEje} emp.
+                        </span>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between mb-1" style="font-size: 0.67rem; color: #64748b;">
+                        <span><i class="bi bi-pin-map me-1 text-primary"></i>${(eje.municipios || []).length} Municipios:</span>
+                        <button type="button" class="btn btn-xs btn-link p-0 text-decoration-none" style="font-size: 0.67rem;" onclick="event.stopPropagation(); filterByEjeFromMap('${eje.codigo}')">
+                            ${currentEjeFilter === eje.codigo ? '✓ Activo' : 'Filtrar este Eje'}
+                        </button>
+                    </div>
+
+                    <div class="d-flex flex-wrap mb-1">
+                        ${munChipsHtml}
+                    </div>
+
+                    <div class="pt-1 border-top mt-1">
+                        <div style="font-size: 0.65rem; color: #64748b; font-weight: 600; margin-bottom: 3px;">
+                            <i class="bi bi-hammer me-1 text-secondary"></i>Yacimientos Minerales No Metálicos (ME-01):
+                        </div>
+                        <div class="d-flex flex-wrap">
+                            ${minChipsHtml}
+                        </div>
+                    </div>
+                `;
+
+                // Al hacer clic en la tarjeta del eje, centrar el mapa y filtrar
+                itemDiv.addEventListener('click', () => {
+                    filterByEjeFromMap(eje.codigo);
+                });
+
+                container.appendChild(itemDiv);
+            });
+        }
+
+        // Configuración de controles del panel de capas y leyenda
+        function setupCapasControls() {
+            // 1. Mostrar/Ocultar panel flotante con el botón de la barra de mapa
+            const btnToggleLegend = document.getElementById('btn-toggle-legend-card');
+            const legendPanel = document.getElementById('ejes-legend-panel');
+            if (btnToggleLegend && legendPanel) {
+                btnToggleLegend.addEventListener('click', () => {
+                    if (legendPanel.style.display === 'none') {
+                        legendPanel.style.display = 'flex';
+                        btnToggleLegend.classList.add('btn-primary');
+                        btnToggleLegend.classList.remove('btn-outline-secondary');
+                    } else {
+                        legendPanel.style.display = 'none';
+                        btnToggleLegend.classList.remove('btn-primary');
+                        btnToggleLegend.classList.add('btn-outline-secondary');
+                    }
+                });
+            }
+
+            // 2. Minimizar / Expandir panel de leyenda
+            const headerLegend = document.getElementById('btn-toggle-legend-header');
+            const btnCollapseLegend = document.getElementById('btn-toggle-legend-collapse');
+            const iconCollapse = document.getElementById('icon-legend-collapse');
+
+            function toggleLegendCollapse() {
+                if (!legendPanel) return;
+                const isCollapsed = legendPanel.classList.toggle('collapsed');
+                if (iconCollapse) {
+                    iconCollapse.className = isCollapsed ? 'bi bi-chevron-up' : 'bi bi-chevron-down';
+                }
+            }
+
+            if (headerLegend) headerLegend.addEventListener('click', toggleLegendCollapse);
+            if (btnCollapseLegend) {
+                btnCollapseLegend.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleLegendCollapse();
+                });
+            }
+
+            // 3. Switch de Visibilidad de Capas
+            const switchCapas = document.getElementById('switch-capas-ejes');
+            if (switchCapas) {
+                switchCapas.addEventListener('change', (e) => {
+                    isCapasEjesVisible = e.target.checked;
+                    updateCapasEjesStyles();
+                });
+            }
+
+            // 4. Slider de Opacidad
+            const rangeOpacity = document.getElementById('range-capas-opacity');
+            const labelOpacity = document.getElementById('label-capas-opacity');
+            if (rangeOpacity) {
+                rangeOpacity.addEventListener('input', (e) => {
+                    capasOpacity = parseInt(e.target.value, 10) / 100;
+                    if (labelOpacity) labelOpacity.textContent = `${e.target.value}%`;
+                    updateCapasEjesStyles();
+                });
+            }
+
+            // 5. Botones de Filtro Rápido por Eje en la Leyenda
+            document.querySelectorAll('#legend-eje-filter-btns button[data-eje-filter]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const ejeVal = btn.getAttribute('data-eje-filter');
+                    filterByEjeFromMap(ejeVal);
+                });
+            });
+        }
+
+        // Enfocar Eje en el mapa ajustando la vista
+        function focusEjeOnMap(codigoEje) {
+            if (!capasEjesData) return;
+
+            try {
+                if (googleMap) {
+                    if (codigoEje === 'all') {
+                        googleMap.setCenter({ lat: 10.4500, lng: -71.8000 });
+                        googleMap.setZoom(9);
+                        return;
+                    }
+
+                    const bounds = new google.maps.LatLngBounds();
+                    let found = false;
+
+                    googleMap.data.forEach(feature => {
+                        if (feature.getProperty('codigo_eje') === codigoEje) {
+                            const geom = feature.getGeometry();
+                            if (geom) {
+                                processGoogleGeometry(geom, bounds);
+                                found = true;
+                            }
+                        }
+                    });
+
+                    if (found && !bounds.isEmpty()) {
+                        googleMap.fitBounds(bounds);
+                    }
+                } else if (leafletMapInstance && leafletPolygonsLayer) {
+                    if (codigoEje === 'all') {
+                        leafletMapInstance.setView([10.4500, -71.8000], 9);
+                        return;
+                    }
+
+                    const bounds = L.latLngBounds([]);
+                    leafletPolygonsLayer.eachLayer(layer => {
+                        if (layer.feature && layer.feature.properties && layer.feature.properties.codigo_eje === codigoEje) {
+                            bounds.extend(layer.getBounds());
+                        }
+                    });
+
+                    if (bounds.isValid()) {
+                        leafletMapInstance.fitBounds(bounds, { padding: [20, 20] });
+                    }
+                }
+            } catch (err) {
+                console.warn("No se pudo ajustar bounds del eje:", err);
+            }
+        }
+
+        function processGoogleGeometry(geometry, bounds) {
+            if (geometry.getType() === 'Point') {
+                bounds.extend(geometry.get());
+            } else if (geometry.getType() === 'Polygon') {
+                geometry.getArray().forEach(path => {
+                    path.getArray().forEach(latLng => bounds.extend(latLng));
+                });
+            } else if (geometry.getType() === 'MultiPolygon') {
+                geometry.getArray().forEach(polygon => {
+                    polygon.getArray().forEach(path => {
+                        path.getArray().forEach(latLng => bounds.extend(latLng));
+                    });
+                });
+            }
+        }
+
+        // Funciones globales para filtrar desde tooltips e InfoWindows
+        window.filterByMunFromMap = function(munId, munNombre) {
+            currentMunicipioFilter = String(munId);
+            const selMun = document.getElementById('filter-municipio');
+            if (selMun) selMun.value = String(munId);
+            applyMnmFilters();
+            if (polygonInfoWindow) polygonInfoWindow.close();
+            if (leafletMapInstance) leafletMapInstance.closePopup();
+        };
+
+        window.filterByEjeFromMap = function(ejeCodigo) {
+            currentEjeFilter = ejeCodigo;
+            const selEje = document.getElementById('filter-eje');
+            if (selEje) selEje.value = ejeCodigo;
+            applyMnmFilters();
+            focusEjeOnMap(ejeCodigo);
+            if (polygonInfoWindow) polygonInfoWindow.close();
+            if (leafletMapInstance) leafletMapInstance.closePopup();
+        };
     </script>
 
     <!-- CARGA DE GOOGLE MAPS JAVASCRIPT API CON EL API KEY PROVISTO -->

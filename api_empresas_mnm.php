@@ -62,9 +62,21 @@ try {
     $estatusParam   = isset($_GET['estatus']) ? trim($_GET['estatus']) : '';
     $searchParam    = isset($_GET['q']) ? trim($_GET['q']) : '';
     $grupoParam     = isset($_GET['grupo']) ? trim($_GET['grupo']) : '';
+    $ejeParam       = isset($_GET['eje']) ? trim($_GET['eje']) : '';
 
     $whereClauses = array();
     $params = array();
+
+    // Filtro por Eje Territorial
+    if ($ejeParam !== '' && $ejeParam !== 'all') {
+        if (is_numeric($ejeParam)) {
+            $whereClauses[] = "uni.codigo_eje = :eje";
+            $params[':eje'] = 'EJE ' . (int)$ejeParam;
+        } else {
+            $whereClauses[] = "LOWER(uni.codigo_eje) = LOWER(:eje)";
+            $params[':eje'] = $ejeParam;
+        }
+    }
 
     // Filtro por Grupo de Contribuyentes (RITEZ o Registro de Oficio)
     if ($grupoParam !== '' && $grupoParam !== 'all') {
@@ -138,6 +150,9 @@ try {
                     mun.de_municipio AS municipio,
                     m.id_tab_parroquia AS id_parroquia,
                     par.de_parroquia AS parroquia,
+                    pol.codigo_eje,
+                    pol.nombre_eje,
+                    pol.color_hex AS color_eje,
                     m.tl_fijo AS telefono_fijo,
                     m.da_correo AS correo_empresa,
                     m.nb_responsable1 AS responsable_nombre,
@@ -157,6 +172,7 @@ try {
                 LEFT JOIN contribuyente.tab_contribuyente c ON c.id = m.id_tab_contribuyente
                 LEFT JOIN mantenimiento.tab_municipio mun ON mun.id = m.id_tab_municipio
                 LEFT JOIN mantenimiento.tab_parroquia par ON par.id = m.id_tab_parroquia
+                LEFT JOIN mantenimiento.tab_poligonos_ejes pol ON pol.id_tab_municipio = m.id_tab_municipio
 
                 UNION ALL
 
@@ -177,6 +193,9 @@ try {
                     mun.de_municipio AS municipio,
                     m.id_tab_parroquia AS id_parroquia,
                     par.de_parroquia AS parroquia,
+                    pol.codigo_eje,
+                    pol.nombre_eje,
+                    pol.color_hex AS color_eje,
                     m.tl_fijo AS telefono_fijo,
                     m.da_correo AS correo_empresa,
                     m.nb_responsable1 AS responsable_nombre,
@@ -195,6 +214,7 @@ try {
                 FROM preregistro.tab_minas m
                 LEFT JOIN mantenimiento.tab_municipio mun ON mun.id = m.id_tab_municipio
                 LEFT JOIN mantenimiento.tab_parroquia par ON par.id = m.id_tab_parroquia
+                LEFT JOIN mantenimiento.tab_poligonos_ejes pol ON pol.id_tab_municipio = m.id_tab_municipio
             ) uni
             $whereSql
             ORDER BY uni.razon_social ASC";
@@ -324,6 +344,9 @@ try {
             'municipio' => $row['municipio'] ? $row['municipio'] : 'POR ASIGNAR',
             'id_parroquia' => $row['id_parroquia'] ? (int)$row['id_parroquia'] : null,
             'parroquia' => $row['parroquia'] ? $row['parroquia'] : 'POR ASIGNAR',
+            'codigo_eje' => !empty($row['codigo_eje']) ? $row['codigo_eje'] : null,
+            'nombre_eje' => !empty($row['nombre_eje']) ? $row['nombre_eje'] : null,
+            'color_eje' => !empty($row['color_eje']) ? $row['color_eje'] : null,
             'telefono_fijo' => $row['telefono_fijo'],
             'correo' => $row['correo_empresa'],
             'responsable' => array(

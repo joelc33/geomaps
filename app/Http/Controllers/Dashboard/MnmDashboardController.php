@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ContribuyenteMnm;
 use App\Models\ContribuyenteOficio;
 use App\Models\Municipio;
+use App\Models\PoligonoEje;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -183,4 +184,59 @@ class MnmDashboardController extends Controller
             ]
         ]);
     }
+
+    /**
+     * Obtener capas de polígonos de municipios por ejes según leyenda oficial SEDATEZ
+     */
+    public function getCapasEjes(Request $request)
+    {
+        $query = PoligonoEje::where('in_activo', 1)->orderBy('orden', 'asc');
+
+        if ($request->filled('eje') && $request->eje !== 'all') {
+            $ejeVal = $request->eje;
+            if (is_numeric($ejeVal)) {
+                $query->where('codigo_eje', 'EJE ' . $ejeVal);
+            } else {
+                $query->whereRaw('LOWER(codigo_eje) = ?', [strtolower($ejeVal)]);
+            }
+        }
+
+        $poligonos = $query->get();
+
+        $features = $poligonos->map(function ($p) {
+            return [
+                'type' => 'Feature',
+                'id' => $p->id,
+                'properties' => [
+                    'id' => $p->id,
+                    'codigo_eje' => $p->codigo_eje,
+                    'nombre_eje' => $p->nombre_eje,
+                    'id_municipio' => $p->id_tab_municipio,
+                    'nombre_municipio' => $p->nombre_municipio,
+                    'color_hex' => $p->color_hex,
+                    'color_borde' => $p->color_borde ?: '#FFFFFF',
+                    'opacidad' => (float)$p->opacidad,
+                    'leyenda_municipios' => $p->leyenda_municipios,
+                    'leyenda_minerales' => $p->leyenda_minerales,
+                    'minerales' => $p->minerales_json ?: [],
+                    'orden' => $p->orden
+                ],
+                'geometry' => $p->geometria_geojson
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'type' => 'FeatureCollection',
+            'metadata' => [
+                'plano_codigo' => 'ME-01',
+                'titulo' => 'MAPA DE MUNICIPIOS POR EJES DEL ESTADO ZULIA',
+                'institucion' => 'SEDATEZ - GEOTECH.ca',
+                'fecha' => 'AGOSTO 2026',
+                'total_poligonos' => $features->count()
+            ],
+            'features' => $features
+        ]);
+    }
 }
+

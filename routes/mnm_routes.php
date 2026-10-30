@@ -12,5 +12,7 @@ use App\Http\Controllers\Dashboard\MnmDashboardController;
 Route::middleware(['web'])->prefix('api/mnm')->group(function () {
     Route::get('/empresas', [MnmDashboardController::class, 'getEmpresas'])->name('api.mnm.empresas');
     Route::get('/kpis', [MnmDashboardController::class, 'getKpis'])->name('api.mnm.kpis');
+    Route::get('/capas-ejes', [MnmDashboardController::class, 'getCapasEjes'])->name('api.mnm.capas_ejes');
     Route::post('/coordenadas', [MnmDashboardController::class, 'actualizarCoordenadas'])->name('api.mnm.coordenadas');
 });
+
