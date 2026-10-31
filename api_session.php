@@ -2,7 +2,7 @@
 header('Content-Type: application/json; charset=utf-8');
 session_start();
 
-if (isset($_SESSION['auth_user'])) {
+if (isset($_SESSION['auth_user']) && !empty($_SESSION['auth_user']['in_ver_mapa'])) {
     echo json_encode(array(
         'authenticated' => true,
         'user' => $_SESSION['auth_user']

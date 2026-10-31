@@ -18,6 +18,7 @@ class Usuario extends Authenticatable
         'da_email',
         'da_password',
         'in_estatus',
+        'in_ver_mapa',
         'id_tab_tipo_usuario',
     ];
 
@@ -29,6 +30,7 @@ class Usuario extends Authenticatable
 
     protected $casts = [
         'in_estatus' => 'boolean',
+        'in_ver_mapa' => 'boolean',
     ];
 
     /**

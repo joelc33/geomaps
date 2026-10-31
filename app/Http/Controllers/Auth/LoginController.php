@@ -63,7 +63,15 @@ class LoginController extends Controller
             ], 403);
         }
 
-        // 4. Iniciar sesión y regenerar session ID contra fijación de sesión
+        // 5. Validar autorización para ver el mapa
+        if (!$usuario->in_ver_mapa) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Acceso denegado: su usuario no cuenta con autorización para acceder al sistema cartográfico. Comuníquese con la administración de SEDATEZ.'
+            ], 403);
+        }
+
+        // 6. Iniciar sesión y regenerar session ID contra fijación de sesión
         Auth::login($usuario);
         $request->session()->regenerate();
 
@@ -97,7 +105,7 @@ class LoginController extends Controller
                 'nombre'    => $usuario->nombre_completo,
                 'iniciales' => $usuario->iniciales,
                 'cargo'     => $cargo,
-                'tipo'      => optional($usuario->tipoUsuario)->de_tipo_usuario ?? 'Funcionario',
+                'tipo'      => optional($usuario->tipoUsuario)->de_tipo_usuario ?: 'Funcionario',
                 'id_tab_tipo_usuario' => (int)$usuario->id_tab_tipo_usuario,
                 'cedula'    => optional($usuario->funcionario)->nu_cedula,
             ],
@@ -132,6 +140,12 @@ class LoginController extends Controller
     {
         if (Auth::check()) {
             $usuario = Auth::user();
+            if (!$usuario->in_ver_mapa || !$usuario->in_estatus) {
+                Auth::logout();
+                return response()->json([
+                    'authenticated' => false
+                ]);
+            }
             return response()->json([
                 'authenticated' => true,
                 'user' => [
@@ -140,8 +154,8 @@ class LoginController extends Controller
                     'email'     => $usuario->da_email,
                     'nombre'    => $usuario->nombre_completo,
                     'iniciales' => $usuario->iniciales,
-                    'cargo'     => optional(optional($usuario->funcionario)->cargo)->de_cargo ?? 'Funcionario',
-                    'tipo'      => optional($usuario->tipoUsuario)->de_tipo_usuario ?? 'Funcionario',
+                    'cargo'     => optional(optional($usuario->funcionario)->cargo)->de_cargo ?: 'Funcionario',
+                    'tipo'      => optional($usuario->tipoUsuario)->de_tipo_usuario ?: 'Funcionario',
                 ]
             ]);
         }

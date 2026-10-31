@@ -821,6 +821,29 @@
         }
 
         /* ============================================================== */
+        /* CÍRCULOS DE CLUSTERS Y AGRUPACIÓN POR MINERALES                */
+        /* ============================================================== */
+        .cluster-sedatez-icon {
+            background: transparent !important;
+            border: none !important;
+        }
+        .cluster-circle-badge {
+            transition: transform 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease, filter 0.2s ease;
+            user-select: none;
+            cursor: pointer;
+        }
+        .cluster-circle-badge:hover {
+            transform: scale(1.14);
+            filter: brightness(1.1) drop-shadow(0 6px 14px rgba(0,0,0,0.4));
+            z-index: 9999 !important;
+        }
+        .cluster-pill-label {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            letter-spacing: 0.02em;
+        }
+
+        /* ============================================================== */
         /* PANEL FLOTANTE DE CAPAS Y LEYENDA OFICIAL (PLANO ME-01)        */
         /* ============================================================== */
         .ejes-legend-panel {
@@ -844,7 +867,7 @@
         }
         .ejes-legend-panel.collapsed {
             max-height: 44px;
-            width: 250px;
+            width: 265px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
         .ejes-legend-panel.collapsed .ejes-legend-body,
@@ -860,6 +883,7 @@
             justify-content: space-between;
             cursor: pointer;
             user-select: none;
+            white-space: nowrap;
         }
         .ejes-legend-header:hover {
             background: linear-gradient(135deg, #134074 0%, #1d4ed8 100%);
@@ -888,12 +912,22 @@
             margin-bottom: 8px;
             background: #ffffff;
             transition: all 0.2s ease;
-            cursor: pointer;
         }
         .eje-row-item:hover {
             border-color: #cbd5e1;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             transform: translateY(-1px);
+        }
+        .eje-header-toggle {
+            user-select: none;
+            padding: 2px 0;
+            transition: opacity 0.2s ease;
+        }
+        .eje-header-toggle:hover {
+            opacity: 0.85;
+        }
+        .eje-collapse-body {
+            transition: all 0.25s ease;
         }
         .eje-row-item.active-eje {
             border-color: #0066FF;
@@ -1199,24 +1233,21 @@
                                 <i class="bi bi-water"></i> La Cañada
                             </button>
                         </div>
-                        <button class="btn btn-sm btn-primary py-0 px-2 fw-semibold" id="btn-toggle-legend-card" title="Mostrar u Ocultar Leyenda y Capas">
-                            <i class="bi bi-layers-fill me-1"></i> Capas y Leyenda
+                        <button class="btn btn-sm btn-outline-secondary py-0 px-2 fw-semibold" id="btn-toggle-legend-card" title="Mostrar u Ocultar Municipios por Ejes">
+                            <i class="bi bi-layers-half me-1"></i> Municipios por Ejes
                         </button>
                     </div>
                 </div>
 
-                <!-- Panel Flotante de Leyenda Oficial de Ejes y Capas (Plano ME-01) -->
-                <div class="ejes-legend-panel" id="ejes-legend-panel">
+                <!-- Panel Flotante de Municipios por Ejes -->
+                <div class="ejes-legend-panel collapsed" id="ejes-legend-panel">
                     <div class="ejes-legend-header" id="btn-toggle-legend-header" title="Haga clic para minimizar o expandir">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-layers-half text-warning fs-6"></i>
-                            <div>
-                                <div class="fw-bold" style="font-size: 0.78rem; line-height: 1.1;">MUNICIPIOS POR EJES</div>
-                                <div style="font-size: 0.65rem; opacity: 0.85;">Plano ME-01 • SEDATEZ / GEOTECH.ca</div>
-                            </div>
+                            <span class="fw-bold" style="font-size: 0.82rem; letter-spacing: 0.2px;">Municipios por Ejes</span>
                         </div>
                         <div class="d-flex align-items-center gap-1">
-                            <button type="button" class="btn btn-xs btn-outline-light py-0 px-1 border-0" id="btn-toggle-legend-collapse" title="Minimizar / Expandir Leyenda">
+                            <button type="button" class="btn btn-xs btn-outline-light py-0 px-1 border-0" id="btn-toggle-legend-collapse" title="Minimizar / Expandir">
                                 <i class="bi bi-chevron-down" id="icon-legend-collapse"></i>
                             </button>
                         </div>
@@ -1225,7 +1256,7 @@
                     <!-- Barra de Controles de Capas -->
                     <div class="ejes-legend-controls-bar bg-light px-3 py-2 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
                         <div class="form-check form-switch mb-0">
-                            <input class="form-check-input" type="checkbox" role="switch" id="switch-capas-ejes" checked>
+                            <input class="form-check-input" type="checkbox" role="switch" id="switch-capas-ejes">
                             <label class="form-check-label fw-bold small text-dark" for="switch-capas-ejes" style="font-size: 0.73rem; cursor: pointer;">
                                 Ver Capas
                             </label>
@@ -1551,6 +1582,7 @@
         const GOOGLE_MAPS_API_KEY = "AIzaSyA6RBBze6bCJDvTY8gDHoYxGeG0-OgQY2Y";
         let googleMap = null;
         let googleMarkers = {};
+        let googleClusterMarkers = [];
         let activeInfoWindow = null;
         let isGoogleMapsReady = false;
         let activeEmpresaId = null;
@@ -1558,6 +1590,11 @@
         // Fallback Leaflet
         let leafletMapInstance = null;
         let leafletMarkers = {};
+        let leafletClusterMarkers = [];
+
+        // Control de Filtros y Clustering Activo
+        let currentFilteredEmpresas = [];
+        let debounceMarkerTimer = null;
 
         // Datos reales de Minerales No Metálicos (SEDATEZ)
         let MNM_DATA = [];
@@ -1575,7 +1612,7 @@
 
         // Capas de Polígonos de Municipios por Ejes (Plano ME-01)
         let capasEjesData = null;
-        let isCapasEjesVisible = true;
+        let isCapasEjesVisible = false;
         let capasOpacity = 0.38;
         let leafletPolygonsLayer = null;
         let googleDataLoaded = false;
@@ -2327,6 +2364,11 @@
                     }
                 });
 
+                // Listener de zoom para clustering dinámico y desagrupación por mineral
+                googleMap.addListener('zoom_changed', () => {
+                    debounceRenderMarkers();
+                });
+
                 setupMapControls();
                 renderMnmMarkers(MNM_DATA);
                 if (capasEjesData) {
@@ -2347,27 +2389,32 @@
 
             if (btnFit) {
                 btnFit.onclick = () => {
+                    const emps = (currentFilteredEmpresas.length ? currentFilteredEmpresas : MNM_DATA).filter(e => 
+                        e.geometria && e.geometria.lat !== null && !isNaN(e.geometria.lat) && Number(e.geometria.lat) !== 0
+                    );
+
                     if (googleMap) {
-                        const bounds = new google.maps.LatLngBounds();
-                        let count = 0;
-                        for (let id in googleMarkers) {
-                            bounds.extend(googleMarkers[id].marker.getPosition());
-                            count++;
-                        }
-                        if (count > 1) {
+                        if (emps.length > 1) {
+                            const bounds = new google.maps.LatLngBounds();
+                            emps.forEach(emp => {
+                                bounds.extend(new google.maps.LatLng(Number(emp.geometria.lat), Number(emp.geometria.lng)));
+                            });
                             googleMap.fitBounds(bounds);
-                        } else if (count === 1) {
-                            for (let id in googleMarkers) {
-                                googleMap.setCenter(googleMarkers[id].marker.getPosition());
-                                googleMap.setZoom(14);
-                                break;
-                            }
+                        } else if (emps.length === 1) {
+                            googleMap.setCenter({ lat: Number(emps[0].geometria.lat), lng: Number(emps[0].geometria.lng) });
+                            googleMap.setZoom(14);
                         } else {
                             googleMap.setCenter({ lat: 10.4500, lng: -71.8000 });
                             googleMap.setZoom(9);
                         }
                     } else if (leafletMapInstance) {
-                        leafletMapInstance.setView([10.4500, -71.8000], 9);
+                        if (emps.length > 1) {
+                            leafletMapInstance.fitBounds(emps.map(e => [Number(e.geometria.lat), Number(e.geometria.lng)]), { padding: [40, 40] });
+                        } else if (emps.length === 1) {
+                            leafletMapInstance.setView([Number(emps[0].geometria.lat), Number(emps[0].geometria.lng)], 14);
+                        } else {
+                            leafletMapInstance.setView([10.4500, -71.8000], 9);
+                        }
                     }
                 };
             }
@@ -2399,10 +2446,611 @@
         }
 
         // ==============================================================
-        // 6. RENDERIZACIÓN DE MARCADORES MINEROS EN EL MAPA
+        // 6. RENDERIZACIÓN DE MARCADORES Y CLUSTERING DINÁMICO POR MINERAL
+        // ==============================================================
+
+        // Proyección exacta Web Mercator a píxeles en pantalla
+        function latLngToPixel(lat, lng, zoom) {
+            const sinLat = Math.sin(lat * Math.PI / 180);
+            const clampedSin = Math.min(Math.max(sinLat, -0.9999), 0.9999);
+            const scale = 256 * Math.pow(2, zoom);
+            const x = scale * (lng + 180) / 360;
+            const y = scale * (0.5 - Math.log((1 + clampedSin) / (1 - clampedSin)) / (4 * Math.PI));
+            return { x, y };
+        }
+
+        // Conversión inversa de píxeles a coordenadas Lat/Lng
+        function pixelToLatLng(x, y, zoom) {
+            const scale = 256 * Math.pow(2, zoom);
+            const lng = (x / scale) * 360 - 180;
+            const n = Math.PI - 2 * Math.PI * (y / scale);
+            const lat = (180 / Math.PI) * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
+            return { lat, lng };
+        }
+
+        // Obtener categoría y color del mineral principal de la empresa
+        function getMineralCategory(emp) {
+            if (emp.grupo_codigo === 'oficio') {
+                return {
+                    name: 'Reg. de Oficio',
+                    color: '#6366f1',
+                    short: 'Oficio'
+                };
+            }
+
+            const minText = (emp.mineral_principal || (emp.minerales && emp.minerales[0]) || emp.minerales_raw || '').trim();
+            const low = normalizeMineralText(minText);
+
+            if (low.includes('caliza')) {
+                return { name: 'Caliza', color: '#475569', short: 'Caliza' };
+            }
+            if (low.includes('arena')) {
+                return { name: 'Arena', color: '#d97706', short: 'Arena' };
+            }
+            if (low.includes('arcilla') || low.includes('barro') || low.includes('vegetal')) {
+                return { name: 'Arcilla', color: '#ea580c', short: 'Arcilla' };
+            }
+            if (low.includes('grava') || low.includes('piedra')) {
+                return { name: 'Grava / Piedra', color: '#0284c7', short: 'Grava' };
+            }
+            if (low.includes('menito')) {
+                return { name: 'Menito', color: '#059669', short: 'Menito' };
+            }
+
+            return {
+                name: minText || 'Mineral No Metálico',
+                color: emp.color_mineral || '#0b2545',
+                short: (minText ? minText.substring(0, 8) : 'Mineral')
+            };
+        }
+
+        // Algoritmo de clustering jerárquico según el nivel de zoom
+        function computeClusters(items, zoom) {
+            if (!items || items.length === 0) return [];
+
+            // Tier A: Zoom <= 10 (Alejado: Agrupación general de empresas en círculos)
+            // Tier B: Zoom 11 a 13 (Acercándose: Desagrupando por tipo de minerales)
+            // Tier C: Zoom >= 14 (Cerca: Desagrupado a nivel de empresa individual)
+            const isZoomOut = (zoom <= 10);
+            const isMediumZoom = (zoom >= 11 && zoom <= 13);
+            const isZoomIn = (zoom >= 14);
+
+            const clusterPixelRadius = isZoomOut ? 65 : (isMediumZoom ? 55 : 12);
+
+            const projected = items.map(emp => {
+                const lat = Number(emp.geometria.lat);
+                const lng = Number(emp.geometria.lng);
+                const pixel = latLngToPixel(lat, lng, zoom);
+                const mineralInfo = getMineralCategory(emp);
+                return {
+                    emp,
+                    lat,
+                    lng,
+                    x: pixel.x,
+                    y: pixel.y,
+                    mineralInfo,
+                    assigned: false
+                };
+            });
+
+            const spatialClusters = [];
+
+            for (let i = 0; i < projected.length; i++) {
+                const p1 = projected[i];
+                if (p1.assigned) continue;
+
+                p1.assigned = true;
+                const currentCluster = [p1];
+
+                for (let j = i + 1; j < projected.length; j++) {
+                    const p2 = projected[j];
+                    if (p2.assigned) continue;
+
+                    const dx = p1.x - p2.x;
+                    const dy = p1.y - p2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist <= clusterPixelRadius) {
+                        p2.assigned = true;
+                        currentCluster.push(p2);
+                    }
+                }
+
+                spatialClusters.push(currentCluster);
+            }
+
+            const finalElements = [];
+
+            spatialClusters.forEach(cluster => {
+                const centerLat = cluster.reduce((acc, c) => acc + c.lat, 0) / cluster.length;
+                const centerLng = cluster.reduce((acc, c) => acc + c.lng, 0) / cluster.length;
+                const allEmps = cluster.map(c => c.emp);
+
+                // Tier A: Zoom <= 10 -> Círculos generales de empresas
+                if (isZoomOut) {
+                    if (cluster.length > 1) {
+                        const uniqueMinerals = [...new Set(cluster.map(c => c.mineralInfo.name))];
+                        const isSingleMineral = (uniqueMinerals.length === 1);
+                        const color = isSingleMineral ? cluster[0].mineralInfo.color : '#0b2545';
+                        const label = isSingleMineral ? cluster[0].mineralInfo.short : null;
+
+                        finalElements.push({
+                            type: 'cluster',
+                            mode: 'general',
+                            lat: centerLat,
+                            lng: centerLng,
+                            count: cluster.length,
+                            color: color,
+                            label: label,
+                            title: `Grupo de ${cluster.length} empresas (${uniqueMinerals.join(', ')})`,
+                            companies: allEmps
+                        });
+                    } else {
+                        finalElements.push({
+                            type: 'single',
+                            emp: cluster[0].emp,
+                            lat: cluster[0].lat,
+                            lng: cluster[0].lng,
+                            mineralInfo: cluster[0].mineralInfo
+                        });
+                    }
+                    return;
+                }
+
+                // Tier B: Zoom 11 a 13 -> DESAGRUPANDO POR TIPO DE MINERALES
+                if (isMediumZoom) {
+                    if (cluster.length <= 1) {
+                        finalElements.push({
+                            type: 'single',
+                            emp: cluster[0].emp,
+                            lat: cluster[0].lat,
+                            lng: cluster[0].lng,
+                            mineralInfo: cluster[0].mineralInfo
+                        });
+                        return;
+                    }
+
+                    // Agrupar las empresas de este radio por tipo de mineral
+                    const byMineral = {};
+                    cluster.forEach(c => {
+                        const minName = c.mineralInfo.name;
+                        if (!byMineral[minName]) {
+                            byMineral[minName] = {
+                                info: c.mineralInfo,
+                                items: []
+                            };
+                        }
+                        byMineral[minName].items.push(c);
+                    });
+
+                    const minKeys = Object.keys(byMineral);
+
+                    if (minKeys.length === 1) {
+                        const group = byMineral[minKeys[0]];
+                        if (group.items.length <= 1) {
+                            // Cuando solo hay 1 empresa: solo punto de coordenadas (no círculo con número 1)
+                            finalElements.push({
+                                type: 'single',
+                                emp: group.items[0].emp,
+                                lat: group.items[0].lat,
+                                lng: group.items[0].lng,
+                                mineralInfo: group.items[0].mineralInfo
+                            });
+                        } else {
+                            finalElements.push({
+                                type: 'cluster',
+                                mode: 'mineral',
+                                lat: centerLat,
+                                lng: centerLng,
+                                count: group.items.length,
+                                color: group.info.color,
+                                label: group.info.short,
+                                title: `${group.items.length} empresas de ${group.info.name}`,
+                                companies: group.items.map(i => i.emp),
+                                mineralName: group.info.name
+                            });
+                        }
+                        return;
+                    }
+
+                    // Múltiples minerales: distribuir en círculos separados por tipo de mineral
+                    const K = minKeys.length;
+                    const spreadDistancePx = 25;
+
+                    minKeys.forEach((minName, idx) => {
+                        const group = byMineral[minName];
+                        if (group.items.length <= 1) {
+                            // Si en este mineral solo hay 1 empresa, colocar únicamente el punto de coordenadas individual (sin círculo ni número 1)
+                            finalElements.push({
+                                type: 'single',
+                                emp: group.items[0].emp,
+                                lat: group.items[0].lat,
+                                lng: group.items[0].lng,
+                                mineralInfo: group.items[0].mineralInfo
+                            });
+                        } else {
+                            // 2 o más empresas de este mineral: círculo con el conteo de empresas
+                            const angle = (2 * Math.PI * idx) / K;
+                            const centerPix = latLngToPixel(centerLat, centerLng, zoom);
+                            const offsetPix = {
+                                x: centerPix.x + Math.cos(angle) * spreadDistancePx,
+                                y: centerPix.y + Math.sin(angle) * spreadDistancePx
+                            };
+                            const offsetLatLng = pixelToLatLng(offsetPix.x, offsetPix.y, zoom);
+
+                            finalElements.push({
+                                type: 'cluster',
+                                mode: 'mineral',
+                                lat: offsetLatLng.lat,
+                                lng: offsetLatLng.lng,
+                                count: group.items.length,
+                                color: group.info.color,
+                                label: group.info.short,
+                                title: `${group.items.length} empresas de ${group.info.name}`,
+                                companies: group.items.map(i => i.emp),
+                                mineralName: group.info.name
+                            });
+                        }
+                    });
+                    return;
+                }
+
+                // Tier C: Zoom >= 14 -> Desagrupadas a nivel de empresa individual
+                if (cluster.length <= 1) {
+                    finalElements.push({
+                        type: 'single',
+                        emp: cluster[0].emp,
+                        lat: cluster[0].lat,
+                        lng: cluster[0].lng,
+                        mineralInfo: cluster[0].mineralInfo
+                    });
+                } else {
+                    // Puntos compartidos exactamente en la misma coordenada GPS
+                    const firstMin = cluster[0].mineralInfo;
+                    finalElements.push({
+                        type: 'cluster',
+                        mode: 'exact_spot',
+                        lat: centerLat,
+                        lng: centerLng,
+                        count: cluster.length,
+                        color: firstMin.color,
+                        label: firstMin.short,
+                        title: `${cluster.length} empresas en esta ubicación (${firstMin.name})`,
+                        companies: allEmps,
+                        mineralName: firstMin.name
+                    });
+                }
+            });
+
+            return finalElements;
+        }
+
+        // Creador de Círculo en Google Maps con número de empresas
+        function createClusterMarkerGoogle(element) {
+            const count = element.count;
+            if (count <= 1) return null; // No colocar círculo con el número 1, solo marcador individual
+            const color = element.color || '#0b2545';
+            const label = element.label || '';
+
+            let svg = '';
+            let sizeW = 50;
+            let sizeH = 50;
+            let anchorX = 25;
+            let anchorY = 25;
+
+            if (label) {
+                sizeW = 76;
+                sizeH = 62;
+                anchorX = 38;
+                anchorY = 22;
+
+                svg = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="${sizeW}" height="${sizeH}" viewBox="0 0 ${sizeW} ${sizeH}">
+                        <defs>
+                            <filter id="c-sh-${Math.round(anchorX)}" x="-30%" y="-30%" width="160%" height="160%">
+                                <feDropShadow dx="0" dy="2.5" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.38"/>
+                            </filter>
+                        </defs>
+                        <!-- Círculo principal con el número de empresas -->
+                        <circle cx="${anchorX}" cy="${anchorY}" r="20" fill="${color}" stroke="#ffffff" stroke-width="2.5" filter="url(#c-sh-${Math.round(anchorX)})"/>
+                        <text x="${anchorX}" y="${anchorY + 5.5}" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="800" fill="#ffffff" text-anchor="middle">${count}</text>
+                        <!-- Etiqueta del mineral -->
+                        <rect x="8" y="44" width="60" height="16" rx="8" fill="#0b2545" stroke="#ffffff" stroke-width="1.2" filter="url(#c-sh-${Math.round(anchorX)})"/>
+                        <text x="${anchorX}" y="55.5" font-family="Inter, system-ui, sans-serif" font-size="9" font-weight="700" fill="#ffffff" text-anchor="middle">${label}</text>
+                    </svg>
+                `;
+            } else {
+                const radius = count >= 10 ? 23 : (count >= 5 ? 20 : 17);
+                sizeW = (radius + 4) * 2;
+                sizeH = sizeW;
+                anchorX = sizeW / 2;
+                anchorY = sizeH / 2;
+                const fontSize = count >= 10 ? 15 : (count >= 5 ? 13.5 : 12.5);
+
+                svg = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="${sizeW}" height="${sizeH}" viewBox="0 0 ${sizeW} ${sizeH}">
+                        <defs>
+                            <filter id="c-sh-g" x="-30%" y="-30%" width="160%" height="160%">
+                                <feDropShadow dx="0" dy="2.5" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.38"/>
+                            </filter>
+                        </defs>
+                        <!-- Círculo general con número -->
+                        <circle cx="${anchorX}" cy="${anchorY}" r="${radius}" fill="${color}" stroke="#ffffff" stroke-width="2.8" filter="url(#c-sh-g)"/>
+                        <text x="${anchorX}" y="${anchorY + 5}" font-family="Inter, system-ui, sans-serif" font-size="${fontSize}" font-weight="800" fill="#ffffff" text-anchor="middle">${count}</text>
+                    </svg>
+                `;
+            }
+
+            const marker = new google.maps.Marker({
+                position: { lat: element.lat, lng: element.lng },
+                map: googleMap,
+                title: element.title || `Grupo de ${count} empresas`,
+                icon: {
+                    url: 'data:image/svg+xml;utf-8,' + encodeURIComponent(svg),
+                    scaledSize: new google.maps.Size(sizeW, sizeH),
+                    anchor: new google.maps.Point(anchorX, anchorY)
+                },
+                zIndex: 200 + count
+            });
+
+            marker.addListener('click', () => {
+                handleClusterClick(element);
+            });
+
+            return marker;
+        }
+
+        // Creador de Círculo en Leaflet con número de empresas
+        function createClusterMarkerLeaflet(element) {
+            const count = element.count;
+            if (count <= 1) return null; // No colocar círculo con el número 1, solo marcador individual
+            const color = element.color || '#0b2545';
+            const label = element.label || '';
+            const radius = count >= 10 ? 44 : (count >= 5 ? 38 : 34);
+
+            const customIcon = L.divIcon({
+                className: 'cluster-sedatez-icon',
+                html: `
+                    <div class="cluster-circle-badge" style="display: flex; flex-direction: column; align-items: center; user-select: none;">
+                        <div style="width: ${radius}px; height: ${radius}px; border-radius: 50%; background: ${color}; border: 2.5px solid #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.38); display: flex; align-items: center; justify-content: center; color: #ffffff; font-weight: 800; font-size: ${count >= 10 ? 15 : 13}px; font-family: 'Inter', sans-serif;">
+                            ${count}
+                        </div>
+                        ${label ? `<div class="cluster-pill-label" style="margin-top: 2px; background: #0b2545; color: #ffffff; font-size: 9px; font-weight: 700; padding: 1px 7px; border-radius: 9px; border: 1px solid #ffffff; white-space: nowrap;">${label}</div>` : ''}
+                    </div>
+                `,
+                iconSize: [70, label ? 60 : radius],
+                iconAnchor: [35, radius / 2]
+            });
+
+            const marker = L.marker([element.lat, element.lng], { icon: customIcon }).addTo(leafletMapInstance);
+
+            marker.on('click', () => {
+                handleClusterClick(element);
+            });
+
+            return marker;
+        }
+
+        // Manejador del clic en un círculo de cluster (acercar y desagrupar)
+        function handleClusterClick(element) {
+            if (!element.companies || element.companies.length === 0) return;
+
+            const zoom = googleMap ? googleMap.getZoom() : (leafletMapInstance ? leafletMapInstance.getZoom() : 9);
+            const uniqueCoords = new Set(element.companies.map(c => `${Number(c.geometria.lat).toFixed(5)},${Number(c.geometria.lng).toFixed(5)}`));
+
+            if (uniqueCoords.size > 1 && zoom < 15) {
+                if (googleMap) {
+                    const bounds = new google.maps.LatLngBounds();
+                    element.companies.forEach(c => {
+                        bounds.extend(new google.maps.LatLng(Number(c.geometria.lat), Number(c.geometria.lng)));
+                    });
+                    googleMap.fitBounds(bounds);
+                    setTimeout(() => {
+                        if (googleMap.getZoom() <= zoom) {
+                            googleMap.setZoom(zoom + 2);
+                            googleMap.setCenter({ lat: element.lat, lng: element.lng });
+                        }
+                    }, 80);
+                } else if (leafletMapInstance) {
+                    const latLngs = element.companies.map(c => [Number(c.geometria.lat), Number(c.geometria.lng)]);
+                    leafletMapInstance.fitBounds(latLngs, { padding: [50, 50], maxZoom: 16 });
+                }
+            } else {
+                showClusterInfoWindow(element);
+            }
+        }
+
+        // InfoWindow consolidada para clusters en el mismo punto o zoom cercano
+        function showClusterInfoWindow(element) {
+            const isOficio = (element.companies[0] && element.companies[0].grupo_codigo === 'oficio');
+            const headerTitle = element.mineralName 
+                ? `Grupo de ${element.count} Empresas (${element.mineralName})`
+                : `Grupo de ${element.count} Empresas Registradas`;
+
+            const itemsHtml = element.companies.map(emp => {
+                const pinColor = isOficio ? '#6366f1' : (emp.color_mineral || getMineralColor(emp.mineral_principal));
+                return `
+                    <div style="border-bottom: 1px solid #e2e8f0; padding: 7px 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px;">
+                            <span style="font-weight: 700; color: #0f172a; font-size: 0.8rem; line-height: 1.25;">
+                                ${empresaEscape(emp.razon_social)}
+                            </span>
+                            <span class="badge bg-secondary-subtle text-dark font-monospace" style="font-size: 0.65rem; margin-left: 6px;">
+                                RIF: ${emp.rif}
+                            </span>
+                        </div>
+                        <div style="font-size: 0.72rem; color: #64748b; margin-bottom: 5px;">
+                            <span class="badge" style="background-color: ${pinColor}; color: #ffffff; font-size: 0.62rem; margin-right: 4px;">
+                                ${empresaEscape(emp.mineral_principal || 'Mineral')}
+                            </span>
+                            ${emp.municipio || ''} • ${emp.parroquia || ''}
+                        </div>
+                        <div style="display: flex; gap: 4px;">
+                            <button type="button" class="btn btn-xs btn-primary py-0 px-2" style="font-size: 0.68rem;" onclick="openTaxpayerOffcanvas('${emp.uid}')">
+                                <i class="bi bi-file-earmark-person me-1"></i>Ver Ficha
+                            </button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size: 0.68rem;" onclick="selectAndCenterCompany('${emp.uid}', false)">
+                                <i class="bi bi-crosshair me-1"></i>Ubicar
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const contentHtml = `
+                <div style="font-family: 'Inter', sans-serif; max-width: 320px; max-height: 280px; overflow-y: auto; padding: 2px;">
+                    <div style="background: linear-gradient(135deg, #0b2545 0%, #134074 100%); color: #ffffff; padding: 8px 10px; border-radius: 6px 6px 0 0; margin: -5px -5px 8px -5px;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <span class="fw-bold" style="font-size: 0.82rem;">${headerTitle}</span>
+                            <span class="badge bg-warning text-dark font-monospace" style="font-size: 0.65rem;">${element.count}</span>
+                        </div>
+                    </div>
+                    <div>
+                        ${itemsHtml}
+                    </div>
+                </div>
+            `;
+
+            if (googleMap) {
+                if (activeInfoWindow) activeInfoWindow.close();
+                activeInfoWindow = new google.maps.InfoWindow({
+                    content: contentHtml,
+                    position: { lat: element.lat, lng: element.lng }
+                });
+                activeInfoWindow.open(googleMap);
+            } else if (leafletMapInstance) {
+                L.popup()
+                    .setLatLng([element.lat, element.lng])
+                    .setContent(contentHtml)
+                    .openOn(leafletMapInstance);
+            }
+        }
+
+        // Renderizar marcador individual en Google Maps
+        function renderSingleCompanyMarkerGoogle(emp) {
+            const lat = Number(emp.geometria.lat);
+            const lng = Number(emp.geometria.lng);
+            const isOficio = (emp.grupo_codigo === 'oficio');
+            const pinColor = isOficio ? '#6366f1' : ((currentMineralFilter !== 'all') ? getMineralColor(currentMineralFilter) : (emp.color_mineral || '#0b2545'));
+            const strokeColor = isOficio ? '#4338ca' : (emp.activo ? '#ffffff' : '#ef4444');
+
+            const pinSvg = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="34" height="44" viewBox="0 0 34 44">
+                    <defs>
+                        <filter id="s-${emp.uid}" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="${pinColor}" flood-opacity="0.45"/>
+                        </filter>
+                    </defs>
+                    <path d="M17 2C8.8 2 2 8.8 2 17c0 11.5 15 25 15 25s15-13.5 15-25C32 8.8 25.2 2 17 2z" fill="${pinColor}" stroke="${strokeColor}" stroke-width="${isOficio ? '2.5' : '2'}" filter="url(#s-${emp.uid})"/>
+                    <circle cx="17" cy="17" r="7" fill="#ffffff"/>
+                    <circle cx="17" cy="17" r="3.8" fill="${pinColor}"/>
+                </svg>`;
+
+            const marker = new google.maps.Marker({
+                position: { lat, lng },
+                map: googleMap,
+                title: `[${emp.grupo_nombre}] ${emp.razon_social}`,
+                icon: {
+                    url: 'data:image/svg+xml;utf-8,' + encodeURIComponent(pinSvg),
+                    scaledSize: new google.maps.Size(34, 44),
+                    anchor: new google.maps.Point(17, 44)
+                },
+                zIndex: 50
+            });
+
+            const headerGrad = isOficio 
+                ? 'linear-gradient(135deg, #4338ca 0%, #6d28d9 100%)' 
+                : 'linear-gradient(135deg, #0b2545 0%, #134074 100%)';
+            const groupBadgeHtml = isOficio
+                ? '<span style="background: rgba(255,255,255,0.25); color: #ffffff; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;"><i class="bi bi-journal-bookmark-fill me-1"></i>Reg. de Oficio</span>'
+                : '<span style="background: rgba(255,255,255,0.2); color: #ffffff; font-size: 0.65rem; font-weight: 600; padding: 2px 6px; border-radius: 4px;"><i class="bi bi-award-fill me-1"></i>Minerales No Metálicos</span>';
+
+            const infoContent = `
+                <div style="font-family: 'Inter', sans-serif; max-width: 320px; padding: 2px;">
+                    <div style="background: ${headerGrad}; color: white; padding: 10px 12px; border-radius: 8px 8px 0 0; margin: -5px -5px 10px -5px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            ${groupBadgeHtml}
+                            <span style="background: #ffffff; color: #0b2545; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-family: monospace;">RIF: ${emp.rif}</span>
+                        </div>
+                        <div style="font-size: 0.86rem; font-weight: 700; line-height: 1.25;">${empresaEscape(emp.razon_social)}</div>
+                        ${(!isOficio && emp.ritez) ? `<div style="display: flex; gap: 5px; margin-top: 4px;">
+                            <span style="background: rgba(255,255,255,0.18); color: #ffffff; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px;">RITEZ: ${emp.ritez}</span>
+                        </div>` : ''}
+                    </div>
+                    <div style="font-size: 0.75rem; color: #334155; margin-bottom: 6px;">
+                        <strong>Minerales:</strong> <span style="color: ${pinColor}; font-weight: 600;">${empresaEscape(emp.minerales_raw || emp.mineral_principal)}</span><br>
+                        <strong>Municipio:</strong> ${emp.municipio} • ${emp.parroquia}
+                    </div>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px; font-size: 0.72rem; margin-bottom: 8px;">
+                        <i class="bi bi-geo-alt-fill text-danger me-1"></i> ${empresaEscape(emp.direccion_terreno)}
+                    </div>
+                    <button type="button" onclick="openTaxpayerOffcanvas('${emp.uid}')" style="width: 100%; background: #0066FF; color: white; border: none; padding: 7px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">
+                        <i class="bi bi-file-earmark-person me-1"></i> Ver Ficha y Georreferenciar
+                    </button>
+                </div>`;
+
+            const infoWindow = new google.maps.InfoWindow({ content: infoContent });
+
+            marker.addListener('click', () => {
+                selectAndCenterCompany(emp.uid, true);
+            });
+
+            googleMarkers[emp.uid] = { marker, infoWindow, data: emp };
+            return marker;
+        }
+
+        // Renderizar marcador individual en Leaflet
+        function renderSingleCompanyMarkerLeaflet(emp) {
+            const lat = Number(emp.geometria.lat);
+            const lng = Number(emp.geometria.lng);
+            const isOficio = (emp.grupo_codigo === 'oficio');
+            const pinColor = isOficio ? '#6366f1' : ((currentMineralFilter !== 'all') ? getMineralColor(currentMineralFilter) : (emp.color_mineral || '#0066FF'));
+            const iconClass = isOficio ? 'bi-journal-bookmark-fill' : 'bi-gem';
+            const customIcon = L.divIcon({
+                className: 'custom-sedatez-pin',
+                html: `
+                    <div style="background-color: ${pinColor}; border: 2.5px solid ${isOficio ? '#ffffff' : (emp.activo ? '#ffffff' : '#ef4444')}; color: #fff; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                <i class="bi ${iconClass}" style="transform: rotate(45deg); font-size: 11px; color: #ffffff;"></i>
+                    </div>`,
+                iconSize: [30, 30],
+                iconAnchor: [15, 30],
+                popupAnchor: [0, -28]
+            });
+
+            const marker = L.marker([lat, lng], { icon: customIcon }).addTo(leafletMapInstance);
+            const groupBadge = isOficio
+                ? '<span class="badge" style="background:#6366f1;color:#fff;font-size:0.65rem;">Reg. de Oficio</span>'
+                : '<span class="badge" style="background:#0b2545;color:#fff;font-size:0.65rem;">Minerales No Metálicos</span>';
+
+            const popupHtml = `
+                <div style="font-family: 'Inter', sans-serif; font-size: 0.8rem;">
+                    <div class="mb-1">${groupBadge}</div>
+                    <strong>${emp.razon_social}</strong><br>
+                    <small class="text-muted">RIF: ${emp.rif} | ${empresaEscape(emp.minerales_raw || emp.mineral_principal)}</small><br>
+                    <small>${emp.municipio}</small><br>
+                    <button class="btn btn-xs btn-primary mt-1 w-100" onclick="openTaxpayerOffcanvas('${emp.uid}')">Ver Ficha</button>
+                </div>`;
+            marker.bindPopup(popupHtml);
+            leafletMarkers[emp.uid] = marker;
+            return marker;
+        }
+
+        // Debounce para re-renderizar markers en eventos de zoom
+        function debounceRenderMarkers() {
+            if (debounceMarkerTimer) clearTimeout(debounceMarkerTimer);
+            debounceMarkerTimer = setTimeout(() => {
+                const emps = currentFilteredEmpresas.length ? currentFilteredEmpresas : MNM_DATA;
+                renderMnmMarkers(emps);
+            }, 60);
+        }
+
+        // ==============================================================
+        // 6. RENDERIZACIÓN DE MARCADORES Y CLUSTERS
         // ==============================================================
         function renderMnmMarkers(empresas) {
-            // Filtrar únicamente empresas con coordenadas válidas (NO graficar puntos de pendientes)
+            currentFilteredEmpresas = empresas;
+
+            // Filtrar únicamente empresas con coordenadas válidas
             const empresasConCoords = empresas.filter(emp => 
                 emp.geometria && 
                 emp.geometria.lat !== null && 
@@ -2415,124 +3063,54 @@
                 Number(emp.geometria.lng) !== 0
             );
 
-            // Si está activo Google Maps:
+            const currentZoom = googleMap ? googleMap.getZoom() : (leafletMapInstance ? leafletMapInstance.getZoom() : 9);
+            const elements = computeClusters(empresasConCoords, currentZoom);
+
+            // 1. Google Maps
             if (googleMap) {
                 for (let uid in googleMarkers) {
                     if (googleMarkers[uid].marker) googleMarkers[uid].marker.setMap(null);
                 }
                 googleMarkers = {};
 
-                empresasConCoords.forEach(emp => {
-                    const lat = Number(emp.geometria.lat);
-                    const lng = Number(emp.geometria.lng);
-                    const isOficio = (emp.grupo_codigo === 'oficio');
-                    const pinColor = isOficio ? '#6366f1' : ((currentMineralFilter !== 'all') ? getMineralColor(currentMineralFilter) : (emp.color_mineral || '#0b2545'));
-                    const strokeColor = isOficio ? '#4338ca' : (emp.activo ? '#ffffff' : '#ef4444');
+                googleClusterMarkers.forEach(m => m.setMap(null));
+                googleClusterMarkers = [];
 
-                    const pinSvg = `
-                        <svg xmlns="http://www.w3.org/2000/svg" width="34" height="44" viewBox="0 0 34 44">
-                            <defs>
-                                <filter id="s" x="-20%" y="-20%" width="140%" height="140%">
-                                    <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="${pinColor}" flood-opacity="0.45"/>
-                                </filter>
-                            </defs>
-                            <path d="M17 2C8.8 2 2 8.8 2 17c0 11.5 15 25 15 25s15-13.5 15-25C32 8.8 25.2 2 17 2z" fill="${pinColor}" stroke="${strokeColor}" stroke-width="${isOficio ? '2.5' : '2'}" filter="url(#s)"/>
-                            <circle cx="17" cy="17" r="7" fill="#ffffff"/>
-                            <circle cx="17" cy="17" r="3.8" fill="${pinColor}"/>
-                        </svg>`;
-
-                    const marker = new google.maps.Marker({
-                        position: { lat, lng },
-                        map: googleMap,
-                        title: `[${emp.grupo_nombre}] ${emp.razon_social}`,
-                        icon: {
-                            url: 'data:image/svg+xml;utf-8,' + encodeURIComponent(pinSvg),
-                            scaledSize: new google.maps.Size(34, 44),
-                            anchor: new google.maps.Point(17, 44)
+                elements.forEach(el => {
+                    if (el.type === 'cluster') {
+                        if (el.count <= 1 && el.companies && el.companies.length === 1) {
+                            renderSingleCompanyMarkerGoogle(el.companies[0]);
+                        } else {
+                            const m = createClusterMarkerGoogle(el);
+                            if (m) googleClusterMarkers.push(m);
                         }
-                    });
-
-                    // InfoWindow enriquecida con diseño institucional SEDATEZ
-                    const headerGrad = isOficio 
-                        ? 'linear-gradient(135deg, #4338ca 0%, #6d28d9 100%)' 
-                        : 'linear-gradient(135deg, #0b2545 0%, #134074 100%)';
-                    const groupBadgeHtml = isOficio
-                        ? '<span style="background: rgba(255,255,255,0.25); color: #ffffff; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;"><i class="bi bi-journal-bookmark-fill me-1"></i>Reg. de Oficio</span>'
-                        : '<span style="background: rgba(255,255,255,0.2); color: #ffffff; font-size: 0.65rem; font-weight: 600; padding: 2px 6px; border-radius: 4px;"><i class="bi bi-award-fill me-1"></i>Minerales No Metálicos</span>';
-
-                    const infoContent = `
-                        <div style="font-family: 'Inter', sans-serif; max-width: 320px; padding: 2px;">
-                            <div style="background: ${headerGrad}; color: white; padding: 10px 12px; border-radius: 8px 8px 0 0; margin: -5px -5px 10px -5px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                    ${groupBadgeHtml}
-                                    <span style="background: #ffffff; color: #0b2545; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-family: monospace;">RIF: ${emp.rif}</span>
-                                </div>
-                                <div style="font-size: 0.86rem; font-weight: 700; line-height: 1.25;">${empresaEscape(emp.razon_social)}</div>
-                                ${(!isOficio && emp.ritez) ? `<div style="display: flex; gap: 5px; margin-top: 4px;">
-                                    <span style="background: rgba(255,255,255,0.18); color: #ffffff; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px;">RITEZ: ${emp.ritez}</span>
-                                </div>` : ''}
-                            </div>
-                            <div style="font-size: 0.75rem; color: #334155; margin-bottom: 6px;">
-                                <strong>Minerales:</strong> <span style="color: ${pinColor}; font-weight: 600;">${empresaEscape(emp.minerales_raw || emp.mineral_principal)}</span><br>
-                                <strong>Municipio:</strong> ${emp.municipio} • ${emp.parroquia}
-                            </div>
-                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px; font-size: 0.72rem; margin-bottom: 8px;">
-                                <i class="bi bi-geo-alt-fill text-danger me-1"></i> ${empresaEscape(emp.direccion_terreno)}
-                            </div>
-                            <button type="button" onclick="openTaxpayerOffcanvas('${emp.uid}')" style="width: 100%; background: #0066FF; color: white; border: none; padding: 7px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">
-                                <i class="bi bi-file-earmark-person me-1"></i> Ver Ficha y Georreferenciar
-                            </button>
-                        </div>`;
-
-                    const infoWindow = new google.maps.InfoWindow({ content: infoContent });
-
-                    marker.addListener('click', () => {
-                        selectAndCenterCompany(emp.uid, true);
-                    });
-
-                    googleMarkers[emp.uid] = { marker, infoWindow, data: emp };
+                    } else if (el.type === 'single') {
+                        renderSingleCompanyMarkerGoogle(el.emp);
+                    }
                 });
             }
 
-            // Si está activo Leaflet:
+            // 2. Leaflet
             if (leafletMapInstance) {
                 for (let uid in leafletMarkers) {
                     leafletMapInstance.removeLayer(leafletMarkers[uid]);
                 }
                 leafletMarkers = {};
 
-                empresasConCoords.forEach(emp => {
-                    const lat = Number(emp.geometria.lat);
-                    const lng = Number(emp.geometria.lng);
-                    const isOficio = (emp.grupo_codigo === 'oficio');
-                    const pinColor = isOficio ? '#6366f1' : ((currentMineralFilter !== 'all') ? getMineralColor(currentMineralFilter) : (emp.color_mineral || '#0066FF'));
-                    const iconClass = isOficio ? 'bi-journal-bookmark-fill' : 'bi-gem';
-                    const customIcon = L.divIcon({
-                        className: 'custom-sedatez-pin',
-                        html: `
-                            <div style="background-color: ${pinColor}; border: 2.5px solid ${isOficio ? '#ffffff' : (emp.activo ? '#ffffff' : '#ef4444')}; color: #fff; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-                                <i class="bi ${iconClass}" style="transform: rotate(45deg); font-size: 11px; color: #ffffff;"></i>
-                            </div>`,
-                        iconSize: [30, 30],
-                        iconAnchor: [15, 30],
-                        popupAnchor: [0, -28]
-                    });
+                leafletClusterMarkers.forEach(m => leafletMapInstance.removeLayer(m));
+                leafletClusterMarkers = [];
 
-                    const marker = L.marker([lat, lng], { icon: customIcon }).addTo(leafletMapInstance);
-                    const groupBadge = isOficio
-                        ? '<span class="badge" style="background:#6366f1;color:#fff;font-size:0.65rem;">Reg. de Oficio</span>'
-                        : '<span class="badge" style="background:#0b2545;color:#fff;font-size:0.65rem;">Minerales No Metálicos</span>';
-
-                    const popupHtml = `
-                        <div style="font-family: 'Inter', sans-serif; font-size: 0.8rem;">
-                            <div class="mb-1">${groupBadge}</div>
-                            <strong>${emp.razon_social}</strong><br>
-                            <small class="text-muted">RIF: ${emp.rif} | ${empresaEscape(emp.minerales_raw || emp.mineral_principal)}</small><br>
-                            <small>${emp.municipio}</small><br>
-                            <button class="btn btn-xs btn-primary mt-1 w-100" onclick="openTaxpayerOffcanvas('${emp.uid}')">Ver Ficha</button>
-                        </div>`;
-                    marker.bindPopup(popupHtml);
-                    leafletMarkers[emp.uid] = marker;
+                elements.forEach(el => {
+                    if (el.type === 'cluster') {
+                        if (el.count <= 1 && el.companies && el.companies.length === 1) {
+                            renderSingleCompanyMarkerLeaflet(el.companies[0]);
+                        } else {
+                            const m = createClusterMarkerLeaflet(el);
+                            if (m) leafletClusterMarkers.push(m);
+                        }
+                    } else if (el.type === 'single') {
+                        renderSingleCompanyMarkerLeaflet(el.emp);
+                    }
                 });
             }
         }
@@ -2572,25 +3150,42 @@
                 const targetPos = { lat: Number(empresa.geometria.lat), lng: Number(empresa.geometria.lng) };
 
                 // Centrar en Google Maps
-                if (googleMap && googleMarkers[empresa.uid]) {
+                if (googleMap) {
                     googleMap.panTo(targetPos);
-                    googleMap.setZoom(14);
-
-                    if (activeInfoWindow) activeInfoWindow.close();
-                    const item = googleMarkers[empresa.uid];
-                    if (openPopup && item && item.infoWindow) {
-                        item.infoWindow.open(googleMap, item.marker);
-                        activeInfoWindow = item.infoWindow;
-                        item.marker.setAnimation(google.maps.Animation.BOUNCE);
-                        setTimeout(() => item.marker.setAnimation(null), 1400);
+                    const currentZ = googleMap.getZoom();
+                    if (currentZ < 14) {
+                        googleMap.setZoom(14);
+                    } else {
+                        renderMnmMarkers(currentFilteredEmpresas.length ? currentFilteredEmpresas : MNM_DATA);
                     }
+
+                    setTimeout(() => {
+                        if (activeInfoWindow) activeInfoWindow.close();
+                        const item = googleMarkers[empresa.uid];
+                        if (openPopup && item && item.infoWindow && item.marker) {
+                            item.infoWindow.open(googleMap, item.marker);
+                            activeInfoWindow = item.infoWindow;
+                            if (item.marker.setAnimation) {
+                                item.marker.setAnimation(google.maps.Animation.BOUNCE);
+                                setTimeout(() => item.marker.setAnimation(null), 1400);
+                            }
+                        }
+                    }, 200);
                 } 
                 // Centrar en Leaflet
-                else if (leafletMapInstance && leafletMarkers[empresa.uid]) {
-                    leafletMapInstance.flyTo([targetPos.lat, targetPos.lng], 14, { duration: 1.2 });
-                    if (openPopup && leafletMarkers[empresa.uid].openPopup) {
-                        leafletMarkers[empresa.uid].openPopup();
+                else if (leafletMapInstance) {
+                    const currentZ = leafletMapInstance.getZoom();
+                    if (currentZ < 14) {
+                        leafletMapInstance.flyTo([targetPos.lat, targetPos.lng], 14, { duration: 1.0 });
+                    } else {
+                        leafletMapInstance.panTo([targetPos.lat, targetPos.lng]);
+                        renderMnmMarkers(currentFilteredEmpresas.length ? currentFilteredEmpresas : MNM_DATA);
                     }
+                    setTimeout(() => {
+                        if (openPopup && leafletMarkers[empresa.uid] && leafletMarkers[empresa.uid].openPopup) {
+                            leafletMarkers[empresa.uid].openPopup();
+                        }
+                    }, 300);
                 }
             } else {
                 // Empresa sin coordenadas: NO intentar centrar en punto inválido y cerrar InfoWindow
@@ -2961,6 +3556,11 @@
                 if (isMapPickerActive) {
                     handleMapLocationPicked(e.latlng.lat, e.latlng.lng);
                 }
+            });
+
+            // Listener de zoom para clustering dinámico y desagrupación por mineral
+            leafletMapInstance.on('zoomend', () => {
+                debounceRenderMarkers();
             });
 
             setupMapControls();
@@ -3400,7 +4000,8 @@
 
             ejes.forEach(eje => {
                 const itemDiv = document.createElement('div');
-                itemDiv.className = `eje-row-item ${currentEjeFilter === eje.codigo ? 'active-eje' : ''}`;
+                const isSelectedEje = (currentEjeFilter === eje.codigo);
+                itemDiv.className = `eje-row-item ${isSelectedEje ? 'active-eje' : ''}`;
                 itemDiv.id = `eje-card-${eje.codigo.replace(/\s+/g, '')}`;
 
                 // Lista de municipios en chips interactivos
@@ -3424,43 +4025,66 @@
 
                 const totalEmpresasEje = (eje.municipios || []).reduce((acc, m) => acc + (m.total_empresas || 0), 0);
 
+                // Contraído por defecto (o expandido si es el eje actualmente activo)
+                const isExpanded = isSelectedEje;
+                const displayStyle = isExpanded ? 'block' : 'none';
+                const chevronIcon = isExpanded ? 'bi-chevron-up' : 'bi-chevron-down';
+
                 itemDiv.innerHTML = `
-                    <div class="d-flex align-items-center justify-content-between mb-1">
+                    <div class="d-flex align-items-center justify-content-between eje-header-toggle" style="cursor: pointer;" title="Haga clic para expandir o contraer municipios de este Eje">
                         <div class="d-flex align-items-center gap-1">
                             <span class="eje-badge-pill" style="background: ${eje.color};">
                                 <i class="bi bi-layers-fill"></i> ${eje.codigo}
                             </span>
                             <span class="fw-bold text-dark" style="font-size: 0.77rem;">${eje.nombre.replace(/^EJE\s*\d+:\s*/i, '')}</span>
                         </div>
-                        <span class="badge bg-secondary-subtle text-dark font-monospace" style="font-size: 0.65rem;" title="Total contribuyentes en este Eje">
-                            ${totalEmpresasEje} emp.
-                        </span>
-                    </div>
-
-                    <div class="d-flex align-items-center justify-content-between mb-1" style="font-size: 0.67rem; color: #64748b;">
-                        <span><i class="bi bi-pin-map me-1 text-primary"></i>${(eje.municipios || []).length} Municipios:</span>
-                        <button type="button" class="btn btn-xs btn-link p-0 text-decoration-none" style="font-size: 0.67rem;" onclick="event.stopPropagation(); filterByEjeFromMap('${eje.codigo}')">
-                            ${currentEjeFilter === eje.codigo ? '✓ Activo' : 'Filtrar este Eje'}
-                        </button>
-                    </div>
-
-                    <div class="d-flex flex-wrap mb-1">
-                        ${munChipsHtml}
-                    </div>
-
-                    <div class="pt-1 border-top mt-1">
-                        <div style="font-size: 0.65rem; color: #64748b; font-weight: 600; margin-bottom: 3px;">
-                            <i class="bi bi-hammer me-1 text-secondary"></i>Yacimientos Minerales No Metálicos (ME-01):
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="badge bg-secondary-subtle text-dark font-monospace" style="font-size: 0.65rem;" title="Total contribuyentes en este Eje">
+                                ${totalEmpresasEje} emp.
+                            </span>
+                            <i class="bi ${chevronIcon} text-muted ms-1 eje-accordion-icon" style="font-size: 0.72rem;"></i>
                         </div>
-                        <div class="d-flex flex-wrap">
-                            ${minChipsHtml}
+                    </div>
+
+                    <div class="eje-collapse-body" style="display: ${displayStyle}; margin-top: 6px;">
+                        <div class="d-flex align-items-center justify-content-between mb-1" style="font-size: 0.67rem; color: #64748b;">
+                            <span><i class="bi bi-pin-map me-1 text-primary"></i>${(eje.municipios || []).length} Municipios:</span>
+                            <button type="button" class="btn btn-xs btn-link p-0 text-decoration-none fw-semibold" style="font-size: 0.67rem;" onclick="event.stopPropagation(); filterByEjeFromMap('${eje.codigo}')">
+                                ${currentEjeFilter === eje.codigo ? '✓ Activo' : 'Filtrar este Eje'}
+                            </button>
+                        </div>
+
+                        <div class="d-flex flex-wrap mb-1">
+                            ${munChipsHtml}
+                        </div>
+
+                        <div class="pt-1 border-top mt-1">
+                            <div style="font-size: 0.65rem; color: #64748b; font-weight: 600; margin-bottom: 3px;">
+                                <i class="bi bi-hammer me-1 text-secondary"></i>Yacimientos Minerales No Metálicos (ME-01):
+                            </div>
+                            <div class="d-flex flex-wrap">
+                                ${minChipsHtml}
+                            </div>
                         </div>
                     </div>
                 `;
 
-                // Al hacer clic en la tarjeta del eje, centrar el mapa y filtrar
-                itemDiv.addEventListener('click', () => {
-                    filterByEjeFromMap(eje.codigo);
+                // Al hacer clic en el encabezado del eje, alternar colapso de municipios
+                const headerToggle = itemDiv.querySelector('.eje-header-toggle');
+                const collapseBody = itemDiv.querySelector('.eje-collapse-body');
+                const iconElem = itemDiv.querySelector('.eje-accordion-icon');
+
+                headerToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const currentlyOpen = collapseBody.style.display !== 'none';
+                    if (currentlyOpen) {
+                        collapseBody.style.display = 'none';
+                        iconElem.className = 'bi bi-chevron-down text-muted ms-1 eje-accordion-icon';
+                    } else {
+                        collapseBody.style.display = 'block';
+                        iconElem.className = 'bi bi-chevron-up text-muted ms-1 eje-accordion-icon';
+                        focusEjeOnMap(eje.codigo);
+                    }
                 });
 
                 container.appendChild(itemDiv);
@@ -3469,34 +4093,51 @@
 
         // Configuración de controles del panel de capas y leyenda
         function setupCapasControls() {
-            // 1. Mostrar/Ocultar panel flotante con el botón de la barra de mapa
             const btnToggleLegend = document.getElementById('btn-toggle-legend-card');
             const legendPanel = document.getElementById('ejes-legend-panel');
-            if (btnToggleLegend && legendPanel) {
-                btnToggleLegend.addEventListener('click', () => {
-                    if (legendPanel.style.display === 'none') {
-                        legendPanel.style.display = 'flex';
-                        btnToggleLegend.classList.add('btn-primary');
-                        btnToggleLegend.classList.remove('btn-outline-secondary');
-                    } else {
-                        legendPanel.style.display = 'none';
-                        btnToggleLegend.classList.remove('btn-primary');
-                        btnToggleLegend.classList.add('btn-outline-secondary');
-                    }
-                });
-            }
-
-            // 2. Minimizar / Expandir panel de leyenda
             const headerLegend = document.getElementById('btn-toggle-legend-header');
             const btnCollapseLegend = document.getElementById('btn-toggle-legend-collapse');
             const iconCollapse = document.getElementById('icon-legend-collapse');
 
+            // Función centralizada para controlar el estado de contracción del panel
+            function setLegendCollapsedState(collapse) {
+                if (!legendPanel) return;
+                if (collapse) {
+                    legendPanel.classList.add('collapsed');
+                    if (iconCollapse) iconCollapse.className = 'bi bi-chevron-down';
+                    if (btnToggleLegend) {
+                        btnToggleLegend.classList.remove('btn-primary');
+                        btnToggleLegend.classList.add('btn-outline-secondary');
+                    }
+                } else {
+                    legendPanel.classList.remove('collapsed');
+                    legendPanel.style.display = 'flex';
+                    if (iconCollapse) iconCollapse.className = 'bi bi-chevron-up';
+                    if (btnToggleLegend) {
+                        btnToggleLegend.classList.add('btn-primary');
+                        btnToggleLegend.classList.remove('btn-outline-secondary');
+                    }
+                }
+            }
+
+            // 1. Mostrar/Ocultar o Expandir/Contraer con el botón de la barra de mapa
+            if (btnToggleLegend && legendPanel) {
+                btnToggleLegend.addEventListener('click', () => {
+                    if (legendPanel.style.display === 'none') {
+                        setLegendCollapsedState(false);
+                    } else if (legendPanel.classList.contains('collapsed')) {
+                        setLegendCollapsedState(false);
+                    } else {
+                        setLegendCollapsedState(true);
+                    }
+                });
+            }
+
+            // 2. Minimizar / Expandir panel de leyenda desde su encabezado
             function toggleLegendCollapse() {
                 if (!legendPanel) return;
-                const isCollapsed = legendPanel.classList.toggle('collapsed');
-                if (iconCollapse) {
-                    iconCollapse.className = isCollapsed ? 'bi bi-chevron-up' : 'bi bi-chevron-down';
-                }
+                const willCollapse = !legendPanel.classList.contains('collapsed');
+                setLegendCollapsedState(willCollapse);
             }
 
             if (headerLegend) headerLegend.addEventListener('click', toggleLegendCollapse);
@@ -3510,6 +4151,7 @@
             // 3. Switch de Visibilidad de Capas
             const switchCapas = document.getElementById('switch-capas-ejes');
             if (switchCapas) {
+                switchCapas.checked = isCapasEjesVisible;
                 switchCapas.addEventListener('change', (e) => {
                     isCapasEjesVisible = e.target.checked;
                     updateCapasEjesStyles();
@@ -3618,6 +4260,26 @@
             if (selEje) selEje.value = ejeCodigo;
             applyMnmFilters();
             focusEjeOnMap(ejeCodigo);
+
+            // Sincronizar tarjetas de ejes en la leyenda
+            const ejesCards = document.querySelectorAll('.eje-row-item');
+            ejesCards.forEach(card => {
+                const isTarget = (ejeCodigo !== 'all' && card.id === `eje-card-${ejeCodigo.replace(/\s+/g, '')}`);
+                const body = card.querySelector('.eje-collapse-body');
+                const icon = card.querySelector('.eje-accordion-icon');
+                if (isTarget) {
+                    card.classList.add('active-eje');
+                    if (body) body.style.display = 'block';
+                    if (icon) icon.className = 'bi bi-chevron-up text-muted ms-1 eje-accordion-icon';
+                } else {
+                    card.classList.remove('active-eje');
+                    if (ejeCodigo !== 'all') {
+                        if (body) body.style.display = 'none';
+                        if (icon) icon.className = 'bi bi-chevron-down text-muted ms-1 eje-accordion-icon';
+                    }
+                }
+            });
+
             if (polygonInfoWindow) polygonInfoWindow.close();
             if (leafletMapInstance) leafletMapInstance.closePopup();
         };

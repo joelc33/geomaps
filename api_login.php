@@ -131,7 +131,7 @@ try {
     $pdo = getDbConnection();
 
     // Buscar en autenticacion.tab_usuarios por nombre de usuario (da_usuario), correo (da_email) o cédula (nu_cedula)
-    $sql = "SELECT u.id, u.da_usuario, u.da_email, u.da_password, u.in_estatus, u.id_tab_tipo_usuario,
+    $sql = "SELECT u.id, u.da_usuario, u.da_email, u.da_password, u.in_estatus, u.id_tab_tipo_usuario, u.in_ver_mapa,
                    f.nb_funcionario, f.ap_funcionario, f.nu_cedula,
                    c.de_cargo,
                    tu.de_tipo_usuario,
@@ -169,7 +169,20 @@ try {
         sendAuthResponse(false, 'Su cuenta se encuentra inactiva. Comuníquese con la administración de SEDATEZ.', 403);
     }
 
-    // 3.3 Verificación de contraseña Bcrypt
+    // 3.4 Restricción estricta de acceso al mapa: solo usuarios con in_ver_mapa = true
+    $hasMapAccess = isset($user['in_ver_mapa']) && (
+        $user['in_ver_mapa'] === true || 
+        $user['in_ver_mapa'] === 't' || 
+        $user['in_ver_mapa'] === 'true' || 
+        $user['in_ver_mapa'] === 1 || 
+        $user['in_ver_mapa'] === '1'
+    );
+    if (!$hasMapAccess) {
+        recordFailedAttempt($clientIp);
+        sendAuthResponse(false, 'Acceso denegado: su usuario no cuenta con autorización para acceder al sistema cartográfico. Comuníquese con la administración de SEDATEZ.', 403);
+    }
+
+    // 3.5 Verificación de contraseña Bcrypt
     if (!password_verify($password, $user['da_password'])) {
         recordFailedAttempt($clientIp);
         sendAuthResponse(false, 'Las credenciales ingresadas no coinciden con nuestros registros.', 401);
@@ -212,7 +225,8 @@ try {
         'rol' => isset($user['de_rol']) ? $user['de_rol'] : null,
         'cedula' => isset($user['nu_cedula']) ? $user['nu_cedula'] : null,
         'tipo' => isset($user['de_tipo_usuario']) ? $user['de_tipo_usuario'] : 'Funcionario',
-        'id_tab_tipo_usuario' => (int)$user['id_tab_tipo_usuario']
+        'id_tab_tipo_usuario' => (int)$user['id_tab_tipo_usuario'],
+        'in_ver_mapa' => true
     );
 
     $_SESSION['auth_user'] = $sessionUser;
