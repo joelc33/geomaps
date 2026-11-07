@@ -135,6 +135,7 @@ try {
                    f.nb_funcionario, f.ap_funcionario, f.nu_cedula,
                    c.de_cargo,
                    tu.de_tipo_usuario,
+                   r.id AS id_rol,
                    r.de_rol
             FROM autenticacion.tab_usuarios u
             LEFT JOIN mantenimiento.tab_funcionario f ON f.id_tab_usuarios = u.id
@@ -169,14 +170,18 @@ try {
         sendAuthResponse(false, 'Su cuenta se encuentra inactiva. Comuníquese con la administración de SEDATEZ.', 403);
     }
 
-    // 3.4 Restricción estricta de acceso al mapa: solo usuarios con in_ver_mapa = true
-    $hasMapAccess = isset($user['in_ver_mapa']) && (
+    // 3.4 Restricción estricta de acceso al mapa: Administradores y Super Administradores tienen acceso automático
+    $idRolPrev = isset($user['id_rol']) ? (int)$user['id_rol'] : 0;
+    $deRolPrev = isset($user['de_rol']) ? trim($user['de_rol']) : '';
+    $isAdminRole = ($idRolPrev === 1 || $idRolPrev === 2 || strcasecmp($deRolPrev, 'Super Administrador') === 0 || strcasecmp($deRolPrev, 'Administrador') === 0);
+
+    $hasMapAccess = $isAdminRole || (isset($user['in_ver_mapa']) && (
         $user['in_ver_mapa'] === true || 
         $user['in_ver_mapa'] === 't' || 
         $user['in_ver_mapa'] === 'true' || 
         $user['in_ver_mapa'] === 1 || 
         $user['in_ver_mapa'] === '1'
-    );
+    ));
     if (!$hasMapAccess) {
         recordFailedAttempt($clientIp);
         sendAuthResponse(false, 'Acceso denegado: su usuario no cuenta con autorización para acceder al sistema cartográfico. Comuníquese con la administración de SEDATEZ.', 403);
@@ -215,6 +220,31 @@ try {
         ? $user['de_cargo'] 
         : (!empty($user['de_rol']) ? $user['de_rol'] : (!empty($user['de_tipo_usuario']) ? $user['de_tipo_usuario'] : 'Funcionario SEDATEZ'));
 
+    $idRol = isset($user['id_rol']) ? (int)$user['id_rol'] : 0;
+    $deRol = isset($user['de_rol']) ? trim($user['de_rol']) : '';
+    $esAdmin = ($idRol === 1 || $idRol === 2 || strcasecmp($deRol, 'Super Administrador') === 0 || strcasecmp($deRol, 'Administrador') === 0);
+
+    $permisos = array(
+        'puede_ver_tipo_empresa' => true,
+        'puede_ver_tipo_minerales' => true,
+        'puede_ver_municipios_eje' => true,
+        'puede_modificar_coordenadas' => $esAdmin,
+        'es_admin' => $esAdmin
+    );
+
+    if ($idRol > 0) {
+        $stmtP = $pdo->prepare("SELECT puede_ver_tipo_empresa, puede_ver_tipo_minerales, puede_ver_municipios_eje, puede_modificar_coordenadas 
+                                FROM autenticacion.tab_rol_permisos_mapa WHERE id_tab_rol = :id_rol");
+        $stmtP->execute(array(':id_rol' => $idRol));
+        $pRow = $stmtP->fetch();
+        if ($pRow) {
+            $permisos['puede_ver_tipo_empresa'] = (bool)$pRow['puede_ver_tipo_empresa'];
+            $permisos['puede_ver_tipo_minerales'] = (bool)$pRow['puede_ver_tipo_minerales'];
+            $permisos['puede_ver_municipios_eje'] = (bool)$pRow['puede_ver_municipios_eje'];
+            $permisos['puede_modificar_coordenadas'] = (bool)$pRow['puede_modificar_coordenadas'];
+        }
+    }
+
     $sessionUser = array(
         'id' => (int)$user['id'],
         'usuario' => $user['da_usuario'],
@@ -222,11 +252,14 @@ try {
         'nombre' => $nombreCompleto,
         'iniciales' => $iniciales,
         'cargo' => $cargo,
+        'id_rol' => $idRol,
         'rol' => isset($user['de_rol']) ? $user['de_rol'] : null,
         'cedula' => isset($user['nu_cedula']) ? $user['nu_cedula'] : null,
         'tipo' => isset($user['de_tipo_usuario']) ? $user['de_tipo_usuario'] : 'Funcionario',
         'id_tab_tipo_usuario' => (int)$user['id_tab_tipo_usuario'],
-        'in_ver_mapa' => true
+        'in_ver_mapa' => true,
+        'es_admin' => $esAdmin,
+        'permisos' => $permisos
     );
 
     $_SESSION['auth_user'] = $sessionUser;

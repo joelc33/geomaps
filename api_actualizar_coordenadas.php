@@ -5,7 +5,9 @@
  */
 
 header('Content-Type: application/json; charset=utf-8');
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once __DIR__ . '/config_db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -13,6 +15,44 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(array(
         'success' => false,
         'message' => 'Método no permitido. Utilice POST.'
+    ));
+    exit;
+}
+
+// 1. Verificación de autenticación de usuario
+if (!isset($_SESSION['auth_user']) || empty($_SESSION['auth_user']['id'])) {
+    http_response_code(401);
+    echo json_encode(array(
+        'success' => false,
+        'message' => 'Acceso no autorizado. Debe iniciar sesión en el sistema SEDATEZ.'
+    ));
+    exit;
+}
+
+// 2. Verificación de permisos de rol para modificar coordenadas
+$currentUser = $_SESSION['auth_user'];
+$idRol = isset($currentUser['id_rol']) ? (int)$currentUser['id_rol'] : 0;
+$puedeModificar = ($idRol === 1 || $idRol === 2); // SuperAdmin o Admin por defecto
+
+try {
+    $pdoAuth = getDbConnection();
+    if ($idRol > 0) {
+        $stmtP = $pdoAuth->prepare("SELECT puede_modificar_coordenadas FROM autenticacion.tab_rol_permisos_mapa WHERE id_tab_rol = :id_rol");
+        $stmtP->execute(array(':id_rol' => $idRol));
+        $pRow = $stmtP->fetch();
+        if ($pRow) {
+            $puedeModificar = (bool)$pRow['puede_modificar_coordenadas'];
+        }
+    }
+} catch (Exception $e) {
+    // Mantener la verificación base si ocurre excepción
+}
+
+if (!$puedeModificar) {
+    http_response_code(403);
+    echo json_encode(array(
+        'success' => false,
+        'message' => 'Acceso denegado: Su perfil o rol de usuario no cuenta con autorización para modificar coordenadas GPS de registrados.'
     ));
     exit;
 }

@@ -971,6 +971,76 @@
                 padding: 2.5rem 1.5rem;
             }
         }
+
+        /* ============================================================== */
+        /* ESTILOS DEL MÓDULO DE ADMINISTRACIÓN DE ROLES Y PERMISOS       */
+        /* ============================================================== */
+        .role-card-admin {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px 20px;
+            transition: all 0.25s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .role-card-admin:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 6px 18px rgba(11, 37, 69, 0.08);
+        }
+        .permiso-switch-item {
+            background: #f8fafc;
+            border: 1px solid #f1f5f9;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 4px;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+        .permiso-switch-item:hover {
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+        }
+        .permiso-switch-item .form-check-input {
+            cursor: pointer;
+            width: 2.2em;
+            height: 1.2em;
+        }
+        .permiso-switch-item .form-check-label {
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.82rem;
+            color: #1e293b;
+        }
+        .permiso-desc {
+            font-size: 0.72rem;
+            color: #64748b;
+            margin-top: 2px;
+            line-height: 1.3;
+        }
+
+        /* REGLAS REACTIVAS DE RESTRICCIÓN SEGÚN EL PERFIL */
+        body.hide-tipo-empresas .badge-group-ritez,
+        body.hide-tipo-empresas .badge-group-oficio,
+        body.hide-tipo-empresas #group-segment-container,
+        body.hide-tipo-empresas #pill-company-group,
+        body.hide-tipo-empresas #oc-grupo-badge,
+        body.hide-tipo-empresas #badge-header-oficio {
+            display: none !important;
+        }
+
+        body.hide-tipo-minerales #container-filter-mineral,
+        body.hide-tipo-minerales #pill-company-category,
+        body.hide-tipo-minerales #oc-minerales-chips,
+        body.hide-tipo-minerales #oc-minerales-section,
+        body.hide-tipo-minerales .company-minerals-row,
+        body.hide-tipo-minerales #badge-header-ritez {
+            display: none !important;
+        }
+
+        body.hide-municipios-eje #container-filter-eje,
+        body.hide-municipios-eje #btn-toggle-legend-card,
+        body.hide-municipios-eje #ejes-legend-panel {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -1059,10 +1129,10 @@
             <div class="d-flex align-items-center gap-3">
                 <!-- Resumen Rápido de Minerales No Metálicos -->
                 <div class="d-none d-lg-flex align-items-center gap-2">
-                    <span class="badge px-2 py-1" style="background: rgba(11, 37, 69, 0.08); color: #0b2545; border: 1px solid rgba(11, 37, 69, 0.2); font-size: 0.72rem;" title="Minerales No Metálicos">
+                    <span id="badge-header-ritez" class="badge px-2 py-1" style="background: rgba(11, 37, 69, 0.08); color: #0b2545; border: 1px solid rgba(11, 37, 69, 0.2); font-size: 0.72rem;" title="Minerales No Metálicos">
                         <i class="bi bi-award-fill me-1"></i> <span id="header-ritez-mnm">54</span> Minerales No Metálicos
                     </span>
-                    <span class="badge px-2 py-1" style="background: rgba(99, 102, 241, 0.12); color: #4338ca; border: 1px solid rgba(99, 102, 241, 0.3); font-size: 0.72rem;" title="Registro de Oficio de Usuarios de Minerales No Metálicos">
+                    <span id="badge-header-oficio" class="badge px-2 py-1" style="background: rgba(99, 102, 241, 0.12); color: #4338ca; border: 1px solid rgba(99, 102, 241, 0.3); font-size: 0.72rem;" title="Registro de Oficio de Usuarios de Minerales No Metálicos">
                         <i class="bi bi-journal-bookmark-fill me-1"></i> <span id="header-oficio-mnm">3</span> Reg. de Oficio
                     </span>
                     <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.72rem;">
@@ -1080,8 +1150,15 @@
                     </div>
                     <div class="d-none d-sm-block text-end">
                         <div id="user-fullname" style="font-size: 0.8rem; font-weight: 700; color: #1e293b;">Funcionario</div>
+                        <span id="user-role-badge" class="badge bg-primary-subtle text-primary border" style="font-size: 0.65rem;">Rol</span>
                     </div>
                 </div>
+
+                <!-- Botón de Administración de Roles (Visible únicamente para Super Administrador y Administrador) -->
+                <button type="button" class="btn btn-sm align-items-center gap-1 px-3 py-1 shadow-sm" id="btn-admin-roles" style="display: none !important; font-weight: 600; font-size: 0.78rem; background-color: #0b2545; border-color: #0b2545; color: #ffffff;" title="Administración de Roles y Restricciones de Perfil" onclick="abrirModalAdminRoles()">
+                    <i class="bi bi-shield-lock-fill text-warning"></i>
+                    <span>Roles y Permisos</span>
+                </button>
 
                 <!-- Botón Cerrar Sesión -->
                 <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 px-3 py-1" id="btn-logout" title="Cerrar Sesión">
@@ -1090,6 +1167,17 @@
                 </button>
             </div>
         </header>
+
+        <!-- Banner de Simulación de Perfil / Rol -->
+        <div id="simulation-banner" class="alert alert-warning py-1 px-3 mb-0 small d-none align-items-center justify-content-between border-0 border-bottom rounded-0" style="background: #fffbeb; color: #92400e; z-index: 1040;">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-eye-fill fs-6 text-warning"></i>
+                <span><strong>Modo Simulación de Rol Activo:</strong> Visualizando la interfaz con las restricciones de: <strong id="simulation-role-name">Rol</strong></span>
+            </div>
+            <button type="button" class="btn btn-xs btn-outline-dark py-0 px-2" style="font-size: 0.72rem;" onclick="restaurarRolAdmin()">
+                <i class="bi bi-arrow-counterclockwise me-1"></i> Salir de Simulación
+            </button>
+        </div>
 
         <!-- CUERPO PRINCIPAL: SIDEBAR (≤ 10%) + MAPA (90%) -->
         <div class="dashboard-body">
@@ -1113,6 +1201,12 @@
                         </button>
                     </div>
 
+                    <!-- Botón Acceso Rápido Roles y Permisos en Sidebar para Administradores -->
+                    <button type="button" id="btn-admin-roles-sidebar" class="btn btn-sm w-100 my-2 align-items-center justify-content-center gap-2 py-1 shadow-sm" style="display: none !important; font-size: 0.78rem; font-weight: 700; background: #0b2545; color: #ffffff; border: 1px solid #0b2545; border-radius: 6px;" onclick="abrirModalAdminRoles()" title="Gestionar Roles y Restricciones">
+                        <i class="bi bi-shield-lock-fill text-warning"></i>
+                        <span>Panel de Roles y Permisos</span>
+                    </button>
+
                     <!-- Buscador Cómodo con botón de limpiar -->
                     <div class="sidebar-search-box mb-2">
                         <i class="bi bi-search sidebar-search-icon"></i>
@@ -1121,7 +1215,7 @@
                     </div>
 
                     <!-- Segmentador de Grupo de Registrados -->
-                    <div class="d-flex align-items-center justify-content-between bg-light p-1 rounded border mb-2">
+                    <div id="group-segment-container" class="d-flex align-items-center justify-content-between bg-light p-1 rounded border mb-2">
                         <span class="small text-muted ps-1" style="font-size: 0.7rem; font-weight: 600;">Grupo:</span>
                         <div class="btn-group btn-group-sm" role="group">
                             <button type="button" class="btn btn-xs py-0 px-2 btn-primary active" id="group-btn-all" data-group="all" style="font-size: 0.68rem;">Todos (<span id="count-group-all">57</span>)</button>
@@ -1131,7 +1225,7 @@
                     </div>
 
                     <!-- Filtro por Eje Territorial Oficial (Plano ME-01) -->
-                    <div class="mb-2">
+                    <div id="container-filter-eje" class="mb-2">
                         <select id="filter-eje" class="form-select form-select-sm" style="font-size: 0.73rem; background-color: #f8fafc; border-color: #cbd5e1; font-weight: 600;">
                             <option value="all">🗺️ Eje Territorial: Todos</option>
                             <option value="EJE 1" style="color: #E05677; font-weight: 700;">● EJE 1: Metropolitano y Perijá</option>
@@ -1142,13 +1236,13 @@
                     </div>
 
                     <!-- Filtros Territoriales y Mineros -->
-                    <div class="row g-2 mb-2">
-                        <div class="col-6">
+                    <div class="row g-2 mb-2" id="row-filters-geo-min">
+                        <div class="col-6" id="container-filter-municipio">
                             <select id="filter-municipio" class="form-select form-select-sm" style="font-size: 0.73rem; background-color: #f8fafc; border-color: #cbd5e1;">
                                 <option value="all">📍 Municipio: Todos</option>
                             </select>
                         </div>
-                        <div class="col-6">
+                        <div class="col-6" id="container-filter-mineral">
                             <select id="filter-mineral" class="form-select form-select-sm" style="font-size: 0.73rem; background-color: #f8fafc; border-color: #cbd5e1;">
                                 <option value="all">💎 Mineral: Todos</option>
                             </select>
@@ -1367,7 +1461,7 @@
             </div>
 
             <!-- 1. Minerales y Operaciones -->
-            <div class="card border mb-3">
+            <div class="card border mb-3" id="oc-minerales-section">
                 <div class="card-header bg-white py-2 fw-bold text-dark d-flex align-items-center gap-2" style="font-size: 0.8rem;">
                     <i class="bi bi-hammer text-primary"></i> Minerales Explotados y Superficie
                 </div>
@@ -1471,6 +1565,13 @@
                         </div>
                         <div id="georef-feedback" class="small mt-2 d-none"></div>
                     </form>
+
+                    <!-- Aviso cuando la edición de coordenadas está restringida por perfil -->
+                    <div id="georef-restricted-box" class="d-none text-center py-3 px-3 bg-white border rounded">
+                        <i class="bi bi-shield-lock-fill text-muted fs-4 d-block mb-1"></i>
+                        <span class="fw-bold text-dark d-block" style="font-size: 0.8rem;">Edición de Coordenadas GPS Restringida</span>
+                        <span class="text-muted" style="font-size: 0.72rem;">Su perfil institucional no posee autorización para modificar coordenadas geográficas de los contribuyentes.</span>
+                    </div>
                 </div>
             </div>
 
@@ -1570,6 +1671,199 @@
         </div>
     </div>
 
+    <!-- ============================================================== -->
+    <!-- MODAL: ADMINISTRACIÓN DE ROLES Y PERMISOS DE USUARIO           -->
+    <!-- ============================================================== -->
+    <div class="modal fade" id="modal-admin-roles" tabindex="-1" aria-labelledby="modalAdminRolesLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 14px; overflow: hidden;">
+                <!-- Header del Modal -->
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #0b2545 0%, #134074 100%);">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <i class="bi bi-shield-lock-fill text-warning fs-5"></i>
+                            <h5 class="modal-title fw-bold fs-6 mb-0" id="modalAdminRolesLabel">
+                                Administración de Roles y Restricciones de Perfil
+                            </h5>
+                            <span class="badge bg-warning text-dark font-monospace" style="font-size: 0.7rem;">SEDATEZ GIS</span>
+                        </div>
+                        <div class="text-white-50 small" style="font-size: 0.76rem;">
+                            Configure los permisos de visualización y edición en la cartografía digital para cada rol institucional.
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <!-- Tabs de Navegación -->
+                <div class="bg-light border-bottom px-3 pt-2">
+                    <ul class="nav nav-tabs border-0" id="adminRolesTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-semibold" id="tab-roles-link" data-bs-toggle="tab" data-bs-target="#tab-content-roles" type="button" role="tab" style="font-size: 0.82rem;">
+                                <i class="bi bi-sliders me-1 text-primary"></i> 1. Restricciones por Rol (<span id="count-roles-badge">0</span>)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-semibold" id="tab-usuarios-link" data-bs-toggle="tab" data-bs-target="#tab-content-usuarios" type="button" role="tab" style="font-size: 0.82rem;">
+                                <i class="bi bi-people-fill me-1 text-success"></i> 2. Usuarios y Asignación de Roles
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-semibold" id="tab-nuevo-rol-link" data-bs-toggle="tab" data-bs-target="#tab-content-nuevo-rol" type="button" role="tab" style="font-size: 0.82rem;">
+                                <i class="bi bi-plus-circle-fill me-1 text-primary"></i> 3. Crear Nuevo Rol
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Cuerpo del Modal con Contenido de Tabs -->
+                <div class="modal-body p-3 bg-light">
+                    <!-- Alerta de Notificación en Modal -->
+                    <div id="admin-roles-alert" class="alert alert-success py-2 px-3 small d-none align-items-center justify-content-between mb-3 shadow-sm">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-check-circle-fill fs-6" id="admin-alert-icon"></i>
+                            <span id="admin-alert-text">Cambios guardados exitosamente.</span>
+                        </div>
+                        <button type="button" class="btn-close btn-close-sm" onclick="document.getElementById('admin-roles-alert').classList.add('d-none')"></button>
+                    </div>
+
+                    <div class="tab-content" id="adminRolesTabsContent">
+                        <!-- TAB 1: ROLES Y PERMISOS -->
+                        <div class="tab-pane fade show active" id="tab-content-roles" role="tabpanel">
+                            <!-- Barra de búsqueda y leyenda explicativa -->
+                            <div class="bg-white p-3 rounded border mb-3 shadow-sm">
+                                <div class="row g-2 align-items-center">
+                                    <div class="col-md-5">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                                            <input type="text" id="input-search-role" class="form-control" placeholder="Buscar rol por nombre..." oninput="filtrarListaRoles()">
+                                            <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('input-search-role').value=''; filtrarListaRoles();"><i class="bi bi-x-circle"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <div class="d-flex flex-wrap gap-2 justify-content-md-end small text-muted" style="font-size: 0.72rem;">
+                                            <span class="badge bg-light text-dark border"><i class="bi bi-building me-1 text-primary"></i> 1. Tipo Empresas</span>
+                                            <span class="badge bg-light text-dark border"><i class="bi bi-gem me-1 text-info"></i> 2. Tipo Minerales</span>
+                                            <span class="badge bg-light text-dark border"><i class="bi bi-layers-half me-1 text-warning"></i> 3. Municipios Eje</span>
+                                            <span class="badge bg-light text-dark border"><i class="bi bi-pin-map-fill me-1 text-danger"></i> 4. Modificar Coordenadas</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Listado de tarjetas de roles -->
+                            <div id="roles-cards-container" class="d-flex flex-column gap-3">
+                                <div class="text-center py-4 text-muted">
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span> Cargando roles institucionales...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 2: USUARIOS Y ASIGNACIÓN DE ROLES -->
+                        <div class="tab-pane fade" id="tab-content-usuarios" role="tabpanel">
+                            <div class="bg-white p-3 rounded border shadow-sm">
+                                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                    <div class="input-group input-group-sm" style="max-width: 350px;">
+                                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                                        <input type="text" id="input-search-user" class="form-control" placeholder="Buscar usuario o funcionario..." oninput="filtrarListaUsuarios()">
+                                    </div>
+                                    <span class="small text-muted" id="usuarios-count-label">Cargando usuarios...</span>
+                                </div>
+                                <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
+                                    <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.8rem;">
+                                        <thead class="table-light sticky-top">
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Usuario</th>
+                                                <th>Funcionario / Nombre</th>
+                                                <th>Cédula</th>
+                                                <th>Rol Actual</th>
+                                                <th>Asignar Nuevo Rol</th>
+                                                <th class="text-center">Acción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbody-usuarios-admin">
+                                            <tr>
+                                                <td colspan="7" class="text-center py-3 text-muted">
+                                                    <span class="spinner-border spinner-border-sm me-2"></span> Cargando lista de funcionarios...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 3: CREAR NUEVO ROL -->
+                        <div class="tab-pane fade" id="tab-content-nuevo-rol" role="tabpanel">
+                            <div class="bg-white p-4 rounded border shadow-sm mx-auto" style="max-width: 650px;">
+                                <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-shield-plus text-primary me-2"></i>Registrar Nuevo Rol Institucional</h6>
+                                <form id="form-crear-rol" onsubmit="crearNuevoRol(event)">
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold">Nombre del Rol:</label>
+                                        <input type="text" id="nuevo-rol-nombre" class="form-control form-control-sm" placeholder="Ejemplo: Fiscal de Campo MNM" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold mb-2">Permisos y Restricciones Iniciales:</label>
+                                        <div class="permiso-switch-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div class="form-check-label">1.- Tipo de Empresas</div>
+                                                <div class="permiso-desc">Permite ver y segmentar por tipo de registrado (Minerales No Metálicos vs Registro de Oficio).</div>
+                                            </div>
+                                            <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input" type="checkbox" id="nuevo-rol-ver-emp" checked>
+                                            </div>
+                                        </div>
+                                        <div class="permiso-switch-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div class="form-check-label">2.- Tipo de Minerales</div>
+                                                <div class="permiso-desc">Permite ver el filtro de minerales, chips de minerales y resúmenes mineros.</div>
+                                            </div>
+                                            <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input" type="checkbox" id="nuevo-rol-ver-min" checked>
+                                            </div>
+                                        </div>
+                                        <div class="permiso-switch-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div class="form-check-label">3.- Municipios por Eje</div>
+                                                <div class="permiso-desc">Permite visualizar el panel de ejes territoriales, capas poligonales y filtro por eje.</div>
+                                            </div>
+                                            <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input" type="checkbox" id="nuevo-rol-ver-eje" checked>
+                                            </div>
+                                        </div>
+                                        <div class="permiso-switch-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div class="form-check-label">4.- Modificar Coordenadas GPS</div>
+                                                <div class="permiso-desc">Permite editar y fijar coordenadas geográficas exactas de las empresas en la BD.</div>
+                                            </div>
+                                            <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input" type="checkbox" id="nuevo-rol-mod-coord">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('tab-roles-link').click()">Cancelar</button>
+                                        <button type="submit" class="btn btn-sm btn-primary" id="btn-submit-nuevo-rol">
+                                            <i class="bi bi-save me-1"></i> Guardar Nuevo Rol
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer del Modal -->
+                <div class="modal-footer bg-light py-2 d-flex justify-content-between">
+                    <span class="text-muted small" style="font-size: 0.72rem;">
+                        <i class="bi bi-info-circle me-1"></i> La configuración se almacena en la tabla <code class="text-primary font-monospace">autenticacion.tab_rol_permisos_mapa</code>
+                    </span>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -1641,15 +1935,730 @@
             });
         }
 
-        // Actualizar datos del usuario en la interfaz (solo muestra el nombre del usuario)
+        // ==============================================================
+        // GESTIÓN DE ROLES, PERFILES Y PERMISOS DEL SISTEMA CARTOGRÁFICO
+        // ==============================================================
+        let CURRENT_USER = null;
+        let CURRENT_PERMISOS = {
+            puede_ver_tipo_empresa: true,
+            puede_ver_tipo_minerales: true,
+            puede_ver_municipios_eje: true,
+            puede_modificar_coordenadas: false,
+            es_admin: false
+        };
+        let ORIGINAL_ADMIN_PERMISOS = null;
+        let ROLES_ADMIN_CACHE = [];
+        let USUARIOS_ADMIN_CACHE = [];
+        let modalAdminRolesInstance = null;
+
+        // Verifica con máxima precisión si el usuario autenticado es Super Administrador o Administrador
+        function esUsuarioAdmin(user) {
+            if (!user) return false;
+            // 1. Verificación directa por flag booleano
+            if (user.es_admin === true || user.es_admin === 'true' || user.es_admin === 1) return true;
+            if (user.permisos && (user.permisos.es_admin === true || user.permisos.es_admin === 'true' || user.permisos.es_admin === 1)) return true;
+            // 2. Verificación por ID de Rol institucional (1 = Super Admin, 2 = Admin)
+            const idRol = parseInt(user.id_rol || user.id_tab_rol, 10);
+            if (idRol === 1 || idRol === 2) return true;
+            // 3. Verificación por nombre textual del Rol
+            const rol = (user.rol || user.de_rol || '').trim().toLowerCase();
+            if (rol === 'super administrador' || rol === 'administrador') return true;
+            if (rol.includes('administrador') && !rol.includes('iara')) return true;
+            return false;
+        }
+
+        // Actualizar datos del usuario y sus permisos en la interfaz
         function updateUserData(user) {
             if (!user) return;
+            CURRENT_USER = user;
+            const esAdmin = esUsuarioAdmin(user);
+            if (user.permisos) {
+                CURRENT_PERMISOS = Object.assign({}, user.permisos);
+                CURRENT_PERMISOS.es_admin = esAdmin;
+            } else {
+                CURRENT_PERMISOS = {
+                    puede_ver_tipo_empresa: true,
+                    puede_ver_tipo_minerales: true,
+                    puede_ver_municipios_eje: true,
+                    puede_modificar_coordenadas: esAdmin,
+                    es_admin: esAdmin
+                };
+            }
+
             const avatar = document.getElementById('user-avatar-initials') || document.getElementById('user-display-avatar');
             const nameEl = document.getElementById('user-fullname') || document.getElementById('user-display-name');
+            const roleEl = document.getElementById('user-role-badge');
+
             if (avatar) avatar.textContent = user.iniciales || 'US';
             if (nameEl) nameEl.textContent = user.nombre || user.usuario || 'Funcionario';
-            const roleEl = document.getElementById('user-role-label') || document.getElementById('user-display-cargo');
-            if (roleEl) roleEl.remove();
+            if (roleEl) {
+                roleEl.textContent = user.rol || 'Funcionario';
+                roleEl.title = `Rol: ${user.rol || 'Funcionario'} (ID: ${user.id_rol || '-'})`;
+            }
+
+            // Mostrar u ocultar el botón del Menú de Administración de Roles (Header y Sidebar)
+            // REGLA ESTRICTA: Solo los Administradores y Super Administradores pueden ver el botón
+            const btnAdminRoles = document.getElementById('btn-admin-roles');
+            const btnAdminRolesSidebar = document.getElementById('btn-admin-roles-sidebar');
+            [btnAdminRoles, btnAdminRolesSidebar].forEach(btn => {
+                if (!btn) return;
+                if (esAdmin) {
+                    btn.classList.remove('d-none');
+                    btn.style.setProperty('display', 'inline-flex', 'important');
+                } else {
+                    btn.classList.add('d-none');
+                    btn.style.setProperty('display', 'none', 'important');
+                }
+            });
+
+            // Aplicar restricciones reactivas según el perfil del usuario
+            aplicarPermisos(CURRENT_PERMISOS);
+        }
+
+        // Aplica o restringe las 4 opciones solicitadas según la configuración del perfil
+        function aplicarPermisos(permisos) {
+            if (!permisos) return;
+
+            // ----------------------------------------------------------
+            // 0.- Visibilidad del botón de Roles y Permisos (Solo Admins)
+            // ----------------------------------------------------------
+            const esAdminValido = (typeof permisos.es_admin !== 'undefined') ? Boolean(permisos.es_admin) : esUsuarioAdmin(CURRENT_USER);
+            const btnAdminRoles = document.getElementById('btn-admin-roles');
+            const btnAdminRolesSidebar = document.getElementById('btn-admin-roles-sidebar');
+            [btnAdminRoles, btnAdminRolesSidebar].forEach(btn => {
+                if (!btn) return;
+                if (esAdminValido) {
+                    btn.classList.remove('d-none');
+                    btn.style.setProperty('display', 'inline-flex', 'important');
+                } else {
+                    btn.classList.add('d-none');
+                    btn.style.setProperty('display', 'none', 'important');
+                }
+            });
+
+            // ----------------------------------------------------------
+            // 1.- Tipo de empresas
+            // ----------------------------------------------------------
+            const segContainer = document.getElementById('group-segment-container');
+            const badgeOficio = document.getElementById('badge-header-oficio');
+            if (!permisos.puede_ver_tipo_empresa) {
+                document.body.classList.add('hide-tipo-empresas');
+                if (segContainer) segContainer.classList.add('d-none');
+                if (badgeOficio) badgeOficio.classList.add('d-none');
+                if (currentGroupFilter !== 'all') {
+                    currentGroupFilter = 'all';
+                    if (typeof applyMnmFilters === 'function' && Array.isArray(MNM_DATA) && MNM_DATA.length > 0) {
+                        applyMnmFilters();
+                    }
+                }
+            } else {
+                document.body.classList.remove('hide-tipo-empresas');
+                if (segContainer) segContainer.classList.remove('d-none');
+                if (badgeOficio) badgeOficio.classList.remove('d-none');
+            }
+
+            // ----------------------------------------------------------
+            // 2.- Tipo de minerales
+            // ----------------------------------------------------------
+            const minContainer = document.getElementById('container-filter-mineral');
+            const munContainer = document.getElementById('container-filter-municipio');
+            const badgeRitez = document.getElementById('badge-header-ritez');
+            const ocMinSec = document.getElementById('oc-minerales-section');
+            if (!permisos.puede_ver_tipo_minerales) {
+                document.body.classList.add('hide-tipo-minerales');
+                if (minContainer) minContainer.classList.add('d-none');
+                if (munContainer) {
+                    munContainer.classList.remove('col-6');
+                    munContainer.classList.add('col-12');
+                }
+                if (badgeRitez) badgeRitez.classList.add('d-none');
+                if (ocMinSec) ocMinSec.classList.add('d-none');
+                if (currentMineralFilter !== 'all') {
+                    currentMineralFilter = 'all';
+                    if (typeof applyMnmFilters === 'function' && Array.isArray(MNM_DATA) && MNM_DATA.length > 0) {
+                        applyMnmFilters();
+                    }
+                }
+            } else {
+                document.body.classList.remove('hide-tipo-minerales');
+                if (minContainer) minContainer.classList.remove('d-none');
+                if (munContainer) {
+                    munContainer.classList.remove('col-12');
+                    munContainer.classList.add('col-6');
+                }
+                if (badgeRitez) badgeRitez.classList.remove('d-none');
+                if (ocMinSec) ocMinSec.classList.remove('d-none');
+            }
+
+            // ----------------------------------------------------------
+            // 3.- Municipios por Eje
+            // ----------------------------------------------------------
+            const ejeContainer = document.getElementById('container-filter-eje');
+            const btnToggleLegend = document.getElementById('btn-toggle-legend-card');
+            const legendPanel = document.getElementById('ejes-legend-panel');
+            if (!permisos.puede_ver_municipios_eje) {
+                document.body.classList.add('hide-municipios-eje');
+                if (ejeContainer) ejeContainer.classList.add('d-none');
+                if (btnToggleLegend) btnToggleLegend.classList.add('d-none');
+                if (legendPanel) {
+                    legendPanel.classList.add('d-none');
+                    legendPanel.classList.add('collapsed');
+                }
+                if (currentEjeFilter !== 'all') {
+                    currentEjeFilter = 'all';
+                    if (typeof applyMnmFilters === 'function' && Array.isArray(MNM_DATA) && MNM_DATA.length > 0) {
+                        applyMnmFilters();
+                    }
+                }
+                if (googleMap && googleMap.data) {
+                    googleMap.data.setStyle({ visible: false });
+                }
+                if (leafletPolygonsLayer && leafletMapInstance) {
+                    if (leafletMapInstance.hasLayer(leafletPolygonsLayer)) {
+                        leafletMapInstance.removeLayer(leafletPolygonsLayer);
+                    }
+                }
+            } else {
+                document.body.classList.remove('hide-municipios-eje');
+                if (ejeContainer) ejeContainer.classList.remove('d-none');
+                if (btnToggleLegend) btnToggleLegend.classList.remove('d-none');
+                if (legendPanel) legendPanel.classList.remove('d-none');
+                if (typeof updateCapasEjesStyles === 'function') {
+                    updateCapasEjesStyles();
+                }
+            }
+
+            // ----------------------------------------------------------
+            // 4.- Modificar coordenadas de GPS en la ficha de la empresa
+            // ----------------------------------------------------------
+            const btnActivatePicker = document.getElementById('btn-activate-map-picker');
+            const formGeoref = document.getElementById('form-georef');
+            const restrictedGeorefBox = document.getElementById('georef-restricted-box');
+            if (!permisos.puede_modificar_coordenadas) {
+                if (btnActivatePicker) btnActivatePicker.classList.add('d-none');
+                if (formGeoref) formGeoref.classList.add('d-none');
+                if (restrictedGeorefBox) restrictedGeorefBox.classList.remove('d-none');
+                if (typeof cancelCoordinatePicker === 'function' && isPickerModeActive) {
+                    cancelCoordinatePicker();
+                }
+            } else {
+                if (btnActivatePicker) btnActivatePicker.classList.remove('d-none');
+                if (formGeoref) formGeoref.classList.remove('d-none');
+                if (restrictedGeorefBox) restrictedGeorefBox.classList.add('d-none');
+            }
+        }
+
+        // ==============================================================
+        // CONTROLADORES DEL MODAL DE ADMINISTRACIÓN DE ROLES
+        // ==============================================================
+        function abrirModalAdminRoles() {
+            // Protección: Solo administradores y Super Administradores pueden abrir el modal
+            if (!esUsuarioAdmin(CURRENT_USER)) {
+                console.warn('Acceso denegado: solo Administradores y Super Administradores tienen acceso a este módulo.');
+                return;
+            }
+            const modalEl = document.getElementById('modal-admin-roles');
+            if (!modalEl) return;
+            if (!modalAdminRolesInstance) {
+                modalAdminRolesInstance = new bootstrap.Modal(modalEl);
+            }
+            modalAdminRolesInstance.show();
+            cargarRolesAdmin();
+            cargarUsuariosAdmin();
+        }
+
+        async function cargarRolesAdmin() {
+            const container = document.getElementById('roles-cards-container');
+            if (!container) return;
+            container.innerHTML = `
+                <div class="text-center py-4 text-muted">
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span> Cargando roles institucionales...
+                </div>
+            `;
+
+            try {
+                const res = await fetch('api_roles.php?action=listar_roles');
+                const data = await res.json();
+                if (!data.success || !Array.isArray(data.roles)) {
+                    container.innerHTML = `<div class="alert alert-danger py-2 small">${data.message || 'Error al cargar roles.'}</div>`;
+                    return;
+                }
+
+                ROLES_ADMIN_CACHE = data.roles;
+                const countBadge = document.getElementById('count-roles-badge');
+                if (countBadge) countBadge.textContent = data.roles.length;
+
+                renderRolesCards(ROLES_ADMIN_CACHE);
+            } catch (err) {
+                console.error("Error al cargar roles:", err);
+                container.innerHTML = `<div class="alert alert-danger py-2 small">Error de conexión: ${err.message}</div>`;
+            }
+        }
+
+        function renderRolesCards(roles) {
+            const container = document.getElementById('roles-cards-container');
+            if (!container) return;
+
+            if (!roles || roles.length === 0) {
+                container.innerHTML = `<div class="text-center py-4 text-muted small">No se encontraron roles coincidentes.</div>`;
+                return;
+            }
+
+            container.innerHTML = roles.map(r => {
+                const esSuperOAdmin = (r.id === 1 || r.id === 2);
+                const badgeAdmin = esSuperOAdmin ? `<span class="badge bg-primary text-white" style="font-size: 0.65rem;">ADMINISTRADOR</span>` : '';
+                const isCurrent = (CURRENT_USER && CURRENT_USER.id_rol === r.id);
+                const badgeCurrent = isCurrent ? `<span class="badge bg-success text-white" style="font-size: 0.65rem;"><i class="bi bi-person-check-fill me-1"></i>TU ROL ACTUAL</span>` : '';
+
+                return `
+                    <div class="role-card-admin" id="role-card-${r.id}" data-role-id="${r.id}" data-role-name="${r.de_rol.toLowerCase()}">
+                        <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width: 32px; height: 32px; background: var(--sedatez-navy); font-size: 0.78rem;">
+                                    ${r.id}
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.92rem;">${r.de_rol}</h6>
+                                    <div class="d-flex align-items-center gap-1 mt-1 flex-wrap">
+                                        ${badgeAdmin}
+                                        ${badgeCurrent}
+                                        <span class="badge bg-light text-secondary border" style="font-size: 0.68rem;">
+                                            <i class="bi bi-people me-1"></i>${r.total_usuarios} usuarios
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2" style="font-size: 0.72rem;" onclick="simularPermisosRol(${r.id})" title="Ver la interfaz exactamente como la vería este perfil">
+                                    <i class="bi bi-eye me-1"></i> Probar Perfil
+                                </button>
+                                <button type="button" class="btn btn-xs btn-primary py-1 px-3" id="btn-save-role-${r.id}" style="font-size: 0.75rem;" onclick="guardarPermisosRol(${r.id}, this)">
+                                    <i class="bi bi-cloud-arrow-up-fill me-1"></i> Guardar
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Grid de las 4 Opciones de Restricción solicitadas -->
+                        <div class="row g-2 mt-2 pt-2 border-top">
+                            <!-- 1. Tipo de Empresas -->
+                            <div class="col-md-6 col-lg-3">
+                                <div class="permiso-switch-item h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                            <label class="form-check-label text-truncate" for="switch-emp-${r.id}" title="1. Tipo de Empresas">
+                                                <i class="bi bi-building text-primary me-1"></i> 1. Tipo Empresas
+                                            </label>
+                                            <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input" type="checkbox" id="switch-emp-${r.id}" ${r.puede_ver_tipo_empresa ? 'checked' : ''}>
+                                            </div>
+                                        </div>
+                                        <div class="permiso-desc">Segmentador de grupos (MNM vs Reg. Oficio) y clasificación.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. Tipo de Minerales -->
+                            <div class="col-md-6 col-lg-3">
+                                <div class="permiso-switch-item h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                            <label class="form-check-label text-truncate" for="switch-min-${r.id}" title="2. Tipo de Minerales">
+                                                <i class="bi bi-gem text-info me-1"></i> 2. Tipo Minerales
+                                            </label>
+                                            <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input" type="checkbox" id="switch-min-${r.id}" ${r.puede_ver_tipo_minerales ? 'checked' : ''}>
+                                            </div>
+                                        </div>
+                                        <div class="permiso-desc">Filtro select por mineral, chips de minerales y resúmenes.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. Municipios por Eje -->
+                            <div class="col-md-6 col-lg-3">
+                                <div class="permiso-switch-item h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                            <label class="form-check-label text-truncate" for="switch-eje-${r.id}" title="3. Municipios por Eje">
+                                                <i class="bi bi-layers-half text-warning me-1"></i> 3. Municipios por Eje
+                                            </label>
+                                            <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input" type="checkbox" id="switch-eje-${r.id}" ${r.puede_ver_municipios_eje ? 'checked' : ''}>
+                                            </div>
+                                        </div>
+                                        <div class="permiso-desc">Panel flotante, leyenda, selector y capas poligonales de ejes.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 4. Modificar coordenadas GPS en ficha -->
+                            <div class="col-md-6 col-lg-3">
+                                <div class="permiso-switch-item h-100 d-flex flex-column justify-content-between" style="border-left: 3px solid #0066FF;">
+                                    <div>
+                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                            <label class="form-check-label text-truncate" for="switch-coord-${r.id}" title="4. Modificar Coordenadas GPS">
+                                                <i class="bi bi-pin-map-fill text-danger me-1"></i> 4. Modificar Coordenadas
+                                            </label>
+                                            <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input" type="checkbox" id="switch-coord-${r.id}" ${r.puede_modificar_coordenadas ? 'checked' : ''}>
+                                            </div>
+                                        </div>
+                                        <div class="permiso-desc">Editor de coordenadas GPS y botón Fijar en Mapa.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filtrarListaRoles() {
+            const query = (document.getElementById('input-search-role')?.value || '').toLowerCase().trim();
+            if (!query) {
+                renderRolesCards(ROLES_ADMIN_CACHE);
+                return;
+            }
+            const filtrados = ROLES_ADMIN_CACHE.filter(r => r.de_rol.toLowerCase().includes(query) || String(r.id) === query);
+            renderRolesCards(filtrados);
+        }
+
+        async function guardarPermisosRol(idRol, btnEl) {
+            const swEmp = document.getElementById(`switch-emp-${idRol}`);
+            const swMin = document.getElementById(`switch-min-${idRol}`);
+            const swEje = document.getElementById(`switch-eje-${idRol}`);
+            const swCoord = document.getElementById(`switch-coord-${idRol}`);
+
+            if (!swEmp || !swMin || !swEje || !swCoord) return;
+
+            const payload = {
+                id_tab_rol: idRol,
+                puede_ver_tipo_empresa: swEmp.checked,
+                puede_ver_tipo_minerales: swMin.checked,
+                puede_ver_municipios_eje: swEje.checked,
+                puede_modificar_coordenadas: swCoord.checked
+            };
+
+            const origHtml = btnEl.innerHTML;
+            btnEl.disabled = true;
+            btnEl.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
+
+            try {
+                const res = await fetch('api_roles.php?action=guardar_permisos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    btnEl.className = 'btn btn-xs btn-success py-1 px-3';
+                    btnEl.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> ¡Guardado!`;
+                    setTimeout(() => {
+                        btnEl.className = 'btn btn-xs btn-primary py-1 px-3';
+                        btnEl.innerHTML = origHtml;
+                        btnEl.disabled = false;
+                    }, 2000);
+
+                    // Actualizar caché en memoria
+                    const idx = ROLES_ADMIN_CACHE.findIndex(r => r.id === idRol);
+                    if (idx !== -1) {
+                        ROLES_ADMIN_CACHE[idx].puede_ver_tipo_empresa = payload.puede_ver_tipo_empresa;
+                        ROLES_ADMIN_CACHE[idx].puede_ver_tipo_minerales = payload.puede_ver_tipo_minerales;
+                        ROLES_ADMIN_CACHE[idx].puede_ver_municipios_eje = payload.puede_ver_municipios_eje;
+                        ROLES_ADMIN_CACHE[idx].puede_modificar_coordenadas = payload.puede_modificar_coordenadas;
+                    }
+
+                    mostrarAlertaAdmin(`Permisos del rol ID ${idRol} guardados exitosamente en la BD.`, 'success');
+
+                    // Si el rol modificado es el del usuario conectado, refrescar en vivo
+                    if (CURRENT_USER && CURRENT_USER.id_rol === idRol) {
+                        CURRENT_PERMISOS = Object.assign({}, CURRENT_PERMISOS, payload);
+                        aplicarPermisos(CURRENT_PERMISOS);
+                    }
+                } else {
+                    mostrarAlertaAdmin(data.message || 'Error al guardar permisos.', 'danger');
+                    btnEl.innerHTML = origHtml;
+                    btnEl.disabled = false;
+                }
+            } catch (err) {
+                mostrarAlertaAdmin('Error de red al guardar: ' + err.message, 'danger');
+                btnEl.innerHTML = origHtml;
+                btnEl.disabled = false;
+            }
+        }
+
+        function mostrarAlertaAdmin(mensaje, tipo = 'success') {
+            const alertEl = document.getElementById('admin-roles-alert');
+            const alertText = document.getElementById('admin-alert-text');
+            const alertIcon = document.getElementById('admin-alert-icon');
+            if (!alertEl || !alertText) return;
+
+            alertEl.className = `alert alert-${tipo} py-2 px-3 small d-flex align-items-center justify-content-between mb-3 shadow-sm`;
+            alertText.textContent = mensaje;
+            if (alertIcon) {
+                alertIcon.className = (tipo === 'success') ? 'bi bi-check-circle-fill fs-6 text-success' : 'bi bi-exclamation-triangle-fill fs-6 text-danger';
+            }
+            alertEl.classList.remove('d-none');
+            setTimeout(() => {
+                alertEl.classList.add('d-none');
+            }, 4500);
+        }
+
+        function simularPermisosRol(idRol) {
+            const rol = ROLES_ADMIN_CACHE.find(r => r.id === idRol);
+            if (!rol) return;
+
+            if (!ORIGINAL_ADMIN_PERMISOS) {
+                ORIGINAL_ADMIN_PERMISOS = Object.assign({}, CURRENT_PERMISOS);
+            }
+
+            const rolNombre = (rol.de_rol || '').trim().toLowerCase();
+            const esRolAdmin = (rol.id === 1 || rol.id === 2 || rolNombre === 'super administrador' || rolNombre === 'administrador');
+
+            const permisosSimulados = {
+                puede_ver_tipo_empresa: Boolean(rol.puede_ver_tipo_empresa),
+                puede_ver_tipo_minerales: Boolean(rol.puede_ver_tipo_minerales),
+                puede_ver_municipios_eje: Boolean(rol.puede_ver_municipios_eje),
+                puede_modificar_coordenadas: Boolean(rol.puede_modificar_coordenadas),
+                es_admin: esRolAdmin
+            };
+
+            aplicarPermisos(permisosSimulados);
+
+            const banner = document.getElementById('simulation-banner');
+            const simName = document.getElementById('simulation-role-name');
+            if (banner && simName) {
+                simName.textContent = `${rol.de_rol} (ID: ${rol.id})`;
+                banner.classList.remove('d-none');
+                banner.classList.add('d-flex');
+            }
+
+            if (modalAdminRolesInstance) {
+                modalAdminRolesInstance.hide();
+            }
+        }
+
+        function restaurarRolAdmin() {
+            if (ORIGINAL_ADMIN_PERMISOS) {
+                CURRENT_PERMISOS = Object.assign({}, ORIGINAL_ADMIN_PERMISOS);
+                ORIGINAL_ADMIN_PERMISOS = null;
+            }
+            aplicarPermisos(CURRENT_PERMISOS);
+
+            const banner = document.getElementById('simulation-banner');
+            if (banner) {
+                banner.classList.add('d-none');
+                banner.classList.remove('d-flex');
+            }
+        }
+
+        async function cargarUsuariosAdmin() {
+            const tbody = document.getElementById('tbody-usuarios-admin');
+            const countLabel = document.getElementById('usuarios-count-label');
+            if (!tbody) return;
+
+            try {
+                const res = await fetch('api_roles.php?action=listar_usuarios');
+                const data = await res.json();
+                if (!data.success || !Array.isArray(data.usuarios)) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-danger text-center">${data.message || 'Error cargando usuarios'}</td></tr>`;
+                    return;
+                }
+
+                USUARIOS_ADMIN_CACHE = data.usuarios;
+                if (countLabel) countLabel.textContent = `${data.usuarios.length} funcionarios administrativos registrados`;
+                renderUsuariosTable(USUARIOS_ADMIN_CACHE);
+            } catch (err) {
+                console.error("Error cargando usuarios:", err);
+                tbody.innerHTML = `<tr><td colspan="7" class="text-danger text-center">Error al conectar con la base de datos</td></tr>`;
+            }
+        }
+
+        function renderUsuariosTable(usuarios) {
+            const tbody = document.getElementById('tbody-usuarios-admin');
+            if (!tbody) return;
+
+            if (!usuarios || usuarios.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-3">No se encontraron usuarios.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = usuarios.map(u => {
+                const isCurrent = (CURRENT_USER && CURRENT_USER.id === u.id);
+                const badgeYou = isCurrent ? `<span class="badge bg-success ms-1" style="font-size: 0.65rem;">Tú</span>` : '';
+
+                return `
+                    <tr id="user-row-${u.id}">
+                        <td class="font-monospace text-muted">${u.id}</td>
+                        <td>
+                            <strong class="text-dark">${u.da_usuario}</strong>
+                            ${badgeYou}
+                        </td>
+                        <td>
+                            <div>${u.nombre_completo}</div>
+                            <small class="text-muted" style="font-size: 0.72rem;">${u.da_email || 'Sin correo'}</small>
+                        </td>
+                        <td class="font-monospace">${u.nu_cedula || '-'}</td>
+                        <td>
+                            <span class="badge bg-light text-dark border fw-bold" id="user-role-badge-${u.id}">
+                                ${u.de_rol || 'Sin Rol'}
+                            </span>
+                        </td>
+                        <td>
+                            <select class="form-select form-select-sm" id="user-role-select-${u.id}" style="font-size: 0.75rem; max-width: 200px;">
+                                <option value="">-- Seleccionar Rol --</option>
+                                ${ROLES_ADMIN_CACHE.map(r => `
+                                    <option value="${r.id}" ${u.id_rol === r.id ? 'selected' : ''}>${r.de_rol}</option>
+                                `).join('')}
+                            </select>
+                        </td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-xs btn-outline-primary py-1 px-2" style="font-size: 0.72rem;" onclick="asignarRolUsuario(${u.id}, this)">
+                                <i class="bi bi-check-lg me-1"></i> Asignar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filtrarListaUsuarios() {
+            const query = (document.getElementById('input-search-user')?.value || '').toLowerCase().trim();
+            if (!query) {
+                renderUsuariosTable(USUARIOS_ADMIN_CACHE);
+                return;
+            }
+            const filtrados = USUARIOS_ADMIN_CACHE.filter(u => 
+                u.da_usuario.toLowerCase().includes(query) || 
+                u.nombre_completo.toLowerCase().includes(query) ||
+                (u.de_rol && u.de_rol.toLowerCase().includes(query)) ||
+                (u.da_email && u.da_email.toLowerCase().includes(query))
+            );
+            renderUsuariosTable(filtrados);
+        }
+
+        async function asignarRolUsuario(userId, btnEl) {
+            const selectEl = document.getElementById(`user-role-select-${userId}`);
+            if (!selectEl || !selectEl.value) {
+                mostrarAlertaAdmin('Debe seleccionar un rol para asignar.', 'warning');
+                return;
+            }
+
+            const targetRoleId = parseInt(selectEl.value, 10);
+            const origHtml = btnEl.innerHTML;
+            btnEl.disabled = true;
+            btnEl.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
+
+            try {
+                const res = await fetch('api_roles.php?action=asignar_rol', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id_tab_usuarios: userId,
+                        id_tab_rol: targetRoleId
+                    })
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    btnEl.className = 'btn btn-xs btn-success py-1 px-2';
+                    btnEl.innerHTML = `<i class="bi bi-check-circle-fill"></i> ¡Asignado!`;
+                    setTimeout(() => {
+                        btnEl.className = 'btn btn-xs btn-outline-primary py-1 px-2';
+                        btnEl.innerHTML = origHtml;
+                        btnEl.disabled = false;
+                    }, 2000);
+
+                    // Actualizar badge en la fila
+                    const badgeEl = document.getElementById(`user-role-badge-${userId}`);
+                    if (badgeEl) badgeEl.textContent = data.de_rol;
+
+                    // Actualizar caché
+                    const u = USUARIOS_ADMIN_CACHE.find(item => item.id === userId);
+                    if (u) {
+                        u.id_rol = targetRoleId;
+                        u.de_rol = data.de_rol;
+                    }
+
+                    mostrarAlertaAdmin(data.message, 'success');
+
+                    // Si el usuario modificado es el que está conectado actualmente
+                    if (CURRENT_USER && CURRENT_USER.id === userId) {
+                        CURRENT_USER.id_rol = targetRoleId;
+                        CURRENT_USER.rol = data.de_rol;
+                        const roleBadgeTop = document.getElementById('user-role-badge');
+                        if (roleBadgeTop) roleBadgeTop.textContent = data.de_rol;
+                        
+                        const roleObj = ROLES_ADMIN_CACHE.find(r => r.id === targetRoleId);
+                        if (roleObj) {
+                            CURRENT_PERMISOS = {
+                                puede_ver_tipo_empresa: Boolean(roleObj.puede_ver_tipo_empresa),
+                                puede_ver_tipo_minerales: Boolean(roleObj.puede_ver_tipo_minerales),
+                                puede_ver_municipios_eje: Boolean(roleObj.puede_ver_municipios_eje),
+                                puede_modificar_coordenadas: Boolean(roleObj.puede_modificar_coordenadas),
+                                es_admin: (targetRoleId === 1 || targetRoleId === 2)
+                            };
+                            aplicarPermisos(CURRENT_PERMISOS);
+                        }
+                    }
+
+                    // Refrescar roles para actualizar contadores
+                    cargarRolesAdmin();
+                } else {
+                    mostrarAlertaAdmin(data.message || 'Error al asignar rol.', 'danger');
+                    btnEl.innerHTML = origHtml;
+                    btnEl.disabled = false;
+                }
+            } catch (err) {
+                mostrarAlertaAdmin('Error de red al asignar rol: ' + err.message, 'danger');
+                btnEl.innerHTML = origHtml;
+                btnEl.disabled = false;
+            }
+        }
+
+        async function crearNuevoRol(event) {
+            event.preventDefault();
+            const btnSubmit = document.getElementById('btn-submit-nuevo-rol');
+            const nombre = document.getElementById('nuevo-rol-nombre').value.trim();
+            const verEmp = document.getElementById('nuevo-rol-ver-emp').checked;
+            const verMin = document.getElementById('nuevo-rol-ver-min').checked;
+            const verEje = document.getElementById('nuevo-rol-ver-eje').checked;
+            const modCoord = document.getElementById('nuevo-rol-mod-coord').checked;
+
+            if (!nombre) return;
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Guardando...`;
+
+            try {
+                const res = await fetch('api_roles.php?action=crear_rol', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        de_rol: nombre,
+                        puede_ver_tipo_empresa: verEmp,
+                        puede_ver_tipo_minerales: verMin,
+                        puede_ver_municipios_eje: verEje,
+                        puede_modificar_coordenadas: modCoord
+                    })
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    mostrarAlertaAdmin(`Rol '${nombre}' creado exitosamente en la base de datos.`, 'success');
+                    document.getElementById('form-crear-rol').reset();
+                    document.getElementById('tab-roles-link').click();
+                    await cargarRolesAdmin();
+                } else {
+                    mostrarAlertaAdmin(data.message || 'Error al crear rol.', 'danger');
+                }
+            } catch (err) {
+                mostrarAlertaAdmin('Error de red al crear nuevo rol: ' + err.message, 'danger');
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = `<i class="bi bi-save me-1"></i> Guardar Nuevo Rol`;
+            }
         }
 
         // Chequear sesión existente al cargar la página
@@ -1774,6 +2783,9 @@
 
                 // 3. Cargar Capas Poligonales y Leyenda Oficial (Plano ME-01)
                 await loadCapasEjes();
+
+                // 4. Aplicar restricciones de visualización del perfil
+                aplicarPermisos(CURRENT_PERMISOS);
             } catch (err) {
                 console.error("Error cargando datos del dashboard MNM:", err);
             }
