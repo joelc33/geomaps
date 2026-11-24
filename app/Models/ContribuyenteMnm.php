@@ -33,12 +33,14 @@ class ContribuyenteMnm extends Model
         'nu_longitud',
         'in_activo',
         'in_llenado_guia',
+        'in_productor',
         'id_tab_ambito_territorial',
     ];
 
     protected $casts = [
         'in_activo' => 'boolean',
         'in_llenado_guia' => 'boolean',
+        'in_productor' => 'boolean',
     ];
 
     /**

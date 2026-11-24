@@ -612,7 +612,7 @@
         }
 
         .badge-group-oficio {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
             color: #ffffff !important;
             font-size: 0.65rem;
             font-weight: 700;
@@ -620,7 +620,7 @@
             border-radius: 4px;
             display: inline-flex;
             align-items: center;
-            box-shadow: 0 1px 3px rgba(79, 70, 229, 0.25);
+            box-shadow: 0 1px 3px rgba(37, 99, 235, 0.25);
         }
 
         .badge-group-ritez {
@@ -710,9 +710,9 @@
 
         .btn-floating-expand-sidebar {
             position: absolute;
-            top: 14px;
-            left: 14px;
-            z-index: 1000;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1010;
             font-size: 0.88rem;
             font-weight: 700;
             letter-spacing: -0.01em;
@@ -764,8 +764,8 @@
                 gap: 10px;
             }
             .btn-floating-expand-sidebar {
-                top: 12px;
-                left: 12px;
+                bottom: 16px;
+                left: 16px;
                 padding: 12px 22px;
                 font-size: 0.92rem;
                 min-height: 48px;
@@ -807,6 +807,10 @@
             max-width: 380px;
             transition: all 0.3s ease;
             display: none;
+        }
+
+        .dashboard-body.sidebar-collapsed .active-company-floating-pill {
+            bottom: 80px;
         }
 
         /* Modal Inspector DB */
@@ -1129,10 +1133,10 @@
             <div class="d-flex align-items-center gap-3">
                 <!-- Resumen Rápido de Minerales No Metálicos -->
                 <div class="d-none d-lg-flex align-items-center gap-2">
-                    <span id="badge-header-ritez" class="badge px-2 py-1" style="background: rgba(11, 37, 69, 0.08); color: #0b2545; border: 1px solid rgba(11, 37, 69, 0.2); font-size: 0.72rem;" title="Minerales No Metálicos">
-                        <i class="bi bi-award-fill me-1"></i> <span id="header-ritez-mnm">54</span> Minerales No Metálicos
+                    <span id="badge-header-ritez" class="badge px-2 py-1" style="background: rgba(234, 88, 12, 0.12); color: #ea580c; border: 1px solid rgba(234, 88, 12, 0.3); font-size: 0.72rem;" title="Contribuyentes Regulares">
+                        <i class="bi bi-award-fill me-1"></i> <span id="header-ritez-mnm">16</span> Regulares
                     </span>
-                    <span id="badge-header-oficio" class="badge px-2 py-1" style="background: rgba(99, 102, 241, 0.12); color: #4338ca; border: 1px solid rgba(99, 102, 241, 0.3); font-size: 0.72rem;" title="Registro de Oficio de Usuarios de Minerales No Metálicos">
+                    <span id="badge-header-oficio" class="badge px-2 py-1" style="background: rgba(37, 99, 235, 0.12); color: #2563eb; border: 1px solid rgba(37, 99, 235, 0.3); font-size: 0.72rem;" title="Registro de Oficio de Usuarios de Minerales No Metálicos">
                         <i class="bi bi-journal-bookmark-fill me-1"></i> <span id="header-oficio-mnm">3</span> Reg. de Oficio
                     </span>
                     <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.72rem;">
@@ -1214,13 +1218,17 @@
                         <button type="button" class="sidebar-search-clear" id="sidebar-search-clear" title="Limpiar búsqueda"><i class="bi bi-x-circle-fill"></i></button>
                     </div>
 
-                    <!-- Segmentador de Grupo de Registrados -->
-                    <div id="group-segment-container" class="d-flex align-items-center justify-content-between bg-light p-1 rounded border mb-2">
-                        <span class="small text-muted ps-1" style="font-size: 0.7rem; font-weight: 600;">Grupo:</span>
-                        <div class="btn-group btn-group-sm" role="group">
-                            <button type="button" class="btn btn-xs py-0 px-2 btn-primary active" id="group-btn-all" data-group="all" style="font-size: 0.68rem;">Todos (<span id="count-group-all">57</span>)</button>
-                            <button type="button" class="btn btn-xs py-0 px-2 btn-outline-secondary" id="group-btn-ritez" data-group="ritez" style="font-size: 0.68rem;" title="Minerales No Metálicos">Minerales No Metálicos (<span id="count-group-ritez">54</span>)</button>
-                            <button type="button" class="btn btn-xs py-0 px-2 btn-outline-secondary" id="group-btn-oficio" data-group="oficio" style="font-size: 0.68rem;" title="Registro de Oficio de Usuarios de Minerales No Metálicos">Reg. Oficio (<span id="count-group-oficio">3</span>)</button>
+                    <!-- Segmentador de Contribuyentes -->
+                    <div id="group-segment-container" class="bg-light p-1 rounded border mb-2">
+                        <div class="d-flex align-items-center justify-content-between mb-1 px-1">
+                            <span class="small text-muted fw-bold" style="font-size: 0.7rem;">
+                                <i class="bi bi-people-fill text-primary me-1"></i>Contribuyentes Productores de Minerales No Metálicos:
+                            </span>
+                        </div>
+                        <div class="btn-group btn-group-sm w-100" role="group">
+                            <button type="button" class="btn btn-xs py-1 px-2 btn-primary active" id="group-btn-all" data-group="all" style="font-size: 0.68rem;" title="Mostrar Contribuyentes Regulares y Registro de Oficio">Todos (<span id="count-group-all">19</span>)</button>
+                            <button type="button" class="btn btn-xs py-1 px-2 btn-outline-secondary" id="group-btn-prod" data-group="productor" style="font-size: 0.68rem;" title="Contribuyentes Regulares de Minerales No Metálicos"><i class="bi bi-award-fill me-1" style="color: #ea580c;"></i>Regulares (<span id="count-group-prod">16</span>)</button>
+                            <button type="button" class="btn btn-xs py-1 px-2 btn-outline-secondary" id="group-btn-oficio" data-group="oficio" style="font-size: 0.68rem;" title="Registro de Oficio de Usuarios de Minerales No Metálicos"><i class="bi bi-journal-bookmark-fill me-1" style="color: #2563eb;"></i>Reg. Oficio (<span id="count-group-oficio">3</span>)</button>
                         </div>
                     </div>
 
@@ -1298,7 +1306,7 @@
                 <button type="button" id="btn-expand-sidebar-floating" class="btn btn-floating-expand-sidebar d-none" title="Toca aquí para ver el listado de registrados">
                     <i class="bi bi-building-fill fs-6"></i>
                     <span>Ver Registrados</span>
-                    <span class="floating-counter-badge" id="floating-btn-counter">54</span>
+                    <span class="floating-counter-badge" id="floating-btn-counter">19</span>
                 </button>
 
                 <!-- Banner de Modo Selección de Coordenadas (GPS Picker Mode) -->
@@ -1387,6 +1395,7 @@
                         <span class="badge" id="pill-company-group">GRUPO</span>
                         <span class="badge font-monospace" style="background: var(--bb-primary-light); color: var(--bb-primary); font-size: 0.72rem; font-weight: 700;" id="pill-company-rif">RIF: J-00000000-0</span>
                         <span class="badge bg-light text-secondary border" style="font-size: 0.68rem;" id="pill-company-category">Mineral</span>
+                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.68rem;" id="pill-company-productor">Regular</span>
                         <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.68rem;" id="pill-company-status">Activo</span>
                     </div>
                     <div class="small text-muted mb-2 text-truncate" style="font-size: 0.76rem; line-height: 1.35;" id="pill-company-address-container">
@@ -1456,6 +1465,19 @@
                     <div class="p-2 border rounded bg-light">
                         <div class="text-muted small" style="font-size: 0.7rem;">Guías de Transporte:</div>
                         <div id="oc-guia-badge"><span class="badge bg-info text-dark">Habilitado</span></div>
+                    </div>
+                </div>
+                <div class="col-12" id="oc-col-productor">
+                    <div class="p-2 border rounded bg-light d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted small" style="font-size: 0.7rem;">Condición de Contribuyente:</div>
+                            <div id="oc-productor-badge" class="mt-1">
+                                <span class="badge bg-warning text-dark"><i class="bi bi-award-fill me-1"></i>Regular</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-xs btn-outline-primary py-1 px-2" id="btn-toggle-productor" style="font-size: 0.72rem;" title="Cambiar si el contribuyente es regular o no regular">
+                            <i class="bi bi-arrow-repeat me-1"></i> Cambiar
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1896,6 +1918,7 @@
 
         // Filtros activos
         let currentGroupFilter = 'all'; // 'all', 'ritez', 'oficio'
+        let currentProductorFilter = 'all'; // 'all', '1' (productores), '0' (no productores)
         let currentStatusFilter = 'all';
         let currentGeoFilter = 'all';
         let currentMunicipioFilter = 'all';
@@ -2045,8 +2068,9 @@
                 document.body.classList.add('hide-tipo-empresas');
                 if (segContainer) segContainer.classList.add('d-none');
                 if (badgeOficio) badgeOficio.classList.add('d-none');
-                if (currentGroupFilter !== 'all') {
+                if (currentGroupFilter !== 'all' || currentProductorFilter !== 'all') {
                     currentGroupFilter = 'all';
+                    currentProductorFilter = 'all';
                     if (typeof applyMnmFilters === 'function' && Array.isArray(MNM_DATA) && MNM_DATA.length > 0) {
                         applyMnmFilters();
                     }
@@ -2808,7 +2832,7 @@
             if (cInactive) cInactive.textContent = resumen.inactivas;
 
             if (resumen.grupos) {
-                if (hRitez && resumen.grupos.ritez) hRitez.textContent = resumen.grupos.ritez.total;
+                if (hRitez && resumen.grupos.ritez) hRitez.textContent = (resumen.grupos.ritez.regulares !== undefined) ? resumen.grupos.ritez.regulares : ((resumen.grupos.ritez.productores !== undefined) ? resumen.grupos.ritez.productores : resumen.grupos.ritez.total);
                 if (hOficio && resumen.grupos.oficio) hOficio.textContent = resumen.grupos.oficio.total;
             }
 
@@ -2916,9 +2940,20 @@
                                             Number(emp.geometria.lat) !== 0 &&
                                             Number(emp.geometria.lng) !== 0);
 
-                // Filtro por Grupo de Registrados (RITEZ o Registro de Oficio)
-                if (currentGroupFilter !== 'all' && emp.grupo_codigo !== currentGroupFilter) {
-                    return false;
+                // Filtro por Grupo de Registrados
+                if (currentGroupFilter === 'all') {
+                    // En el botón Todos solo debe mostrar los productores y los de reg. oficio
+                    if (emp.grupo_codigo !== 'oficio' && emp.in_productor !== true) {
+                        return false;
+                    }
+                } else if (currentGroupFilter === 'productor') {
+                    if (emp.grupo_codigo !== 'ritez' || emp.in_productor !== true) {
+                        return false;
+                    }
+                } else if (currentGroupFilter === 'oficio') {
+                    if (emp.grupo_codigo !== 'oficio') {
+                        return false;
+                    }
                 }
 
                 // Filtro por Estatus (aplica solo para registrados con estatus tributario; Registro de Oficio no tiene estatus tributario)
@@ -3037,14 +3072,17 @@
             const activosEnFiltrados = filtered.filter(e => e.grupo_codigo !== 'oficio' && e.activo === true).length;
             const inactivosEnFiltrados = filtered.filter(e => e.grupo_codigo !== 'oficio' && e.activo === false).length;
 
-            // Conteo por grupos
-            const totalRitez = MNM_DATA.filter(e => e.grupo_codigo === 'ritez').length;
+            // Conteo por grupos (Todos = Productores + Reg. Oficio)
+            const totalProd = MNM_DATA.filter(e => e.grupo_codigo === 'ritez' && e.in_productor === true).length;
             const totalOficio = MNM_DATA.filter(e => e.grupo_codigo === 'oficio').length;
+            const totalTodos = totalProd + totalOficio;
+
             const countGroupAll = document.getElementById('count-group-all');
-            const countGroupRitez = document.getElementById('count-group-ritez');
+            const countGroupProd = document.getElementById('count-group-prod');
             const countGroupOficio = document.getElementById('count-group-oficio');
-            if (countGroupAll) countGroupAll.textContent = MNM_DATA.length;
-            if (countGroupRitez) countGroupRitez.textContent = totalRitez;
+
+            if (countGroupAll) countGroupAll.textContent = totalTodos;
+            if (countGroupProd) countGroupProd.textContent = totalProd;
             if (countGroupOficio) countGroupOficio.textContent = totalOficio;
 
             if (sideCount) sideCount.textContent = `${filtered.length} registrados`;
@@ -3087,8 +3125,8 @@
             });
         }
 
-        // Botones de Grupo (Todos, RITEZ, Registro de Oficio)
-        ['group-btn-all', 'group-btn-ritez', 'group-btn-oficio'].forEach(btnId => {
+        // Botones de Grupo (Todos, Regulares, Registro de Oficio)
+        ['group-btn-all', 'group-btn-prod', 'group-btn-oficio'].forEach(btnId => {
             const btn = document.getElementById(btnId);
             if (btn) {
                 btn.addEventListener('click', () => {
@@ -3267,6 +3305,12 @@
                     ? `<span class="text-muted" style="font-size: 0.7rem;"><i class="bi bi-folder2-open me-1"></i>Exp: ${empresa.expediente}</span>`
                     : '<span style="font-size: 0.7rem;"></span>';
 
+                const productorBadge = (!isOficio && empresa.in_productor !== null && empresa.in_productor !== undefined)
+                    ? (empresa.in_productor 
+                        ? '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle py-1" style="font-size: 0.65rem;" title="Contribuyente Regular"><i class="bi bi-award-fill me-1"></i>Regular</span>'
+                        : '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1" style="font-size: 0.65rem;" title="Contribuyente No Regular"><i class="bi bi-dash-circle me-1"></i>No Regular</span>')
+                    : '';
+
                 btn.innerHTML = `
                     <div class="d-flex align-items-center justify-content-between mb-1">
                         <div class="d-flex align-items-center gap-1 flex-wrap">
@@ -3275,6 +3319,7 @@
                                 <i class="bi bi-hammer me-1"></i>${badgeMineralName}
                             </span>
                             ${multiBadge}
+                            ${productorBadge}
                             ${gpsBadge}
                         </div>
                         ${statusBadge}
@@ -3583,7 +3628,9 @@
                     if (cluster.length > 1) {
                         const uniqueMinerals = [...new Set(cluster.map(c => c.mineralInfo.name))];
                         const isSingleMineral = (uniqueMinerals.length === 1);
-                        const color = isSingleMineral ? cluster[0].mineralInfo.color : '#0b2545';
+                        const allOficio = cluster.every(c => c.emp.grupo_codigo === 'oficio');
+                        const allRegulares = cluster.every(c => c.emp.in_productor === true && c.emp.grupo_codigo !== 'oficio');
+                        let color = allOficio ? '#2563eb' : (allRegulares ? '#ea580c' : (isSingleMineral ? cluster[0].mineralInfo.color : '#0b2545'));
                         const label = isSingleMineral ? cluster[0].mineralInfo.short : null;
 
                         finalElements.push({
@@ -3719,13 +3766,16 @@
                 } else {
                     // Puntos compartidos exactamente en la misma coordenada GPS
                     const firstMin = cluster[0].mineralInfo;
+                    const allOficio = cluster.every(c => c.emp.grupo_codigo === 'oficio');
+                    const allRegulares = cluster.every(c => c.emp.in_productor === true && c.emp.grupo_codigo !== 'oficio');
+                    const clusterColor = allOficio ? '#2563eb' : (allRegulares ? '#ea580c' : firstMin.color);
                     finalElements.push({
                         type: 'cluster',
                         mode: 'exact_spot',
                         lat: centerLat,
                         lng: centerLng,
                         count: cluster.length,
-                        color: firstMin.color,
+                        color: clusterColor,
                         label: firstMin.short,
                         title: `${cluster.length} empresas en esta ubicación (${firstMin.name})`,
                         companies: allEmps,
@@ -3880,7 +3930,9 @@
                 : `Grupo de ${element.count} Empresas Registradas`;
 
             const itemsHtml = element.companies.map(emp => {
-                const pinColor = isOficio ? '#6366f1' : (emp.color_mineral || getMineralColor(emp.mineral_principal));
+                const isOficioEmp = (emp.grupo_codigo === 'oficio');
+                const isRegularEmp = (!isOficioEmp && emp.in_productor === true);
+                const pinColor = isOficioEmp ? '#2563eb' : (isRegularEmp ? '#ea580c' : '#64748b');
                 return `
                     <div style="border-bottom: 1px solid #e2e8f0; padding: 7px 0;">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px;">
@@ -3943,8 +3995,10 @@
             const lat = Number(emp.geometria.lat);
             const lng = Number(emp.geometria.lng);
             const isOficio = (emp.grupo_codigo === 'oficio');
-            const pinColor = isOficio ? '#6366f1' : ((currentMineralFilter !== 'all') ? getMineralColor(currentMineralFilter) : (emp.color_mineral || '#0b2545'));
-            const strokeColor = isOficio ? '#4338ca' : (emp.activo ? '#ffffff' : '#ef4444');
+            const isRegular = (!isOficio && emp.in_productor === true);
+            // Regulares naranjas (#ea580c) y Oficio azules (#2563eb)
+            const pinColor = isOficio ? '#2563eb' : (isRegular ? '#ea580c' : '#64748b');
+            const strokeColor = '#ffffff';
 
             const pinSvg = `
                 <svg xmlns="http://www.w3.org/2000/svg" width="34" height="44" viewBox="0 0 34 44">
@@ -3953,7 +4007,7 @@
                             <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="${pinColor}" flood-opacity="0.45"/>
                         </filter>
                     </defs>
-                    <path d="M17 2C8.8 2 2 8.8 2 17c0 11.5 15 25 15 25s15-13.5 15-25C32 8.8 25.2 2 17 2z" fill="${pinColor}" stroke="${strokeColor}" stroke-width="${isOficio ? '2.5' : '2'}" filter="url(#s-${emp.uid})"/>
+                    <path d="M17 2C8.8 2 2 8.8 2 17c0 11.5 15 25 15 25s15-13.5 15-25C32 8.8 25.2 2 17 2z" fill="${pinColor}" stroke="${strokeColor}" stroke-width="2.5" filter="url(#s-${emp.uid})"/>
                     <circle cx="17" cy="17" r="7" fill="#ffffff"/>
                     <circle cx="17" cy="17" r="3.8" fill="${pinColor}"/>
                 </svg>`;
@@ -3961,7 +4015,7 @@
             const marker = new google.maps.Marker({
                 position: { lat, lng },
                 map: googleMap,
-                title: `[${emp.grupo_nombre}] ${emp.razon_social}`,
+                title: `[${isOficio ? 'Registro de Oficio' : (isRegular ? 'Contribuyente Regular' : 'No Regular')}] ${emp.razon_social}`,
                 icon: {
                     url: 'data:image/svg+xml;utf-8,' + encodeURIComponent(pinSvg),
                     scaledSize: new google.maps.Size(34, 44),
@@ -3971,11 +4025,13 @@
             });
 
             const headerGrad = isOficio 
-                ? 'linear-gradient(135deg, #4338ca 0%, #6d28d9 100%)' 
-                : 'linear-gradient(135deg, #0b2545 0%, #134074 100%)';
+                ? 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)' 
+                : (isRegular
+                    ? 'linear-gradient(135deg, #c2410c 0%, #ea580c 100%)'
+                    : 'linear-gradient(135deg, #0b2545 0%, #134074 100%)');
             const groupBadgeHtml = isOficio
                 ? '<span style="background: rgba(255,255,255,0.25); color: #ffffff; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;"><i class="bi bi-journal-bookmark-fill me-1"></i>Reg. de Oficio</span>'
-                : '<span style="background: rgba(255,255,255,0.2); color: #ffffff; font-size: 0.65rem; font-weight: 600; padding: 2px 6px; border-radius: 4px;"><i class="bi bi-award-fill me-1"></i>Minerales No Metálicos</span>';
+                : '<span style="background: rgba(255,255,255,0.25); color: #ffffff; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;"><i class="bi bi-award-fill me-1"></i>Minerales No Metálicos</span>';
 
             const infoContent = `
                 <div style="font-family: 'Inter', sans-serif; max-width: 320px; padding: 2px;">
@@ -3985,8 +4041,11 @@
                             <span style="background: #ffffff; color: #0b2545; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-family: monospace;">RIF: ${emp.rif}</span>
                         </div>
                         <div style="font-size: 0.86rem; font-weight: 700; line-height: 1.25;">${empresaEscape(emp.razon_social)}</div>
-                        ${(!isOficio && emp.ritez) ? `<div style="display: flex; gap: 5px; margin-top: 4px;">
-                            <span style="background: rgba(255,255,255,0.18); color: #ffffff; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px;">RITEZ: ${emp.ritez}</span>
+                        ${(!isOficio) ? `<div style="display: flex; gap: 5px; margin-top: 4px; flex-wrap: wrap;">
+                            ${emp.ritez ? `<span style="background: rgba(255,255,255,0.18); color: #ffffff; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px;">RITEZ: ${emp.ritez}</span>` : ''}
+                            <span style="background: ${emp.in_productor ? '#f59e0b' : 'rgba(255,255,255,0.2)'}; color: #ffffff; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;">
+                                <i class="bi ${emp.in_productor ? 'bi-award-fill' : 'bi-dash-circle'} me-1"></i>${emp.in_productor ? 'Regular' : 'No Regular'}
+                            </span>
                         </div>` : ''}
                     </div>
                     <div style="font-size: 0.75rem; color: #334155; margin-bottom: 6px;">
@@ -4016,13 +4075,15 @@
             const lat = Number(emp.geometria.lat);
             const lng = Number(emp.geometria.lng);
             const isOficio = (emp.grupo_codigo === 'oficio');
-            const pinColor = isOficio ? '#6366f1' : ((currentMineralFilter !== 'all') ? getMineralColor(currentMineralFilter) : (emp.color_mineral || '#0066FF'));
-            const iconClass = isOficio ? 'bi-journal-bookmark-fill' : 'bi-gem';
+            const isRegular = (!isOficio && emp.in_productor === true);
+            // Regulares naranjas (#ea580c) y Oficio azules (#2563eb)
+            const pinColor = isOficio ? '#2563eb' : (isRegular ? '#ea580c' : '#64748b');
+            const iconClass = isOficio ? 'bi-journal-bookmark-fill' : (isRegular ? 'bi-award-fill' : 'bi-dash-circle');
             const customIcon = L.divIcon({
                 className: 'custom-sedatez-pin',
                 html: `
-                    <div style="background-color: ${pinColor}; border: 2.5px solid ${isOficio ? '#ffffff' : (emp.activo ? '#ffffff' : '#ef4444')}; color: #fff; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-                <i class="bi ${iconClass}" style="transform: rotate(45deg); font-size: 11px; color: #ffffff;"></i>
+                    <div style="background-color: ${pinColor}; border: 2.5px solid #ffffff; color: #fff; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.35);">
+                        <i class="bi ${iconClass}" style="transform: rotate(45deg); font-size: 11px; color: #ffffff;"></i>
                     </div>`,
                 iconSize: [30, 30],
                 iconAnchor: [15, 30],
@@ -4031,12 +4092,17 @@
 
             const marker = L.marker([lat, lng], { icon: customIcon }).addTo(leafletMapInstance);
             const groupBadge = isOficio
-                ? '<span class="badge" style="background:#6366f1;color:#fff;font-size:0.65rem;">Reg. de Oficio</span>'
-                : '<span class="badge" style="background:#0b2545;color:#fff;font-size:0.65rem;">Minerales No Metálicos</span>';
+                ? '<span class="badge" style="background:#2563eb;color:#fff;font-size:0.65rem;"><i class="bi bi-journal-bookmark-fill me-1"></i>Reg. de Oficio</span>'
+                : '<span class="badge" style="background:#ea580c;color:#fff;font-size:0.65rem;"><i class="bi bi-award-fill me-1"></i>Minerales No Metálicos</span>';
+            const prodLeafletBadge = (!isOficio)
+                ? (emp.in_productor 
+                    ? '<span class="badge bg-warning text-dark" style="font-size:0.63rem;"><i class="bi bi-award-fill me-1"></i>Regular</span>' 
+                    : '<span class="badge bg-secondary text-white" style="font-size:0.63rem;"><i class="bi bi-dash-circle me-1"></i>No Regular</span>')
+                : '';
 
             const popupHtml = `
                 <div style="font-family: 'Inter', sans-serif; font-size: 0.8rem;">
-                    <div class="mb-1">${groupBadge}</div>
+                    <div class="mb-1 d-flex align-items-center gap-1 flex-wrap">${groupBadge} ${prodLeafletBadge}</div>
                     <strong>${emp.razon_social}</strong><br>
                     <small class="text-muted">RIF: ${emp.rif} | ${empresaEscape(emp.minerales_raw || emp.mineral_principal)}</small><br>
                     <small>${emp.municipio}</small><br>
@@ -4233,6 +4299,21 @@
                             : 'badge bg-danger-subtle text-danger border border-danger-subtle';
                     }
                 }
+
+                const pillProductor = document.getElementById('pill-company-productor');
+                if (pillProductor) {
+                    if (empresa.grupo_codigo === 'oficio' || empresa.in_productor === null || empresa.in_productor === undefined) {
+                        pillProductor.style.display = 'none';
+                    } else {
+                        pillProductor.style.display = 'inline-block';
+                        pillProductor.innerHTML = empresa.in_productor 
+                            ? '<i class="bi bi-award-fill me-1"></i>Regular' 
+                            : '<i class="bi bi-dash-circle me-1"></i>No Regular';
+                        pillProductor.className = empresa.in_productor
+                            ? 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle'
+                            : 'badge bg-secondary-subtle text-secondary border border-secondary-subtle';
+                    }
+                }
                 document.getElementById('pill-company-address').textContent = `${empresa.municipio} • ${empresa.direccion_terreno}`;
 
                 const pillGroup = document.getElementById('pill-company-group');
@@ -4306,6 +4387,45 @@
                         guiaContainer.innerHTML = empresa.habilitado_guia 
                             ? '<span class="badge bg-info text-dark">Habilitado</span>' 
                             : '<span class="badge bg-secondary">No Habilitado</span>';
+                    }
+
+                    const prodContainer = document.getElementById('oc-productor-badge');
+                    if (prodContainer) {
+                        prodContainer.innerHTML = empresa.in_productor 
+                            ? '<span class="badge bg-warning text-dark"><i class="bi bi-award-fill me-1"></i>Regular</span>' 
+                            : '<span class="badge bg-secondary text-white"><i class="bi bi-dash-circle me-1"></i>No Regular</span>';
+                    }
+
+                    const btnToggleProd = document.getElementById('btn-toggle-productor');
+                    if (btnToggleProd) {
+                        btnToggleProd.onclick = async () => {
+                            const nuevoEstado = !empresa.in_productor;
+                            btnToggleProd.disabled = true;
+                            btnToggleProd.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...';
+                            try {
+                                const resp = await fetch('api_actualizar_productor.php', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ id: empresa.id, in_productor: nuevoEstado })
+                                });
+                                const data = await resp.json();
+                                if (data.success) {
+                                    empresa.in_productor = nuevoEstado;
+                                    empresa.tipo_contribuyente = nuevoEstado ? 'Regular' : 'No Regular';
+                                    prodContainer.innerHTML = nuevoEstado 
+                                        ? '<span class="badge bg-warning text-dark"><i class="bi bi-award-fill me-1"></i>Regular</span>' 
+                                        : '<span class="badge bg-secondary text-white"><i class="bi bi-dash-circle me-1"></i>No Regular</span>';
+                                    applyMnmFilters();
+                                } else {
+                                    alert(data.message || 'Error al actualizar condición de contribuyente regular');
+                                }
+                            } catch (err) {
+                                alert('Error de conexión: ' + err.message);
+                            } finally {
+                                btnToggleProd.disabled = false;
+                                btnToggleProd.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Cambiar';
+                            }
+                        };
                     }
                 }
             }

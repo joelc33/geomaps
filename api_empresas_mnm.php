@@ -63,6 +63,7 @@ try {
     $searchParam    = isset($_GET['q']) ? trim($_GET['q']) : '';
     $grupoParam     = isset($_GET['grupo']) ? trim($_GET['grupo']) : '';
     $ejeParam       = isset($_GET['eje']) ? trim($_GET['eje']) : '';
+    $productorParam = isset($_GET['productor']) ? trim($_GET['productor']) : '';
 
     $whereClauses = array();
     $params = array();
@@ -87,12 +88,23 @@ try {
         }
     }
 
-    // Filtro por Grupo de Contribuyentes (RITEZ o Registro de Oficio)
+    // Filtro por Grupo de Contribuyentes (RITEZ o Registro de Oficio o Regulares/Productores)
     if ($grupoParam !== '' && $grupoParam !== 'all') {
         if ($grupoParam === 'oficio' || $grupoParam === 'registro_oficio') {
             $whereClauses[] = "uni.grupo_codigo = 'oficio'";
         } elseif ($grupoParam === 'ritez' || $grupoParam === 'mnm') {
             $whereClauses[] = "uni.grupo_codigo = 'ritez'";
+        } elseif ($grupoParam === 'regular' || $grupoParam === 'regulares' || $grupoParam === 'productor' || $grupoParam === 'productores') {
+            $whereClauses[] = "(uni.grupo_codigo = 'ritez' AND uni.in_productor = true)";
+        }
+    }
+
+    // Filtro por Tipo de Contribuyente Productor (Aplica a Minerales No Metálicos / tab_mnm)
+    if ($productorParam !== '' && $productorParam !== 'all') {
+        if ($productorParam === '1' || $productorParam === 'true' || $productorParam === 'productor' || $productorParam === 'si') {
+            $whereClauses[] = "(uni.grupo_codigo = 'ritez' AND uni.in_productor = true)";
+        } elseif ($productorParam === '0' || $productorParam === 'false' || $productorParam === 'no_productor' || $productorParam === 'no') {
+            $whereClauses[] = "(uni.grupo_codigo = 'ritez' AND uni.in_productor = false)";
         }
     }
 
@@ -162,6 +174,7 @@ try {
                     c.fe_registro AS fecha_registro,
                     m.in_activo AS activo,
                     m.in_llenado_guia AS habilitado_guia,
+                    m.in_productor AS in_productor,
                     m.da_mineral AS minerales_raw,
                     m.da_superficie AS superficie,
                     m.dr_fiscal AS direccion_fiscal,
@@ -203,6 +216,7 @@ try {
                     NULL::date AS fecha_registro,
                     NULL::boolean AS activo,
                     false AS habilitado_guia,
+                    NULL::boolean AS in_productor,
                     m.da_mineral AS minerales_raw,
                     m.da_superficie AS superficie,
                     m.dr_fiscal AS direccion_fiscal,
@@ -245,15 +259,19 @@ try {
                     COUNT(CASE WHEN activo = true THEN 1 END) as activos,
                     COUNT(CASE WHEN activo = false THEN 1 END) as inactivos,
                     COUNT(CASE WHEN latitud_db IS NOT NULL AND latitud_db != '' THEN 1 END) as con_gps,
+                    COUNT(CASE WHEN in_productor = true THEN 1 END) as total_productores,
+                    COUNT(CASE WHEN in_productor = false THEN 1 END) as total_no_productores,
                     COUNT(CASE WHEN grupo_codigo = 'ritez' THEN 1 END) as total_ritez,
                     COUNT(CASE WHEN grupo_codigo = 'ritez' AND activo = true THEN 1 END) as activos_ritez,
+                    COUNT(CASE WHEN grupo_codigo = 'ritez' AND in_productor = true THEN 1 END) as productores_ritez,
+                    COUNT(CASE WHEN grupo_codigo = 'ritez' AND in_productor = false THEN 1 END) as no_productores_ritez,
                     COUNT(CASE WHEN grupo_codigo = 'ritez' AND latitud_db IS NOT NULL AND latitud_db != '' THEN 1 END) as con_gps_ritez,
                     COUNT(CASE WHEN grupo_codigo = 'oficio' THEN 1 END) as total_oficio,
                     COUNT(CASE WHEN grupo_codigo = 'oficio' AND latitud_db IS NOT NULL AND latitud_db != '' THEN 1 END) as con_gps_oficio
                  FROM (
-                    SELECT id, in_activo as activo, nu_latitud as latitud_db, 'ritez' as grupo_codigo FROM contribuyente.tab_mnm
+                    SELECT id, in_activo as activo, nu_latitud as latitud_db, 'ritez' as grupo_codigo, in_productor FROM contribuyente.tab_mnm
                     UNION ALL
-                    SELECT id, NULL::boolean as activo, nu_latitud as latitud_db, 'oficio' as grupo_codigo FROM preregistro.tab_minas
+                    SELECT id, NULL::boolean as activo, nu_latitud as latitud_db, 'oficio' as grupo_codigo, NULL::boolean as in_productor FROM preregistro.tab_minas
                  ) uni_stats";
     $statsRow = $pdo->query($countSql)->fetch();
 
@@ -347,6 +365,8 @@ try {
             'activo' => ($grupoCodigo === 'oficio') ? null : !empty($row['activo']),
             'estatus_texto' => ($grupoCodigo === 'oficio') ? null : (!empty($row['activo']) ? 'Activo' : 'Inactivo'),
             'habilitado_guia' => ($grupoCodigo === 'oficio') ? null : !empty($row['habilitado_guia']),
+            'in_productor' => ($grupoCodigo === 'ritez') ? (bool)$row['in_productor'] : null,
+            'tipo_contribuyente' => ($grupoCodigo === 'oficio') ? 'Registro de Oficio' : (!empty($row['in_productor']) ? 'Regular' : 'No Regular'),
             'minerales' => $mineralesArr,
             'minerales_raw' => $mineralesRaw,
             'mineral_principal' => $mineralPrincipal,
@@ -398,6 +418,10 @@ try {
         'total_inactivos' => (int)$statsRow['inactivos'],
         'total_con_gps' => (int)$statsRow['con_gps'],
         'total_pendientes_gps' => (int)($statsRow['total'] - $statsRow['con_gps']),
+        'total_productores' => (int)$statsRow['total_productores'],
+        'total_no_productores' => (int)$statsRow['total_no_productores'],
+        'total_regulares' => (int)$statsRow['total_productores'],
+        'total_no_regulares' => (int)$statsRow['total_no_productores'],
         'total_filtrados' => count($empresas),
         'grupos' => array(
             'ritez' => array(
@@ -406,6 +430,10 @@ try {
                 'total' => (int)$statsRow['total_ritez'],
                 'activos' => (int)$statsRow['activos_ritez'],
                 'inactivos' => (int)($statsRow['total_ritez'] - $statsRow['activos_ritez']),
+                'productores' => (int)$statsRow['productores_ritez'],
+                'no_productores' => (int)$statsRow['no_productores_ritez'],
+                'regulares' => (int)$statsRow['productores_ritez'],
+                'no_regulares' => (int)$statsRow['no_productores_ritez'],
                 'con_gps' => (int)$statsRow['con_gps_ritez'],
                 'pendientes_gps' => (int)($statsRow['total_ritez'] - $statsRow['con_gps_ritez'])
             ),
