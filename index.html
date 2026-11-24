@@ -1133,6 +1133,9 @@
             <div class="d-flex align-items-center gap-3">
                 <!-- Resumen Rápido de Minerales No Metálicos -->
                 <div class="d-none d-lg-flex align-items-center gap-2">
+                    <span id="badge-header-total" class="badge px-2 py-1" style="background: rgba(11, 37, 69, 0.08); color: #0b2545; border: 1px solid rgba(11, 37, 69, 0.2); font-size: 0.72rem;" title="Total de Registrados en el Listado">
+                        <i class="bi bi-buildings-fill me-1"></i> <span id="header-total-mnm">19</span> Total Registrados
+                    </span>
                     <span id="badge-header-ritez" class="badge px-2 py-1" style="background: rgba(234, 88, 12, 0.12); color: #ea580c; border: 1px solid rgba(234, 88, 12, 0.3); font-size: 0.72rem;" title="Contribuyentes Regulares">
                         <i class="bi bi-award-fill me-1"></i> <span id="header-ritez-mnm">16</span> Regulares
                     </span>
@@ -1140,10 +1143,10 @@
                         <i class="bi bi-journal-bookmark-fill me-1"></i> <span id="header-oficio-mnm">3</span> Reg. de Oficio
                     </span>
                     <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.72rem;">
-                        <i class="bi bi-check-circle-fill me-1"></i> <span id="header-active-mnm">54</span> Activos
+                        <i class="bi bi-check-circle-fill me-1"></i> <span id="header-active-mnm">19</span> Activos
                     </span>
                     <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1" style="font-size: 0.72rem;" title="Registrados pendientes por coordenadas GPS">
-                        <i class="bi bi-geo me-1 text-warning"></i> <span id="header-pending-mnm">52</span> Pendientes Ubicación
+                        <i class="bi bi-geo me-1 text-warning"></i> <span id="header-pending-mnm">14</span> Pendientes Ubicación
                     </span>
                 </div>
 
@@ -1195,8 +1198,8 @@
                     <div class="sidebar-title">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-building text-primary"></i>
-                            <span class="fw-bold" style="font-size: 0.88rem; color: #1e293b;">Registrados</span>
-                            <span class="badge" style="background: var(--bb-primary-light); color: var(--bb-primary); font-size: 0.72rem; font-weight: 700;" id="sidebar-counter">54</span>
+                            <span class="fw-bold" style="font-size: 0.88rem; color: #1e293b;">Total de Registrados</span>
+                            <span class="badge" style="background: var(--bb-primary-light); color: var(--bb-primary); font-size: 0.72rem; font-weight: 700;" id="sidebar-counter">19</span>
                         </div>
                         <!-- Botón Ocultar Barra Lateral (Llamativo y Táctil para Tablets) -->
                         <button type="button" class="btn btn-collapse-sidebar" id="btn-collapse-sidebar" title="Ocultar barra lateral">
@@ -2825,7 +2828,13 @@
             const cActive = document.getElementById('count-active');
             const cInactive = document.getElementById('count-inactive');
 
-            if (hTotal) hTotal.textContent = resumen.total_empresas;
+            const totalListado = (resumen.total_registrados !== undefined) 
+                ? resumen.total_registrados 
+                : ((resumen.grupos && resumen.grupos.ritez && resumen.grupos.oficio) 
+                    ? ((resumen.grupos.ritez.regulares || resumen.grupos.ritez.total) + resumen.grupos.oficio.total) 
+                    : resumen.total_empresas);
+
+            if (hTotal) hTotal.textContent = totalListado;
             if (hActive) hActive.textContent = resumen.activas;
             if (hPending && resumen.pendientes_gps !== undefined) hPending.textContent = resumen.pendientes_gps;
             if (cActive) cActive.textContent = resumen.activas;
@@ -2837,7 +2846,10 @@
             }
 
             const floatingCount = document.getElementById('floating-btn-counter');
-            if (floatingCount && resumen.total_empresas !== undefined) floatingCount.textContent = resumen.total_empresas;
+            if (floatingCount) floatingCount.textContent = totalListado;
+
+            const sideCount = document.getElementById('sidebar-counter');
+            if (sideCount) sideCount.textContent = totalListado;
         }
 
         function poblarSelectoresFiltro(kpisData) {
@@ -3085,10 +3097,17 @@
             if (countGroupProd) countGroupProd.textContent = totalProd;
             if (countGroupOficio) countGroupOficio.textContent = totalOficio;
 
-            if (sideCount) sideCount.textContent = `${filtered.length} registrados`;
+            if (sideCount) sideCount.textContent = filtered.length;
             if (mapCount) mapCount.textContent = conCoordsEnFiltrados;
             const floatingCount = document.getElementById('floating-btn-counter');
             if (floatingCount) floatingCount.textContent = filtered.length;
+
+            const hTotal = document.getElementById('header-total-mnm');
+            if (hTotal) hTotal.textContent = filtered.length;
+            const hActive = document.getElementById('header-active-mnm');
+            if (hActive) hActive.textContent = activosEnFiltrados;
+            const hPending = document.getElementById('header-pending-mnm');
+            if (hPending) hPending.textContent = sinCoordsEnFiltrados;
 
             const countLocated = document.getElementById('count-located');
             const countPending = document.getElementById('count-pending');

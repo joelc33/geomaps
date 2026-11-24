@@ -97,6 +97,11 @@ try {
         } elseif ($grupoParam === 'regular' || $grupoParam === 'regulares' || $grupoParam === 'productor' || $grupoParam === 'productores') {
             $whereClauses[] = "(uni.grupo_codigo = 'ritez' AND uni.in_productor = true)";
         }
+    } else {
+        // En listado "Todos", mostrar solo los contribuyentes activos en listado (Regulares + Registro de Oficio = 19)
+        if ($productorParam === '' && !isset($_GET['include_all'])) {
+            $whereClauses[] = "(uni.grupo_codigo = 'oficio' OR (uni.grupo_codigo = 'ritez' AND uni.in_productor = true))";
+        }
     }
 
     // Filtro por Tipo de Contribuyente Productor (Aplica a Minerales No Metálicos / tab_mnm)
@@ -256,8 +261,10 @@ try {
     // Consulta de Totales Generales y Desglose por Grupo en BD
     $countSql = "SELECT 
                     COUNT(*) as total, 
+                    COUNT(CASE WHEN grupo_codigo = 'oficio' OR in_productor = true THEN 1 END) as total_listado,
                     COUNT(CASE WHEN activo = true THEN 1 END) as activos,
                     COUNT(CASE WHEN activo = false THEN 1 END) as inactivos,
+                    COUNT(CASE WHEN (grupo_codigo = 'oficio' OR in_productor = true) AND (latitud_db IS NOT NULL AND latitud_db != '') THEN 1 END) as con_gps_listado,
                     COUNT(CASE WHEN latitud_db IS NOT NULL AND latitud_db != '' THEN 1 END) as con_gps,
                     COUNT(CASE WHEN in_productor = true THEN 1 END) as total_productores,
                     COUNT(CASE WHEN in_productor = false THEN 1 END) as total_no_productores,
@@ -271,7 +278,7 @@ try {
                  FROM (
                     SELECT id, in_activo as activo, nu_latitud as latitud_db, 'ritez' as grupo_codigo, in_productor FROM contribuyente.tab_mnm
                     UNION ALL
-                    SELECT id, NULL::boolean as activo, nu_latitud as latitud_db, 'oficio' as grupo_codigo, NULL::boolean as in_productor FROM preregistro.tab_minas
+                    SELECT id, true as activo, nu_latitud as latitud_db, 'oficio' as grupo_codigo, NULL::boolean as in_productor FROM preregistro.tab_minas
                  ) uni_stats";
     $statsRow = $pdo->query($countSql)->fetch();
 
@@ -413,15 +420,17 @@ try {
 
     echo json_encode(array(
         'success' => true,
-        'total_general' => (int)$statsRow['total'],
-        'total_activos' => (int)$statsRow['activos'],
-        'total_inactivos' => (int)$statsRow['inactivos'],
-        'total_con_gps' => (int)$statsRow['con_gps'],
-        'total_pendientes_gps' => (int)($statsRow['total'] - $statsRow['con_gps']),
-        'total_productores' => (int)$statsRow['total_productores'],
-        'total_no_productores' => (int)$statsRow['total_no_productores'],
-        'total_regulares' => (int)$statsRow['total_productores'],
-        'total_no_regulares' => (int)$statsRow['total_no_productores'],
+        'total_general' => (int)$statsRow['total_listado'],
+        'total_general_db' => (int)$statsRow['total'],
+        'total_registrados' => (int)$statsRow['total_listado'],
+        'total_activos' => (int)$statsRow['total_listado'],
+        'total_inactivos' => 0,
+        'total_con_gps' => (int)$statsRow['con_gps_listado'],
+        'total_pendientes_gps' => (int)($statsRow['total_listado'] - $statsRow['con_gps_listado']),
+        'total_productores' => (int)$statsRow['productores_ritez'],
+        'total_no_productores' => (int)$statsRow['no_productores_ritez'],
+        'total_regulares' => (int)$statsRow['productores_ritez'],
+        'total_no_regulares' => (int)$statsRow['no_productores_ritez'],
         'total_filtrados' => count($empresas),
         'grupos' => array(
             'ritez' => array(
