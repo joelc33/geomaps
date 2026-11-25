@@ -173,6 +173,10 @@ try {
                 SELECT 
                     m.id,
                     m.nu_documento_rif AS rif,
+                    m.id_tab_documento,
+                    doc.inicial AS doc_inicial,
+                    doc.tx_documento AS doc_tipo_nombre,
+                    doc.tipo AS doc_tipo_persona,
                     m.de_razon_social AS razon_social,
                     c.co_ritez AS ritez,
                     c.nu_expediente AS expediente,
@@ -206,6 +210,7 @@ try {
                     'contribuyente.tab_mnm' AS origen_tabla
                 FROM contribuyente.tab_mnm m
                 LEFT JOIN contribuyente.tab_contribuyente c ON c.id = m.id_tab_contribuyente
+                LEFT JOIN mantenimiento.tab_documento doc ON doc.id = m.id_tab_documento
                 LEFT JOIN mantenimiento.tab_municipio mun ON mun.id = m.id_tab_municipio
                 LEFT JOIN mantenimiento.tab_parroquia par ON par.id = m.id_tab_parroquia
                 $polJoin
@@ -215,6 +220,10 @@ try {
                 SELECT 
                     m.id,
                     m.nu_documento_rif AS rif,
+                    m.id_tab_documento,
+                    doc.inicial AS doc_inicial,
+                    doc.tx_documento AS doc_tipo_nombre,
+                    doc.tipo AS doc_tipo_persona,
                     m.de_razon_social AS razon_social,
                     NULL::varchar AS ritez,
                     NULL::varchar AS expediente,
@@ -247,6 +256,7 @@ try {
                     'Registro de Oficio de Usuarios de Minerales No Metálicos' AS grupo_nombre,
                     'preregistro.tab_minas' AS origen_tabla
                 FROM preregistro.tab_minas m
+                LEFT JOIN mantenimiento.tab_documento doc ON doc.id = m.id_tab_documento
                 LEFT JOIN mantenimiento.tab_municipio mun ON mun.id = m.id_tab_municipio
                 LEFT JOIN mantenimiento.tab_parroquia par ON par.id = m.id_tab_parroquia
                 $polJoin
@@ -278,7 +288,7 @@ try {
                  FROM (
                     SELECT id, in_activo as activo, nu_latitud as latitud_db, 'ritez' as grupo_codigo, in_productor FROM contribuyente.tab_mnm
                     UNION ALL
-                    SELECT id, true as activo, nu_latitud as latitud_db, 'oficio' as grupo_codigo, NULL::boolean as in_productor FROM preregistro.tab_minas
+                    SELECT id, NULL::boolean as activo, nu_latitud as latitud_db, 'oficio' as grupo_codigo, NULL::boolean as in_productor FROM preregistro.tab_minas
                  ) uni_stats";
     $statsRow = $pdo->query($countSql)->fetch();
 
@@ -358,13 +368,38 @@ try {
 
         $nombreResponsable = trim((isset($row['responsable_nombre']) ? $row['responsable_nombre'] : '') . ' ' . (isset($row['responsable_apellido']) ? $row['responsable_apellido'] : ''));
 
+        // Formateo de RIF y determinación de Persona Natural (V) o Jurídica (J)
+        $rawRif = trim((string)$row['rif']);
+        $docInicial = !empty($row['doc_inicial']) ? strtoupper(trim($row['doc_inicial'])) : null;
+        $docTipo = !empty($row['doc_tipo_persona']) ? strtoupper(trim($row['doc_tipo_persona'])) : null;
+
+        if (preg_match('/^([VvJjGgEePp])-?(.*)$/', $rawRif, $matches)) {
+            $prefix = strtoupper($matches[1]);
+            $numRif = $matches[2];
+            $formattedRif = $prefix . '-' . $numRif;
+        } else {
+            $prefix = $docInicial ? $docInicial : ($docTipo === 'N' ? 'V' : 'J');
+            $formattedRif = $prefix . '-' . $rawRif;
+        }
+
+        $esPersonaNatural = ($prefix === 'V' || $prefix === 'E' || $docTipo === 'N');
+        $tipoPersona = $esPersonaNatural ? 'Natural' : 'Jurídica';
+        $tipoPersonaTexto = $esPersonaNatural ? 'Persona Natural' : 'Persona Jurídica';
+        $tipoPersonaCodigo = $prefix;
+
         $empresas[] = array(
             'uid' => $uid,
             'id' => $id,
             'grupo_codigo' => $grupoCodigo,
             'grupo_nombre' => $row['grupo_nombre'],
             'origen_tabla' => $row['origen_tabla'],
-            'rif' => $row['rif'],
+            'rif' => $formattedRif,
+            'rif_raw' => $rawRif,
+            'tipo_persona' => $tipoPersona,
+            'tipo_persona_texto' => $tipoPersonaTexto,
+            'tipo_persona_codigo' => $tipoPersonaCodigo,
+            'tipo_persona_busqueda' => $esPersonaNatural ? 'natural v persona natural' : 'juridica jurídica j persona juridica persona jurídica',
+            'doc_tipo_nombre' => isset($row['doc_tipo_nombre']) ? $row['doc_tipo_nombre'] : ($esPersonaNatural ? 'Venezolano' : 'Juridico'),
             'razon_social' => $row['razon_social'] ? $row['razon_social'] : 'REGISTRADO SIN DENOMINACIÓN',
             'ritez' => ($grupoCodigo === 'oficio') ? null : ($row['ritez'] ? $row['ritez'] : 'PENDIENTE'),
             'expediente' => ($grupoCodigo === 'oficio') ? null : ($row['expediente'] ? $row['expediente'] : 'S/E'),
@@ -420,6 +455,15 @@ try {
 
     echo json_encode(array(
         'success' => true,
+        'total_general' => (int)$statsRow['total'],
+        'total_activos' => (int)$statsRow['activos'],
+        'total_inactivos' => (int)$statsRow['inactivos'],
+        'total_con_gps' => (int)$statsRow['con_gps'],
+        'total_pendientes_gps' => (int)($statsRow['total'] - $statsRow['con_gps']),
+        'total_productores' => (int)$statsRow['total_productores'],
+        'total_no_productores' => (int)$statsRow['total_no_productores'],
+        'total_regulares' => (int)$statsRow['total_productores'],
+        'total_no_regulares' => (int)$statsRow['total_no_productores'],
         'total_general' => (int)$statsRow['total_listado'],
         'total_general_db' => (int)$statsRow['total'],
         'total_registrados' => (int)$statsRow['total_listado'],

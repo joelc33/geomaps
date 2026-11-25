@@ -12,6 +12,11 @@ try {
 
     // 1. Resumen General y Desglose por Grupo (RITEZ + Registro de Oficio)
     $summarySql = "SELECT 
+        COUNT(*) AS total_empresas,
+        COUNT(CASE WHEN activo = true THEN 1 END) AS activas,
+        COUNT(CASE WHEN activo = false THEN 1 END) AS inactivas,
+        COUNT(CASE WHEN habilitado_guia = true THEN 1 END) AS habilitadas_guia,
+        COUNT(CASE WHEN latitud_db IS NOT NULL AND latitud_db != '' THEN 1 END) AS gps_verificado,
         COUNT(*) AS total_empresas_db,
         -- Contadores del listado activo (Regulares + Registro de Oficio = 19)
         COUNT(CASE WHEN grupo_codigo = 'oficio' OR in_productor = true THEN 1 END) AS total_empresas,
@@ -32,10 +37,11 @@ try {
     FROM (
         SELECT id, in_activo AS activo, in_llenado_guia AS habilitado_guia, in_productor, nu_latitud AS latitud_db, 'ritez' AS grupo_codigo FROM contribuyente.tab_mnm
         UNION ALL
-        SELECT id, true AS activo, false AS habilitado_guia, NULL::boolean AS in_productor, nu_latitud AS latitud_db, 'oficio' AS grupo_codigo FROM preregistro.tab_minas
+        SELECT id, NULL::boolean AS activo, false AS habilitado_guia, NULL::boolean AS in_productor, nu_latitud AS latitud_db, 'oficio' AS grupo_codigo FROM preregistro.tab_minas
     ) uni_summary";
     $summary = $pdo->query($summarySql)->fetch();
 
+    // 2. Conteo por Municipio (agregado de ambos grupos)
     // 2. Conteo por Municipio (agregado de ambos grupos en el listado)
     $munSql = "SELECT 
         COALESCE(mun.id, 0) AS id_municipio,
@@ -69,6 +75,7 @@ try {
                        ORDER BY de_mnm ASC";
     $mineralesLista = $pdo->query($catalogoMinSql)->fetchAll();
 
+    // 5. Conteo de presencia de minerales considerando ambos grupos
     // 5. Conteo de presencia de minerales considerando los contribuyentes en listado
     $mineralesPresencia = array();
     $minSql = "SELECT COUNT(*) AS total FROM (
@@ -118,6 +125,7 @@ try {
             'grupos' => array(
                 'ritez' => array(
                     'nombre' => 'Minerales No Metálicos',
+                    'total' => (int)$summary['total_ritez'],
                     'total' => (int)$summary['productores_ritez'],
                     'total_general_db' => (int)$summary['total_ritez'],
                     'productores' => (int)$summary['productores_ritez'],

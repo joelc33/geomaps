@@ -634,6 +634,30 @@
             align-items: center;
         }
 
+        .badge-persona-natural {
+            background-color: #e0f2fe !important;
+            color: #0369a1 !important;
+            border: 1px solid #bae6fd !important;
+            font-size: 0.66rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .badge-persona-juridica {
+            background-color: #f3e8ff !important;
+            color: #6b21a8 !important;
+            border: 1px solid #d8b4fe !important;
+            font-size: 0.66rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+        }
+
         .sidebar-footer {
             padding: 10px 16px;
             background: #ffffff;
@@ -1397,6 +1421,7 @@
                     <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                         <span class="badge" id="pill-company-group">GRUPO</span>
                         <span class="badge font-monospace" style="background: var(--bb-primary-light); color: var(--bb-primary); font-size: 0.72rem; font-weight: 700;" id="pill-company-rif">RIF: J-00000000-0</span>
+                        <span class="badge badge-persona-juridica font-monospace" id="pill-company-tipo-persona">Persona Jurídica (J)</span>
                         <span class="badge bg-light text-secondary border" style="font-size: 0.68rem;" id="pill-company-category">Mineral</span>
                         <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.68rem;" id="pill-company-productor">Regular</span>
                         <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.68rem;" id="pill-company-status">Activo</span>
@@ -1425,6 +1450,7 @@
             <div>
                 <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
                     <span class="badge bg-warning text-dark font-monospace" id="oc-rif">RIF: J-00000000-0</span>
+                    <span class="badge badge-persona-juridica font-monospace" id="oc-tipo-persona-badge">Persona Jurídica (J)</span>
                     <span class="badge" id="oc-grupo-badge">GRUPO</span>
                 </div>
                 <h5 class="offcanvas-title fw-bold fs-6 mb-0 text-truncate" style="max-width: 420px;" id="oc-razon-social">Razón Social</h5>
@@ -2828,6 +2854,7 @@
             const cActive = document.getElementById('count-active');
             const cInactive = document.getElementById('count-inactive');
 
+            if (hTotal) hTotal.textContent = resumen.total_empresas;
             const totalListado = (resumen.total_registrados !== undefined) 
                 ? resumen.total_registrados 
                 : ((resumen.grupos && resumen.grupos.ritez && resumen.grupos.oficio) 
@@ -2846,6 +2873,7 @@
             }
 
             const floatingCount = document.getElementById('floating-btn-counter');
+            if (floatingCount && resumen.total_empresas !== undefined) floatingCount.textContent = resumen.total_empresas;
             if (floatingCount) floatingCount.textContent = totalListado;
 
             const sideCount = document.getElementById('sidebar-counter');
@@ -3000,6 +3028,10 @@
                 if (term) {
                     const matchText = (emp.razon_social || '').toLowerCase().includes(term) ||
                                       (emp.rif || '').toLowerCase().includes(term) ||
+                                      (emp.rif_raw || '').toLowerCase().includes(term) ||
+                                      (emp.tipo_persona || '').toLowerCase().includes(term) ||
+                                      (emp.tipo_persona_busqueda || '').toLowerCase().includes(term) ||
+                                      (emp.tipo_persona_texto || '').toLowerCase().includes(term) ||
                                       (emp.grupo_codigo !== 'oficio' && (emp.ritez || '').toLowerCase().includes(term)) ||
                                       (emp.grupo_codigo !== 'oficio' && (emp.expediente || '').toLowerCase().includes(term)) ||
                                       (emp.municipio || '').toLowerCase().includes(term) ||
@@ -3097,6 +3129,7 @@
             if (countGroupProd) countGroupProd.textContent = totalProd;
             if (countGroupOficio) countGroupOficio.textContent = totalOficio;
 
+            if (sideCount) sideCount.textContent = `${filtered.length} registrados`;
             if (sideCount) sideCount.textContent = filtered.length;
             if (mapCount) mapCount.textContent = conCoordsEnFiltrados;
             const floatingCount = document.getElementById('floating-btn-counter');
@@ -3330,6 +3363,11 @@
                         : '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1" style="font-size: 0.65rem;" title="Contribuyente No Regular"><i class="bi bi-dash-circle me-1"></i>No Regular</span>')
                     : '';
 
+                const esNaturalEmp = (empresa.tipo_persona === 'Natural' || (empresa.rif && empresa.rif.startsWith('V')));
+                const tipoPersonaBadge = esNaturalEmp 
+                    ? '<span class="badge badge-persona-natural" title="Persona Natural (V)"><i class="bi bi-person-fill me-1"></i>Natural (V)</span>'
+                    : '<span class="badge badge-persona-juridica" title="Persona Jurídica (J)"><i class="bi bi-building me-1"></i>Jurídica (J)</span>';
+
                 btn.innerHTML = `
                     <div class="d-flex align-items-center justify-content-between mb-1">
                         <div class="d-flex align-items-center gap-1 flex-wrap">
@@ -3353,8 +3391,11 @@
                         <span style="color: #334155;">${empresaEscape(empresa.minerales_raw || 'No especificados')}</span>
                     </div>
 
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="company-rif-subtext"><i class="bi bi-file-earmark-text text-primary me-1"></i>RIF: ${empresa.rif}</span>
+                    <div class="d-flex align-items-center justify-content-between mb-2 gap-1 flex-wrap">
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="company-rif-subtext"><i class="bi bi-file-earmark-text text-primary me-1"></i>RIF: ${empresa.rif}</span>
+                            ${tipoPersonaBadge}
+                        </div>
                         ${ritezBadge}
                     </div>
 
@@ -3952,14 +3993,15 @@
                 const isOficioEmp = (emp.grupo_codigo === 'oficio');
                 const isRegularEmp = (!isOficioEmp && emp.in_productor === true);
                 const pinColor = isOficioEmp ? '#2563eb' : (isRegularEmp ? '#ea580c' : '#64748b');
+                const esNatEmp = (emp.tipo_persona === 'Natural' || (emp.rif && emp.rif.startsWith('V')));
                 return `
                     <div style="border-bottom: 1px solid #e2e8f0; padding: 7px 0;">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px;">
                             <span style="font-weight: 700; color: #0f172a; font-size: 0.8rem; line-height: 1.25;">
                                 ${empresaEscape(emp.razon_social)}
                             </span>
-                            <span class="badge bg-secondary-subtle text-dark font-monospace" style="font-size: 0.65rem; margin-left: 6px;">
-                                RIF: ${emp.rif}
+                            <span class="badge ${esNatEmp ? 'badge-persona-natural' : 'badge-persona-juridica'} font-monospace" style="font-size: 0.65rem; margin-left: 6px;">
+                                RIF: ${emp.rif} (${esNatEmp ? 'V' : 'J'})
                             </span>
                         </div>
                         <div style="font-size: 0.72rem; color: #64748b; margin-bottom: 5px;">
@@ -4052,12 +4094,20 @@
                 ? '<span style="background: rgba(255,255,255,0.25); color: #ffffff; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;"><i class="bi bi-journal-bookmark-fill me-1"></i>Reg. de Oficio</span>'
                 : '<span style="background: rgba(255,255,255,0.25); color: #ffffff; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;"><i class="bi bi-award-fill me-1"></i>Minerales No Metálicos</span>';
 
+            const esNatSingle = (emp.tipo_persona === 'Natural' || (emp.rif && emp.rif.startsWith('V')));
+            const tipoPersonaBadge = esNatSingle
+                ? '<span class="badge badge-persona-natural font-monospace"><i class="bi bi-person-fill me-1"></i>Natural (V)</span>'
+                : '<span class="badge badge-persona-juridica font-monospace"><i class="bi bi-building me-1"></i>Jurídica (J)</span>';
+
             const infoContent = `
                 <div style="font-family: 'Inter', sans-serif; max-width: 320px; padding: 2px;">
                     <div style="background: ${headerGrad}; color: white; padding: 10px 12px; border-radius: 8px 8px 0 0; margin: -5px -5px 10px -5px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 4px; flex-wrap: wrap;">
                             ${groupBadgeHtml}
-                            <span style="background: #ffffff; color: #0b2545; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-family: monospace;">RIF: ${emp.rif}</span>
+                            <div style="display: flex; gap: 4px; align-items: center;">
+                                <span style="background: #ffffff; color: #0b2545; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-family: monospace;">RIF: ${emp.rif}</span>
+                                ${tipoPersonaBadge}
+                            </div>
                         </div>
                         <div style="font-size: 0.86rem; font-weight: 700; line-height: 1.25;">${empresaEscape(emp.razon_social)}</div>
                         ${(!isOficio) ? `<div style="display: flex; gap: 5px; margin-top: 4px; flex-wrap: wrap;">
@@ -4119,11 +4169,16 @@
                     : '<span class="badge bg-secondary text-white" style="font-size:0.63rem;"><i class="bi bi-dash-circle me-1"></i>No Regular</span>')
                 : '';
 
+            const isNatL = (emp.tipo_persona === 'Natural' || (emp.rif && emp.rif.startsWith('V')));
+            const tipoPersonaBadgeL = isNatL
+                ? '<span class="badge badge-persona-natural font-monospace"><i class="bi bi-person-fill me-1"></i>Natural (V)</span>'
+                : '<span class="badge badge-persona-juridica font-monospace"><i class="bi bi-building me-1"></i>Jurídica (J)</span>';
+
             const popupHtml = `
                 <div style="font-family: 'Inter', sans-serif; font-size: 0.8rem;">
-                    <div class="mb-1 d-flex align-items-center gap-1 flex-wrap">${groupBadge} ${prodLeafletBadge}</div>
+                    <div class="mb-1 d-flex align-items-center gap-1 flex-wrap">${groupBadge} ${tipoPersonaBadgeL} ${prodLeafletBadge}</div>
                     <strong>${emp.razon_social}</strong><br>
-                    <small class="text-muted">RIF: ${emp.rif} | ${empresaEscape(emp.minerales_raw || emp.mineral_principal)}</small><br>
+                    <small class="text-muted"><strong>RIF:</strong> ${emp.rif} | ${empresaEscape(emp.minerales_raw || emp.mineral_principal)}</small><br>
                     <small>${emp.municipio}</small><br>
                     <button class="btn btn-xs btn-primary mt-1 w-100" onclick="openTaxpayerOffcanvas('${emp.uid}')">Ver Ficha</button>
                 </div>`;
@@ -4304,6 +4359,18 @@
             if (pillCard) {
                 document.getElementById('pill-company-name').textContent = empresa.razon_social;
                 document.getElementById('pill-company-rif').textContent = `RIF: ${empresa.rif}`;
+                
+                const pillTipoPersona = document.getElementById('pill-company-tipo-persona');
+                if (pillTipoPersona) {
+                    const esNatPill = (empresa.tipo_persona === 'Natural' || (empresa.rif && empresa.rif.startsWith('V')));
+                    pillTipoPersona.innerHTML = esNatPill 
+                        ? '<i class="bi bi-person-fill me-1"></i>Persona Natural (V)' 
+                        : '<i class="bi bi-building me-1"></i>Persona Jurídica (J)';
+                    pillTipoPersona.className = esNatPill 
+                        ? 'badge badge-persona-natural font-monospace' 
+                        : 'badge badge-persona-juridica font-monospace';
+                }
+                
                 document.getElementById('pill-company-category').textContent = empresa.mineral_principal;
                 
                 const pillStatus = document.getElementById('pill-company-status');
@@ -4378,6 +4445,17 @@
             // Llenar datos de cabecera
             document.getElementById('oc-rif').textContent = `RIF: ${empresa.rif}`;
             document.getElementById('oc-razon-social').textContent = empresa.razon_social;
+
+            const esNatOc = (empresa.tipo_persona === 'Natural' || (empresa.rif && empresa.rif.startsWith('V')));
+            const ocTipoPersona = document.getElementById('oc-tipo-persona-badge');
+            if (ocTipoPersona) {
+                ocTipoPersona.innerHTML = esNatOc
+                    ? '<i class="bi bi-person-fill me-1"></i>Persona Natural (V)'
+                    : '<i class="bi bi-building me-1"></i>Persona Jurídica (J)';
+                ocTipoPersona.className = esNatOc
+                    ? 'badge badge-persona-natural font-monospace'
+                    : 'badge badge-persona-juridica font-monospace';
+            }
 
             const isOficio = (empresa.grupo_codigo === 'oficio');
 
@@ -5149,6 +5227,28 @@
 
             container.innerHTML = '';
 
+            // Sincronizar conteos dinámicamente con las empresas registradas en MNM_DATA
+            if (Array.isArray(MNM_DATA) && MNM_DATA.length > 0) {
+                ejes.forEach(eje => {
+                    (eje.municipios || []).forEach(m => {
+                        m.total_empresas = MNM_DATA.filter(emp => 
+                            (emp.id_municipio && String(emp.id_municipio) === String(m.id_municipio)) ||
+                            (emp.municipio && emp.municipio.trim().toLowerCase() === m.nombre.trim().toLowerCase())
+                        ).length;
+                    });
+                });
+                if (data && data.features) {
+                    data.features.forEach(f => {
+                        const mId = f.properties.id_municipio;
+                        const mName = f.properties.nombre_municipio;
+                        f.properties.total_empresas = MNM_DATA.filter(emp =>
+                            (emp.id_municipio && String(emp.id_municipio) === String(mId)) ||
+                            (emp.municipio && emp.municipio.trim().toLowerCase() === mName.trim().toLowerCase())
+                        ).length;
+                    });
+                }
+            }
+
             ejes.forEach(eje => {
                 const itemDiv = document.createElement('div');
                 const isSelectedEje = (currentEjeFilter === eje.codigo);
@@ -5174,7 +5274,9 @@
                             </span>`;
                 }).join('');
 
-                const totalEmpresasEje = (eje.municipios || []).reduce((acc, m) => acc + (m.total_empresas || 0), 0);
+                const totalEmpresasEje = (Array.isArray(MNM_DATA) && MNM_DATA.length > 0)
+                    ? MNM_DATA.filter(emp => emp.codigo_eje === eje.codigo).length
+                    : (eje.municipios || []).reduce((acc, m) => acc + (m.total_empresas || 0), 0);
 
                 // Contraído por defecto (o expandido si es el eje actualmente activo)
                 const isExpanded = isSelectedEje;

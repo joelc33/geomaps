@@ -17,11 +17,11 @@ try {
 
     $filterEje = isset($_GET['eje']) ? trim($_GET['eje']) : '';
 
-    // 1. Obtener conteo de contribuyentes por municipio desde las tablas de negocio
+    // 1. Obtener conteo de contribuyentes por municipio desde los registrados en el listado activo (Regulares + Oficio)
     $sqlEmpresas = "
         SELECT id_tab_municipio, COUNT(*) AS total_empresas
         FROM (
-            SELECT id_tab_municipio FROM contribuyente.tab_mnm
+            SELECT id_tab_municipio FROM contribuyente.tab_mnm WHERE in_productor = true
             UNION ALL
             SELECT id_tab_municipio FROM preregistro.tab_minas
         ) uni
